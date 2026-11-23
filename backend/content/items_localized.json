@@ -1,0 +1,248 @@
+{
+ "version": "localized",
+ "review_status": "NEEDS NATIVE ODIA SPEAKER REVIEW",
+ "items": [
+  {
+   "id": "loc_pakhala",
+   "emoji": "🍚",
+   "image": null,
+   "label": {
+    "en": "Pakhala",
+    "or": "ପଖାଳ"
+   },
+   "category": "food",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_dalma",
+   "emoji": "🍲",
+   "image": null,
+   "label": {
+    "en": "Dalma",
+    "or": "ଡାଲମା"
+   },
+   "category": "food",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_pitha",
+   "emoji": "🥟",
+   "image": null,
+   "label": {
+    "en": "Pitha",
+    "or": "ପିଠା"
+   },
+   "category": "food",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_rasagola",
+   "emoji": "🍡",
+   "image": null,
+   "label": {
+    "en": "Rasagola",
+    "or": "ରସଗୋଲା"
+   },
+   "category": "food",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_chhena_poda",
+   "emoji": "🍰",
+   "image": null,
+   "label": {
+    "en": "Chhena Poda",
+    "or": "ଛେନାପୋଡ଼"
+   },
+   "category": "food",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_coconut",
+   "emoji": "🥥",
+   "image": null,
+   "label": {
+    "en": "Coconut",
+    "or": "ନଡ଼ିଆ"
+   },
+   "category": "food",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_mango",
+   "emoji": "🥭",
+   "image": null,
+   "label": {
+    "en": "Mango",
+    "or": "ଆମ୍ବ"
+   },
+   "category": "food",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_banana",
+   "emoji": "🍌",
+   "image": null,
+   "label": {
+    "en": "Banana",
+    "or": "କଦଳୀ"
+   },
+   "category": "food",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_fish",
+   "emoji": "🐟",
+   "image": null,
+   "label": {
+    "en": "Fish",
+    "or": "ମାଛ"
+   },
+   "category": "food",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_betel_leaf",
+   "emoji": "🍃",
+   "image": null,
+   "label": {
+    "en": "Betel leaf",
+    "or": "ପାନ"
+   },
+   "category": "object",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_conch",
+   "emoji": "🐚",
+   "image": null,
+   "label": {
+    "en": "Conch",
+    "or": "ଶଙ୍ଖ"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_lamp",
+   "emoji": "🪔",
+   "image": null,
+   "label": {
+    "en": "Diya lamp",
+    "or": "ଦୀପ"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_boat",
+   "emoji": "🛶",
+   "image": null,
+   "label": {
+    "en": "Boat",
+    "or": "ଡଙ୍ଗା"
+   },
+   "category": "object",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_saree",
+   "emoji": "🥻",
+   "image": null,
+   "label": {
+    "en": "Sambalpuri saree",
+    "or": "ସମ୍ବଲପୁରୀ ଶାଢ଼ୀ"
+   },
+   "category": "object",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_bell",
+   "emoji": "🔔",
+   "image": null,
+   "label": {
+    "en": "Bell",
+    "or": "ଘଣ୍ଟି"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_pot",
+   "emoji": "🏺",
+   "image": null,
+   "label": {
+    "en": "Clay pot",
+    "or": "ମାଟି ହାଣ୍ଡି"
+   },
+   "category": "object",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_drum",
+   "emoji": "🥁",
+   "image": null,
+   "label": {
+    "en": "Drum",
+    "or": "ଢୋଲ"
+   },
+   "category": "object",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_temple",
+   "emoji": "🛕",
+   "image": null,
+   "label": {
+    "en": "Temple",
+    "or": "ମନ୍ଦିର"
+   },
+   "category": "place",
+   "needs_photo": true
+  },
+  {
+   "id": "loc_lotus",
+   "emoji": "🪷",
+   "image": null,
+   "label": {
+    "en": "Lotus",
+    "or": "ପଦ୍ମ"
+   },
+   "category": "nature",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_cow",
+   "emoji": "🐄",
+   "image": null,
+   "label": {
+    "en": "Cow",
+    "or": "ଗାଈ"
+   },
+   "category": "animal",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_peacock",
+   "emoji": "🦚",
+   "image": null,
+   "label": {
+    "en": "Peacock",
+    "or": "ମୟୂର"
+   },
+   "category": "animal",
+   "needs_photo": false
+  },
+  {
+   "id": "loc_elephant",
+   "emoji": "🐘",
+   "image": null,
+   "label": {
+    "en": "Elephant",
+    "or": "ହାତୀ"
+   },
+   "category": "animal",
+   "needs_photo": false
+  }
+ ]
+}

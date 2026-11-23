@@ -1,0 +1,108 @@
+/* Elderly-friendly design: large text, big touch targets, high contrast, calm colours. */
+:root {
+  --bg: #fdf8f0;
+  --ink: #1d1d1b;
+  --muted: #5a5650;
+  --primary: #b4471b;   /* warm terracotta */
+  --primary-ink: #fff;
+  --card: #ffffff;
+  --line: #d8cfc2;
+  --right: #2e7d32;
+  --wrong: #c62828;
+  font-family: 'Noto Sans Oriya', 'Kalinga', 'Noto Sans', system-ui, sans-serif;
+  font-size: 21px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 720px; margin: 0 auto; padding: 1rem; }
+
+h1 { font-size: 1.8rem; margin: 0.5rem 0; }
+h2 { font-size: 1.35rem; }
+.subtitle { color: var(--muted); margin-top: 0; }
+.center { text-align: center; }
+
+button, .button {
+  font: inherit;
+  min-height: 56px;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+button:focus-visible { outline: 4px solid #1565c0; outline-offset: 2px; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.big { width: 100%; min-height: 72px; font-size: 1.15rem; }
+button.primary { background: var(--primary); color: var(--primary-ink); border-color: var(--primary); }
+button.small { min-height: 48px; font-size: 0.95rem; }
+button.link { border: none; background: none; color: var(--muted); text-decoration: underline; font-size: 0.85rem; margin-top: 1.5rem; }
+button.game { justify-content: flex-start; text-align: left; }
+button.game small { display: block; color: var(--muted); font-size: 0.8rem; }
+.game-icon { font-size: 2.2rem; }
+
+.stack { display: flex; flex-direction: column; gap: 0.75rem; margin: 1rem 0; }
+.row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1rem 0; }
+.row > * { flex: 1; }
+
+.lang-switch { display: flex; gap: 0.5rem; margin: 0.5rem 0 1rem; }
+.lang-switch button { flex: 1; }
+.lang-switch button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+label { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 600; }
+input { font: inherit; padding: 0.7rem; border: 2px solid var(--line); border-radius: 12px; }
+.consent { background: #fff3e0; border-radius: 14px; padding: 0.5rem 1rem 1rem; }
+.consent p { font-size: 0.95rem; }
+label.check { flex-direction: row; align-items: center; gap: 0.75rem; }
+label.check input { width: 32px; height: 32px; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; color: var(--muted); }
+.instruction { font-size: 1.2rem; font-weight: 600; text-align: center; }
+.round { text-align: center; color: var(--muted); margin: 0.25rem 0; }
+
+.grid { display: grid; gap: 0.6rem; margin: 1rem 0; }
+.card {
+  aspect-ratio: 1;
+  min-height: 90px;
+  flex-direction: column;
+  background: var(--card);
+  border: 3px solid var(--line);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
+  transition: transform 0.15s, background 0.2s;
+}
+.card.down { background: #8d6e63; border-color: #6d4c41; }
+.card-back { font-size: 2.2rem; color: #fff; font-weight: 700; }
+.card-label { font-size: 0.8rem; text-align: center; line-height: 1.2; margin-top: 0.2rem; }
+.card.matched { opacity: 0.55; border-color: var(--right); }
+.card.right { border-color: var(--right); background: #e8f5e9; }
+.card.wrong { border-color: var(--wrong); background: #ffebee; }
+
+.target { display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-size: 1.2rem; flex-wrap: wrap; }
+
+.timer { height: 10px; background: var(--primary); border-radius: 5px; transform-origin: left; animation: shrink linear forwards; }
+@keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+.stars { font-size: 3rem; margin: 0.5rem; }
+.message { font-size: 1.3rem; font-weight: 600; }
+.why { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 0.5rem 1rem; font-size: 0.85rem; margin: 1rem 0; }
+.error { background: #ffebee; color: var(--wrong); padding: 0.75rem; border-radius: 12px; }
+
+table.history { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+table.history th, table.history td { padding: 0.5rem; border-bottom: 1px solid var(--line); text-align: left; }
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+}

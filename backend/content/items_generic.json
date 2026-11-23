@@ -1,0 +1,248 @@
+{
+ "version": "generic",
+ "review_status": "NEEDS NATIVE ODIA SPEAKER REVIEW",
+ "items": [
+  {
+   "id": "gen_apple",
+   "emoji": "🍎",
+   "image": null,
+   "label": {
+    "en": "Apple",
+    "or": "ସେଓ"
+   },
+   "category": "food",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_bread",
+   "emoji": "🍞",
+   "image": null,
+   "label": {
+    "en": "Bread",
+    "or": "ପାଉଁରୁଟି"
+   },
+   "category": "food",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_cake",
+   "emoji": "🎂",
+   "image": null,
+   "label": {
+    "en": "Cake",
+    "or": "କେକ୍"
+   },
+   "category": "food",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_pizza",
+   "emoji": "🍕",
+   "image": null,
+   "label": {
+    "en": "Pizza",
+    "or": "ପିଜା"
+   },
+   "category": "food",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_car",
+   "emoji": "🚗",
+   "image": null,
+   "label": {
+    "en": "Car",
+    "or": "କାର୍"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_clock",
+   "emoji": "🕰️",
+   "image": null,
+   "label": {
+    "en": "Clock",
+    "or": "ଘଣ୍ଟା"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_key",
+   "emoji": "🔑",
+   "image": null,
+   "label": {
+    "en": "Key",
+    "or": "ଚାବି"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_book",
+   "emoji": "📖",
+   "image": null,
+   "label": {
+    "en": "Book",
+    "or": "ବହି"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_chair",
+   "emoji": "🪑",
+   "image": null,
+   "label": {
+    "en": "Chair",
+    "or": "ଚୌକି"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_cup",
+   "emoji": "☕",
+   "image": null,
+   "label": {
+    "en": "Cup",
+    "or": "କପ୍"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_bicycle",
+   "emoji": "🚲",
+   "image": null,
+   "label": {
+    "en": "Bicycle",
+    "or": "ସାଇକେଲ"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_phone",
+   "emoji": "📱",
+   "image": null,
+   "label": {
+    "en": "Phone",
+    "or": "ଫୋନ୍"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_glasses",
+   "emoji": "👓",
+   "image": null,
+   "label": {
+    "en": "Glasses",
+    "or": "ଚଷମା"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_shoe",
+   "emoji": "👞",
+   "image": null,
+   "label": {
+    "en": "Shoe",
+    "or": "ଜୋତା"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_ball",
+   "emoji": "⚽",
+   "image": null,
+   "label": {
+    "en": "Ball",
+    "or": "ବଲ୍"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_hat",
+   "emoji": "🎩",
+   "image": null,
+   "label": {
+    "en": "Hat",
+    "or": "ଟୋପି"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_airplane",
+   "emoji": "✈️",
+   "image": null,
+   "label": {
+    "en": "Airplane",
+    "or": "ଉଡ଼ାଜାହାଜ"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_television",
+   "emoji": "📺",
+   "image": null,
+   "label": {
+    "en": "Television",
+    "or": "ଟେଲିଭିଜନ"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_scissors",
+   "emoji": "✂️",
+   "image": null,
+   "label": {
+    "en": "Scissors",
+    "or": "କଇଁଚି"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_guitar",
+   "emoji": "🎸",
+   "image": null,
+   "label": {
+    "en": "Guitar",
+    "or": "ଗିଟାର"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_umbrella",
+   "emoji": "☂️",
+   "image": null,
+   "label": {
+    "en": "Umbrella",
+    "or": "ଛତା"
+   },
+   "category": "object",
+   "needs_photo": false
+  },
+  {
+   "id": "gen_dog",
+   "emoji": "🐕",
+   "image": null,
+   "label": {
+    "en": "Dog",
+    "or": "କୁକୁର"
+   },
+   "category": "animal",
+   "needs_photo": false
+  }
+ ]
+}
