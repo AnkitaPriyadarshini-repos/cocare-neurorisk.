@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
+import DemoBanner from '../components/risk/DemoBanner'
 import ProgressChart from '../components/risk/ProgressChart'
 import ScoreBandBadge from '../components/risk/ScoreBandBadge'
 import { t } from '../i18n'
@@ -51,6 +52,9 @@ export default function MyProgress({ user, onRiskCheck, onBack }) {
         </button>
       </div>
 
+      {/* Persistent DEMO banner */}
+      <DemoBanner lang={lang} />
+
       {/* Caregiver & Family Summary Card */}
       <div
         style={{
@@ -62,9 +66,9 @@ export default function MyProgress({ user, onRiskCheck, onBack }) {
           boxShadow: '0 3px 10px rgba(0,0,0,0.04)',
         }}
       >
-        <h3 style={{ margin: '0 0 0.75rem', fontSize: '1.2rem', color: 'var(--primary)' }}>
+        <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.2rem', color: '#8c3109' }}>
           👨‍👩‍👦 {t('caregiver_summary_title', lang)}
-        </h3>
+        </h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
           <div style={{ background: '#faf8f5', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--line)' }}>
@@ -106,9 +110,9 @@ export default function MyProgress({ user, onRiskCheck, onBack }) {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.15rem' }}>
+          <h2 style={{ margin: 0, fontSize: '1.15rem' }}>
             📋 {t('screening_records_title', lang)}
-          </h3>
+          </h2>
           {screeningHistory.length > 0 && (
             <button
               type="button"

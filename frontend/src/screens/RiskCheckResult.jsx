@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
+import DemoBanner from '../components/risk/DemoBanner'
 import DoctorSummaryPrint from '../components/risk/DoctorSummaryPrint'
 import ScoreBandBadge from '../components/risk/ScoreBandBadge'
 import { t } from '../i18n'
 import { riskApi } from '../riskApi'
-import { speak } from '../speech'
+import { hasVoiceForLang, speak } from '../speech'
 
 export default function RiskCheckResult({
   user,
@@ -21,17 +22,28 @@ export default function RiskCheckResult({
   const [optedIn, setOptedIn] = useState(() => (user?.id ? riskApi.isOptedInHistory(user.id) : false))
   const [savedNotice, setSavedNotice] = useState(false)
   const [deletedNotice, setDeletedNotice] = useState(false)
+  const [canSpeak, setCanSpeak] = useState(() => hasVoiceForLang(lang))
 
   const band = result?.band || 'moderate'
   const score = result?.probability !== undefined ? result.probability : 0.5
   const scoreNote = result?.score_note || 'Model score calibrated to OASIS sample prevalence of 48.5%'
 
-  // Synchronize opt-in if user.id changes
+  // Synchronize opt-in and voice capabilities if user or lang changes
   useEffect(() => {
     if (user?.id) {
       setOptedIn(riskApi.isOptedInHistory(user.id))
     }
-  }, [user?.id])
+    setCanSpeak(hasVoiceForLang(lang))
+    function updateVoices() {
+      setCanSpeak(hasVoiceForLang(lang))
+    }
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.addEventListener('voiceschanged', updateVoices)
+      return () => {
+        window.speechSynthesis.removeEventListener('voiceschanged', updateVoices)
+      }
+    }
+  }, [user?.id, lang])
 
   // Filter explanations to only items with magnitude >= 0.01
   const significantExplanations = (result?.explanation || []).filter(
@@ -45,14 +57,12 @@ export default function RiskCheckResult({
     riskApi.setOptInHistory(user.id, isChecked)
 
     if (isChecked) {
+      // Store ONLY { date, band, score, model_variant } - NEVER profile fields
       const record = {
-        id: Date.now(),
         date: new Date().toISOString(),
         score,
         band,
-        variant: result?.model_variant || (useMmse ? 'with_mmse' : 'without_mmse'),
-        profile,
-        useMmse,
+        model_variant: result?.model_variant || (useMmse ? 'with_mmse' : 'without_mmse'),
       }
       riskApi.saveLocalResult(user.id, record)
       setSavedNotice(true)
@@ -70,6 +80,7 @@ export default function RiskCheckResult({
   }
 
   function handleReadResults() {
+    if (!canSpeak) return
     const guidanceText = t(`guidance_${band}`, lang)
     const readText = {
       en: `Screening summary: ${t(`band_${band}`, 'en')}. Model score: ${score}. ${guidanceText}`,
@@ -80,6 +91,9 @@ export default function RiskCheckResult({
 
   return (
     <div className="screen risk-check-result">
+      {/* Persistent DEMO banner */}
+      <DemoBanner lang={lang} />
+
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
         <h1 style={{ margin: 0, fontSize: '1.6rem' }}>🩺 {t('result_title', lang)}</h1>
@@ -87,9 +101,15 @@ export default function RiskCheckResult({
           type="button"
           className="small"
           onClick={handleReadResults}
-          aria-label={t('listen', lang)}
+          disabled={!canSpeak}
+          aria-label={canSpeak ? t('listen', lang) : t('voice_not_available', lang)}
+          title={!canSpeak ? t('voice_not_available', lang) : undefined}
+          style={{
+            opacity: canSpeak ? 1 : 0.45,
+            cursor: canSpeak ? 'pointer' : 'not-allowed',
+          }}
         >
-          🔊 {t('listen', lang)}
+          {canSpeak ? `🔊 ${t('listen', lang)}` : `🔇 ${t('listen', lang)}`}
         </button>
       </div>
 
@@ -133,9 +153,9 @@ export default function RiskCheckResult({
 
         {/* What to do next section */}
         <div style={{ marginTop: '1.2rem', borderTop: '2px dashed var(--line)', paddingTop: '1rem' }}>
-          <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.2rem' }}>
+          <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.2rem' }}>
             🧭 {t('what_to_do_next', lang)}
-          </h3>
+          </h2>
           <p style={{ margin: 0, fontSize: '1.05rem', lineHeight: '1.5', color: 'var(--ink)' }}>
             {t(`guidance_${band}`, lang)}
           </p>
@@ -144,9 +164,9 @@ export default function RiskCheckResult({
         {/* Factors / Explanations section */}
         {significantExplanations.length > 0 && (
           <div style={{ marginTop: '1.2rem', borderTop: '1px solid var(--line)', paddingTop: '0.85rem' }}>
-            <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: 'var(--muted)' }}>
+            <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: '#2e2c29' }}>
               🔍 {t('explanations_title', lang)}
-            </h4>
+            </h3>
             <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.95rem' }}>
               {significantExplanations.map((item, idx) => {
                 const text = isOdia && item.text_or ? item.text_or : item.text_en
@@ -171,12 +191,12 @@ export default function RiskCheckResult({
             borderRadius: '12px',
             padding: '0.75rem 1rem',
             fontSize: '0.9rem',
-            color: '#5d4037',
+            color: '#3e2723',
             lineHeight: '1.4',
           }}
         >
           <strong>⚠️ {t('not_a_diagnosis', lang)}</strong>
-          <div style={{ fontSize: '0.82rem', marginTop: '0.3rem', color: '#795548' }}>
+          <div style={{ fontSize: '0.82rem', marginTop: '0.3rem', color: '#3e2723' }}>
             {t('demo_status_badge', lang)}
           </div>
         </div>
@@ -224,6 +244,9 @@ export default function RiskCheckResult({
             <small style={{ display: 'block', color: 'var(--muted)', fontSize: '0.82rem' }}>
               {t('save_to_device_desc', lang)}
             </small>
+            <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: '#6d4c41', lineHeight: '1.35' }}>
+              ℹ️ {t('shared_device_consent', lang)}
+            </p>
           </span>
         </label>
 

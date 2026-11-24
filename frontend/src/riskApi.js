@@ -19,6 +19,20 @@ async function request(method, path, body) {
   return res.json()
 }
 
+// Feature flag: default false in production builds, true in dev
+export function isRiskCheckEnabled() {
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      const envFlag = import.meta.env.VITE_ENABLE_RISK_CHECK
+      if (envFlag !== undefined) {
+        return envFlag === 'true' || envFlag === true
+      }
+      return Boolean(import.meta.env.DEV)
+    }
+  } catch {}
+  return false
+}
+
 // Fallback form specification in case backend is offline or cold starting
 export const FALLBACK_FORM_SPEC = {
   dataset: 'OASIS-demo',
@@ -72,8 +86,8 @@ export const FALLBACK_FORM_SPEC = {
       min: 1,
       max: 5,
       step: 1,
-      help_text: 'Hollingshead socioeconomic index (1: Upper, 2: Upper-Middle, 3: Middle, 4: Lower-Middle, 5: Lower). Optional.',
-      help_text_or: 'ହୋଲିଙ୍ଗସହେଡ ସୂଚକାଙ୍କ (୧: ଉଚ୍ଚ, ୨: ଉଚ୍ଚ-ମଧ୍ୟମ, ୩: ମଧ୍ୟମ, ୪: ନିମ୍ନ-ମଧ୍ୟମ, ୫: ନିମ୍ନ)। ଇଚ୍ଛାଧୀନ। [needs native review]',
+      help_text: 'Primary occupation or socioeconomic background. Completely optional.',
+      help_text_or: 'ଆପଣଙ୍କ ମୁଖ୍ୟ କାର୍ଯ୍ୟ କିମ୍ବା ପେଶା ଅନୁସାରେ ଏକ ସ୍ତର ବାଛନ୍ତୁ। ଏହା ସମ୍ପୂର୍ଣ୍ଣ ଇଚ୍ଛାଧୀନ। [needs native review]',
     },
     {
       name: 'MMSE',
@@ -91,10 +105,16 @@ export const FALLBACK_FORM_SPEC = {
 }
 
 export const riskApi = {
-  // 1. Fetch intake form specification
+  // 1. Fetch intake form specification with schema_version verification
   getFormSpec: async () => {
     try {
-      return await request('GET', '/risk/form-spec')
+      const res = await request('GET', '/risk/form-spec')
+      if (res && res.schema_version && res.schema_version !== FALLBACK_FORM_SPEC.schema_version) {
+        console.warn(
+          `[riskApi] Form specification schema_version mismatch: backend returned "${res.schema_version}", local fallback expects "${FALLBACK_FORM_SPEC.schema_version}".`
+        )
+      }
+      return res
     } catch (err) {
       console.warn('Using fallback form specification due to network error:', err)
       return FALLBACK_FORM_SPEC
@@ -122,11 +142,19 @@ export const riskApi = {
     }
   },
 
+  // Stores ONLY { id, date, band, score, model_variant }. NEVER stores profile fields!
   saveLocalResult: (userId, record) => {
-    if (!userId) return
+    if (!userId || !record) return
     try {
       const history = riskApi.getLocalHistory(userId)
-      const updated = [record, ...history].slice(0, 30) // keep last 30 assessments
+      const sanitized = {
+        id: record.id || Date.now(),
+        date: record.date || new Date().toISOString(),
+        band: record.band,
+        score: typeof record.score === 'number' ? Number(record.score.toFixed(4)) : record.score,
+        model_variant: record.model_variant || record.variant || 'without_mmse',
+      }
+      const updated = [sanitized, ...history].slice(0, 30) // keep last 30 assessments
       localStorage.setItem(`cocare_risk_history_${userId}`, JSON.stringify(updated))
     } catch (e) {
       console.error('Failed to save assessment to localStorage:', e)

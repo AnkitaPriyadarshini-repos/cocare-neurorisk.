@@ -101,11 +101,76 @@ The same screen has CSV downloads of all tables for the analysis.
 
 CO CARE provides an elderly-friendly, multilingual, and privacy-preserving cognitive health screening and progress tracking experience integrated directly into the React/Vite frontend.
 
+> ⚠️ **Ethics & Clinical Governance Notice**: Enabling the risk screening screens with real participants requires prior institutional ethics board (IRB / IEC) approval and written informed consent. This module is a non-diagnostic preliminary screening demonstration; models were trained on US OASIS data and have **not** been clinically validated or calibrated for Indian/Odia-speaking populations.
+
+### Real Application Screenshots (Playwright Automated Captures)
+
+Below are real screenshots captured directly from the running web application using automated Playwright tests at 360px mobile viewport (Odia locale):
+
 <div align="center">
-  <img src="docs/showcase/ui/01_risk_wizard_screen.svg" alt="CO CARE Risk Check Wizard Screen" width="31%" style="vertical-align: top; margin: 1%;">
-  <img src="docs/showcase/ui/02_risk_result_screen.svg" alt="CO CARE Risk Check Result Screen" width="31%" style="vertical-align: top; margin: 1%;">
-  <img src="docs/showcase/ui/03_my_progress_screen.svg" alt="CO CARE My Progress Screen" width="31%" style="vertical-align: top; margin: 1%;">
+  <img src="docs/showcase/ui/risk_wizard_mobile_or.png" alt="CO CARE Risk Check Wizard Screen (Real Mobile Screenshot - Odia)" width="31%" style="vertical-align: top; margin: 1%; border: 1px solid #ddd; border-radius: 8px;">
+  <img src="docs/showcase/ui/risk_result_mobile_or.png" alt="CO CARE Risk Check Result Screen (Real Mobile Screenshot - Odia)" width="31%" style="vertical-align: top; margin: 1%; border: 1px solid #ddd; border-radius: 8px;">
+  <img src="docs/showcase/ui/my_progress_mobile_or.png" alt="CO CARE My Progress Screen (Real Mobile Screenshot - Odia)" width="31%" style="vertical-align: top; margin: 1%; border: 1px solid #ddd; border-radius: 8px;">
 </div>
+
+*Full automated screenshot matrix available in [`docs/showcase/ui/`](docs/showcase/ui/):*
+- **Mobile (360px)**: Odia ([Wizard](docs/showcase/ui/risk_wizard_mobile_or.png), [Result](docs/showcase/ui/risk_result_mobile_or.png), [Progress](docs/showcase/ui/my_progress_mobile_or.png)) · English ([Wizard](docs/showcase/ui/risk_wizard_mobile_en.png), [Result](docs/showcase/ui/risk_result_mobile_en.png), [Progress](docs/showcase/ui/my_progress_mobile_en.png))
+- **Desktop (1280px)**: Odia ([Wizard](docs/showcase/ui/risk_wizard_desktop_or.png), [Result](docs/showcase/ui/risk_result_desktop_or.png), [Progress](docs/showcase/ui/my_progress_desktop_or.png)) · English ([Wizard](docs/showcase/ui/risk_wizard_desktop_en.png), [Result](docs/showcase/ui/risk_result_desktop_en.png), [Progress](docs/showcase/ui/my_progress_desktop_en.png))
+- **Design Mockups**: Reference design SVGs are preserved as standalone mockups: [`01_risk_wizard_screen_mockup.svg`](docs/showcase/ui/01_risk_wizard_screen_mockup.svg) `[DESIGN MOCKUP]`, [`02_risk_result_screen_mockup.svg`](docs/showcase/ui/02_risk_result_screen_mockup.svg) `[DESIGN MOCKUP]`, and [`03_my_progress_screen_mockup.svg`](docs/showcase/ui/03_my_progress_screen_mockup.svg) `[DESIGN MOCKUP]`.
+
+---
+
+### Feature Flag (`VITE_ENABLE_RISK_CHECK`)
+
+To safeguard research integrity and clinical governance, the risk screening experience is feature-flagged:
+- **Default Production State (`false`)**: In production builds (`npm run build`, `import.meta.env.PROD`), `isRiskCheckEnabled()` returns `false` by default. The "Brain Health Check" entry on the Home screen is hidden, and direct URLs (`/risk_check`, `/risk_result`, `/progress`) redirect safely to `/` (Home).
+- **Development State (`true`)**: During local development (`npm run dev`), the flag defaults to `true` for inspection and testing.
+- **Environment Override**: Can be explicitly forced on or off in `.env` via `VITE_ENABLE_RISK_CHECK=true` or `VITE_ENABLE_RISK_CHECK=false`.
+- **Persistent Demo Banner**: When enabled, every screening screen prominently displays a persistent, non-dismissible alert banner (`DemoBanner.jsx`): *"DEMO MODE · OASIS model not clinically validated or calibrated for Indian populations (LASI-DAD)"*.
+
+---
+
+### Accessibility & Automated Audit (Score: 100%)
+
+Automated accessibility audits were executed on mobile viewports (360px) using `axe-core` via Playwright ([audit log: `docs/showcase/ui/accessibility_audit.json`](docs/showcase/ui/accessibility_audit.json)):
+
+| Screen | Viewport | Passes | Violations | Accessibility Score | Status |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **Risk Check Wizard** (`/risk_check`) | 360 × 640 mobile | 32 | 0 | **100%** | Passed (Zero violations) |
+| **Risk Check Result** (`/risk_result`) | 360 × 640 mobile | 33 | 0 | **100%** | Passed (Zero violations) |
+| **My Progress** (`/progress`) | 360 × 640 mobile | 23 | 0 | **100%** | Passed (Zero violations) |
+
+Key accessibility & ergonomic enhancements:
+- **Explicit Labels for Emoji Badges**: Badges combine emoji and localized descriptive text (e.g. `🛡️ Lower Risk Band`, `⚖️ Moderate Risk Band`, `🩺 Elevated Risk Band`) with WCAG 2.1 AA compliant color contrast ($\ge 4.5:1$ for text, $\ge 3:1$ for UI badges).
+- **Smart Speech Voice Detection**: `hasVoiceForLang(lang)` inspects the client's Web Speech API voices. If no native Odia voice is installed on the user's device, the read-aloud button is cleanly disabled with a descriptive tooltip (`voice_not_available`) instead of attempting phonetic corruption with an English voice.
+- **Plain-Language SES Questions**: Socioeconomic status (SES) includes plain-language descriptions and concrete examples for all 5 tiers (Tier 1 Upper to Tier 5 Lower) and provides a prominent "Skip this optional question" button.
+- **Schema Parity Guardrail**: Checks `schema_version` between client fallback specification and `/api/risk/form-spec` (`"1.0.0"`), warning in the console on mismatch.
+
+---
+
+### Strict Client-Side Privacy & Shared Device Safety
+
+1. **Zero Profile Data in Local Storage**:
+   - `riskApi.saveLocalResult()` strictly whitelists **only** `{ id, date, band, score, model_variant }`.
+   - Individual user inputs (`Age`, `Sex`, `EDUC`, `SES`, `MMSE`) are **never persisted** to browser `localStorage` or any server database.
+2. **Shared Device Notice & Consent**:
+   - Explicit consent disclosure is rendered before enabling on-device screening history: *"Notice: If using a shared tablet or mobile phone, your summary score may be visible to other family members. You can delete saved records anytime."*
+3. **One-Click Data Purge**:
+   - Prominent "Delete my data" button immediately purges all saved records from `localStorage`.
+4. **Printable Doctor Summary (`DoctorSummaryPrint.jsx`)**:
+   - Structured clinician triage handover note with preliminary score definition, OASIS baseline prevalence notice (48.5%), and demographic covariates, containing **zero** diagnostic claims.
+
+---
+
+### Measured Frontend Bundle Size
+
+Measured from the production Vite build (`npm run build`):
+- `frontend/dist/index.html`: **0.40 kB** (gzip: 0.28 kB)
+- `frontend/dist/assets/index-*.css`: **3.64 kB** (gzip: 1.27 kB)
+- `frontend/dist/assets/index-*.js`: **291.57 kB** (gzip: 88.02 kB)
+- **Total uncompressed bundle**: **~295.6 kB** (**~89.5 kB** gzip). Lightweight vector SVG charting (`ProgressChart.jsx`) avoids heavy external visualization libraries, keeping the bundle fast on rural 3G/4G connections.
+
+---
 
 ### 1. Risk Check Wizard (`frontend/src/screens/RiskCheckWizard.jsx`)
 - **Elderly-Friendly Ergonomics**:
@@ -127,17 +192,13 @@ CO CARE provides an elderly-friendly, multilingual, and privacy-preserving cogni
 - **Accessible Score Bands**:
   - Clear visual badge (`ScoreBandBadge.jsx`) combining icon, color, and localized text across three tiers:
     - 🛡️ **Lower Risk Band** (`#1b5e20` green on `#e8f5e9`)
-    - ⚖️ **Moderate Risk Band** (`#b26a00` amber on `#fff8e1`)
+    - ⚖️ **Moderate Risk Band** (`#7a4300` amber on `#fff8e1`)
     - 🩺 **Elevated Risk Band** (`#b71c1c` red on `#ffebee`)
 - **Transparent Explanations & Actionable Guidance**:
   - Explanations are filtered to features with contribution magnitude $|\Delta| \ge 0.01$, rendered in plain language relative to typical training data medians.
   - Non-alarmist next steps tailored to risk level (e.g. promoting physical activity, social engagement, and discussion during routine checkups).
 - **Printable Doctor Summary (`DoctorSummaryPrint.jsx`)**:
   - One-click print-ready summary formatted specifically for a primary care clinician or neurologist, detailing demographic covariates, model variant, threshold, calibration notes, and feature contributions.
-- **Strict Client-Side Privacy**:
-  - Screening profiles are **never stored on the server**.
-  - Local history storage is **strictly opt-in** on the user's personal device (`localStorage` keyed by user ID).
-  - Prominent "Delete my data" button immediately purges all saved screening records.
 
 ### 3. My Progress Dashboard (`frontend/src/screens/MyProgress.jsx`)
 - **Caregiver & Family Overview**:

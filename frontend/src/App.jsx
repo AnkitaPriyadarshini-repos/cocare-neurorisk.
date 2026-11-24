@@ -4,6 +4,7 @@ import FindIt from './games/FindIt'
 import MemoryMatch from './games/MemoryMatch'
 import PictureRecall from './games/PictureRecall'
 import { t } from './i18n'
+import { isRiskCheckEnabled } from './riskApi'
 import MyProgress from './screens/MyProgress'
 import RiskCheckResult from './screens/RiskCheckResult'
 import RiskCheckWizard from './screens/RiskCheckWizard'
@@ -74,7 +75,7 @@ export default function App() {
         onProgress={() => setScreen('progress')}
       />
     )
-  else if (screen === 'risk_check')
+  else if (screen === 'risk_check' && isRiskCheckEnabled())
     body = (
       <RiskCheckWizard
         user={user}
@@ -85,7 +86,7 @@ export default function App() {
         onCancel={() => setScreen('home')}
       />
     )
-  else if (screen === 'risk_result')
+  else if (screen === 'risk_result' && isRiskCheckEnabled())
     body = (
       <RiskCheckResult
         user={user}
@@ -97,7 +98,7 @@ export default function App() {
         onHome={() => setScreen('home')}
       />
     )
-  else if (screen === 'progress')
+  else if (screen === 'progress' && isRiskCheckEnabled())
     body = (
       <MyProgress
         user={user}

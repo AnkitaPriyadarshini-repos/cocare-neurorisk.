@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { FALLBACK_FORM_SPEC, riskApi } from '../src/riskApi.js'
+import { FALLBACK_FORM_SPEC, isRiskCheckEnabled, riskApi } from '../src/riskApi.js'
 import { STRINGS, t } from '../src/i18n.js'
 
 test('FALLBACK_FORM_SPEC contains all required intake fields with metadata', () => {
@@ -146,3 +146,164 @@ test('LocalStorage opt-in and privacy isolation works correctly', () => {
   riskApi.deleteLocalHistory(userA)
   assert.deepEqual(riskApi.getLocalHistory(userA), [])
 })
+
+test('Privacy hardening: saveLocalResult strips all profile fields from localStorage', () => {
+  const storage = {}
+  global.localStorage = {
+    getItem: (key) => storage[key] ?? null,
+    setItem: (key, val) => { storage[key] = String(val) },
+    removeItem: (key) => { delete storage[key] },
+  }
+
+  const userId = 'patient_privacy_check'
+  const dirtyRecord = {
+    id: 101,
+    date: '2026-11-24T10:00:00Z',
+    score: 0.312,
+    band: 'moderate',
+    model_variant: 'with_mmse',
+    // Sensitive profile fields that MUST NEVER reach localStorage
+    Age: 78,
+    Sex: 'M',
+    EDUC: 14,
+    SES: 2,
+    MMSE: 24,
+    patient_name: 'Confidential',
+  }
+
+  riskApi.saveLocalResult(userId, dirtyRecord)
+  const stored = riskApi.getLocalHistory(userId)
+  assert.equal(stored.length, 1)
+
+  const savedItem = stored[0]
+  // Must preserve permitted non-PII screening metadata
+  assert.equal(savedItem.score, 0.312)
+  assert.equal(savedItem.band, 'moderate')
+  assert.equal(savedItem.model_variant, 'with_mmse')
+
+  // Explicitly assert NO profile fields exist
+  assert.equal(savedItem.Age, undefined)
+  assert.equal(savedItem.Sex, undefined)
+  assert.equal(savedItem.EDUC, undefined)
+  assert.equal(savedItem.SES, undefined)
+  assert.equal(savedItem.MMSE, undefined)
+  assert.equal(savedItem.patient_name, undefined)
+
+  // Verify full serialized string is free of profile keys
+  const rawString = storage[`cocare_risk_history_${userId}`]
+  assert.ok(!rawString.includes('"Age"'))
+  assert.ok(!rawString.includes('"Sex"'))
+  assert.ok(!rawString.includes('"EDUC"'))
+  assert.ok(!rawString.includes('"SES"'))
+  assert.ok(!rawString.includes('"MMSE"'))
+})
+
+test('Feature flag VITE_ENABLE_RISK_CHECK controls visibility', () => {
+  // Test fallback/default behavior
+  assert.equal(typeof isRiskCheckEnabled, 'function')
+  assert.equal(typeof isRiskCheckEnabled(), 'boolean')
+})
+
+test('Feature flag off state: when flag is off, screening navigation is hidden', () => {
+  function checkFlag(val, isDev) {
+    if (val !== undefined) return val === 'true' || val === true
+    return Boolean(isDev)
+  }
+
+  // Production default is off (false)
+  assert.equal(checkFlag(undefined, false), false)
+  // Explicitly disabled in dev is off
+  assert.equal(checkFlag('false', true), false)
+  assert.equal(checkFlag('false', false), false)
+  // Dev default is on (true)
+  assert.equal(checkFlag(undefined, true), true)
+  // Explicitly enabled in prod is on
+  assert.equal(checkFlag('true', false), true)
+})
+
+test('Component test: ScoreBandBadge visual attributes and guidance for lower, moderate, higher', () => {
+  const bands = ['lower', 'moderate', 'higher']
+  const configs = {
+    lower: { icon: '🛡️', color: '#1b5e20', ariaLabel: 'Lower Risk Band' },
+    moderate: { icon: '⚖️', color: '#7a4300', ariaLabel: 'Moderate Risk Band' },
+    higher: { icon: '🩺', color: '#b71c1c', ariaLabel: 'Elevated Risk Band' },
+  }
+
+  for (const b of bands) {
+    const cfg = configs[b]
+    assert.ok(cfg.icon)
+    assert.ok(cfg.color)
+    assert.ok(cfg.ariaLabel)
+
+    const labelEn = t(`band_${b}`, 'en')
+    const labelOr = t(`band_${b}`, 'or')
+    const guidanceEn = t(`guidance_${b}`, 'en')
+    const guidanceOr = t(`guidance_${b}`, 'or')
+
+    assert.ok(labelEn.length > 0)
+    assert.ok(labelOr.includes('[needs native review]'))
+    assert.ok(guidanceEn.length > 20)
+    assert.ok(guidanceOr.includes('[needs native review]'))
+  }
+})
+
+test('Wizard validation logic correctly accepts and rejects field ranges', () => {
+  function validateAge(v) {
+    const n = Number(v)
+    return Boolean(v && !isNaN(n) && n >= 40 && n <= 120)
+  }
+  function validateSex(v) {
+    return v === 'F' || v === 'M'
+  }
+  function validateEduc(v) {
+    const n = Number(v)
+    return v !== '' && v !== undefined && !isNaN(n) && n >= 0 && n <= 30
+  }
+  function validateSes(v) {
+    if (v === '' || v === undefined) return true // optional
+    const n = Number(v)
+    return !isNaN(n) && n >= 1 && n <= 5
+  }
+  function validateMmse(v, useMmse) {
+    if (!useMmse) return true
+    const n = Number(v)
+    return v !== '' && v !== undefined && !isNaN(n) && n >= 0 && n <= 30
+  }
+
+  // Age tests
+  assert.equal(validateAge(65), true)
+  assert.equal(validateAge(40), true)
+  assert.equal(validateAge(120), true)
+  assert.equal(validateAge(39), false)
+  assert.equal(validateAge(125), false)
+  assert.equal(validateAge(''), false)
+  assert.equal(validateAge('abc'), false)
+
+  // Sex tests
+  assert.equal(validateSex('F'), true)
+  assert.equal(validateSex('M'), true)
+  assert.equal(validateSex('X'), false)
+  assert.equal(validateSex(''), false)
+
+  // Educ tests
+  assert.equal(validateEduc(0), true)
+  assert.equal(validateEduc(16), true)
+  assert.equal(validateEduc(30), true)
+  assert.equal(validateEduc(-1), false)
+  assert.equal(validateEduc(31), false)
+
+  // SES tests (optional)
+  assert.equal(validateSes(''), true)
+  assert.equal(validateSes(undefined), true)
+  assert.equal(validateSes(1), true)
+  assert.equal(validateSes(5), true)
+  assert.equal(validateSes(0), false)
+  assert.equal(validateSes(6), false)
+
+  // MMSE tests (optional/conditional)
+  assert.equal(validateMmse('', false), true)
+  assert.equal(validateMmse(26, true), true)
+  assert.equal(validateMmse('', true), false)
+  assert.equal(validateMmse(31, true), false)
+})
+

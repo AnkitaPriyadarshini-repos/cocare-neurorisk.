@@ -1,4 +1,5 @@
-import { speak } from '../../speech'
+import { useEffect, useState } from 'react'
+import { hasVoiceForLang, speak } from '../../speech'
 import { t } from '../../i18n'
 
 export default function WizardQuestion({
@@ -12,7 +13,23 @@ export default function WizardQuestion({
   const title = isOdia && field.label_or ? field.label_or : field.label
   const help = isOdia && field.help_text_or ? field.help_text_or : field.help_text
 
+  const [canSpeak, setCanSpeak] = useState(() => hasVoiceForLang(lang))
+
+  useEffect(() => {
+    setCanSpeak(hasVoiceForLang(lang))
+    function updateVoices() {
+      setCanSpeak(hasVoiceForLang(lang))
+    }
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.addEventListener('voiceschanged', updateVoices)
+      return () => {
+        window.speechSynthesis.removeEventListener('voiceschanged', updateVoices)
+      }
+    }
+  }, [lang])
+
   function handleListen() {
+    if (!canSpeak) return
     speak(
       {
         en: `${field.label}. ${field.help_text || ''}`,
@@ -29,11 +46,19 @@ export default function WizardQuestion({
         <button
           type="button"
           onClick={handleListen}
+          disabled={!canSpeak}
           className="small"
-          aria-label={t('read_question', lang)}
-          style={{ whiteSpace: 'nowrap', padding: '0.4rem 0.8rem', minHeight: '44px' }}
+          aria-label={canSpeak ? t('read_question', lang) : t('voice_not_available', lang)}
+          title={!canSpeak ? t('voice_not_available', lang) : undefined}
+          style={{
+            whiteSpace: 'nowrap',
+            padding: '0.4rem 0.8rem',
+            minHeight: '44px',
+            opacity: canSpeak ? 1 : 0.45,
+            cursor: canSpeak ? 'pointer' : 'not-allowed'
+          }}
         >
-          🔊 {t('read_question', lang)}
+          {canSpeak ? `🔊 ${t('read_question', lang)}` : `🔇 ${t('read_question', lang)}`}
         </button>
       </div>
 
@@ -73,9 +98,13 @@ export default function WizardQuestion({
             })}
           </div>
         ) : field.type === 'integer_tier' || field.name === 'SES' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <p style={{ margin: '0 0 0.25rem', fontSize: '0.98rem', color: 'var(--muted)', lineHeight: '1.4' }}>
+              {t('ses_plain_desc', lang)}
+            </p>
             {[1, 2, 3, 4, 5].map((tier) => {
-              const tierKey = `ses_tier_${tier}`
+              const tierTitleKey = `ses_tier_${tier}_title`
+              const tierExKey = `ses_tier_${tier}_ex`
               const isSelected = Number(value) === tier
               return (
                 <button
@@ -84,23 +113,36 @@ export default function WizardQuestion({
                   onClick={() => onChange(tier)}
                   className={isSelected ? 'primary' : ''}
                   style={{
-                    minHeight: '64px',
+                    minHeight: '74px',
                     justifyContent: 'flex-start',
                     textAlign: 'left',
-                    padding: '0.6rem 1rem',
-                    fontSize: '1.1rem',
+                    padding: '0.7rem 1rem',
                     borderWidth: isSelected ? '3px' : '2px',
                     borderColor: isSelected ? 'var(--primary)' : 'var(--line)'
                   }}
                   aria-pressed={isSelected}
                 >
-                  <span style={{ fontWeight: '700', marginRight: '0.5rem' }}>
-                    {isSelected ? '✓ ' : ''}{tier}.
-                  </span>
-                  <span>{t(tierKey, lang)}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <div style={{ fontSize: '1.05rem', fontWeight: '700' }}>
+                      {isSelected ? '✓ ' : ''}{tier}. {t(tierTitleKey, lang)}
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: isSelected ? '#fff' : 'var(--muted)', lineHeight: '1.3' }}>
+                      {t(tierExKey, lang)}
+                    </div>
+                  </div>
                 </button>
               )
             })}
+            <div style={{ textAlign: 'right', marginTop: '0.25rem' }}>
+              <button
+                type="button"
+                className="small link"
+                onClick={() => onChange('')}
+                style={{ margin: 0, textDecoration: 'underline' }}
+              >
+                {t('skip_ses', lang)}
+              </button>
+            </div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -118,6 +160,8 @@ export default function WizardQuestion({
                 −
               </button>
               <input
+                id={`${field.name}-input`}
+                aria-label={title}
                 type="number"
                 inputMode="numeric"
                 min={field.min}

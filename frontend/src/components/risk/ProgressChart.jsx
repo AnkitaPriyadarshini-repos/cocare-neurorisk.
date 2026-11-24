@@ -44,7 +44,7 @@ export default function ProgressChart({ sessions = [], lang = 'or' }) {
   return (
     <div className="progress-chart-container" style={{ background: '#fff', border: '2px solid var(--line)', borderRadius: '16px', padding: '1rem', margin: '1rem 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-        <h3 style={{ margin: 0, fontSize: '1.15rem' }}>📈 {t('game_history_chart', lang)}</h3>
+        <h2 style={{ margin: 0, fontSize: '1.15rem' }}>📈 {t('game_history_chart', lang)}</h2>
         <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
           {points.length} {lang === 'or' ? 'ଖେଳ' : 'sessions'}
         </span>

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import DemoBanner from '../components/risk/DemoBanner'
 import WizardQuestion from '../components/risk/WizardQuestion'
 import { t } from '../i18n'
 import { FALLBACK_FORM_SPEC, riskApi } from '../riskApi'
-import { speak } from '../speech'
+import { hasVoiceForLang, speak } from '../speech'
 
 export default function RiskCheckWizard({ user, onComplete, onCancel }) {
   const lang = user?.lang ?? 'or'
@@ -22,6 +23,20 @@ export default function RiskCheckWizard({ user, onComplete, onCancel }) {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [fontSizeMode, setFontSizeMode] = useState('normal') // normal | large | xlarge
+  const [canSpeak, setCanSpeak] = useState(() => hasVoiceForLang(lang))
+
+  useEffect(() => {
+    setCanSpeak(hasVoiceForLang(lang))
+    function updateVoices() {
+      setCanSpeak(hasVoiceForLang(lang))
+    }
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.addEventListener('voiceschanged', updateVoices)
+      return () => {
+        window.speechSynthesis.removeEventListener('voiceschanged', updateVoices)
+      }
+    }
+  }, [lang])
 
   // Fetch dynamic form spec on mount
   useEffect(() => {
@@ -172,6 +187,7 @@ export default function RiskCheckWizard({ user, onComplete, onCancel }) {
               type="button"
               className="small"
               onClick={() => {
+                if (!canSpeak) return
                 speak(
                   {
                     en: `${t('mmse_step_title', 'en')}. ${t('mmse_step_desc', 'en')}`,
@@ -180,9 +196,18 @@ export default function RiskCheckWizard({ user, onComplete, onCancel }) {
                   lang
                 )
               }}
-              style={{ whiteSpace: 'nowrap', padding: '0.4rem 0.8rem', minHeight: '44px' }}
+              disabled={!canSpeak}
+              aria-label={canSpeak ? t('read_question', lang) : t('voice_not_available', lang)}
+              title={!canSpeak ? t('voice_not_available', lang) : undefined}
+              style={{
+                whiteSpace: 'nowrap',
+                padding: '0.4rem 0.8rem',
+                minHeight: '44px',
+                opacity: canSpeak ? 1 : 0.45,
+                cursor: canSpeak ? 'pointer' : 'not-allowed',
+              }}
             >
-              🔊 {t('read_question', lang)}
+              {canSpeak ? `🔊 ${t('read_question', lang)}` : `🔇 ${t('read_question', lang)}`}
             </button>
           </div>
 
@@ -314,6 +339,9 @@ export default function RiskCheckWizard({ user, onComplete, onCancel }) {
         </button>
       </div>
 
+      {/* Persistent DEMO banner */}
+      <DemoBanner lang={lang} />
+
       {/* Wizard Header and Progress Bar */}
       <div style={{ marginBottom: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.4rem' }}>
@@ -332,6 +360,7 @@ export default function RiskCheckWizard({ user, onComplete, onCancel }) {
             overflow: 'hidden',
           }}
           role="progressbar"
+          aria-label={`${t('step', lang)} ${stepIndex + 1} ${t('of', lang)} ${totalSteps}`}
           aria-valuenow={progressPercent}
           aria-valuemin="0"
           aria-valuemax="100"

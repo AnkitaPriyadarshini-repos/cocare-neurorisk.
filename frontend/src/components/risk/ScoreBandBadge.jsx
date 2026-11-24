@@ -12,9 +12,9 @@ export default function ScoreBandBadge({ band, lang = 'or', size = 'normal' }) {
     },
     moderate: {
       icon: '⚖️',
-      color: '#b26a00',
+      color: '#7a4300',
       bg: '#fff8e1',
-      border: '#ffe082',
+      border: '#ffd54f',
       labelKey: 'band_moderate',
       ariaLabel: 'Moderate Risk Band'
     },
