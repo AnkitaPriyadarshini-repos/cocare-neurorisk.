@@ -125,7 +125,14 @@ A preliminary dementia and cognitive-risk screening aid trained on the OASIS coh
 
 ## Deploy on Vercel
 
-CO CARE is configured for serverless deployment on Vercel alongside the standard local Windows setup.
+CO CARE is deployed live on Vercel as well as configured for local execution.
+
+### Live Production Deployment Links
+- 🌐 **Web Application**: [https://cocare-zeta.vercel.app](https://cocare-zeta.vercel.app)
+- 📖 **Interactive API Documentation (Swagger)**: [https://cocare-zeta.vercel.app/docs](https://cocare-zeta.vercel.app/docs)
+- 🧠 **Risk Screening Model Info**: [https://cocare-zeta.vercel.app/api/risk/model-info](https://cocare-zeta.vercel.app/api/risk/model-info)
+- 📋 **Screening Form Specification**: [https://cocare-zeta.vercel.app/api/risk/form-spec](https://cocare-zeta.vercel.app/api/risk/form-spec)
+- ⚡ **Vercel Project Dashboard**: [https://vercel.com/ankitapriyadarshini-repos-projects/cocare](https://vercel.com/ankitapriyadarshini-repos-projects/cocare)
 
 ### Architectural Constraints Handled
 1. **Read-Only / Ephemeral Filesystem**:
