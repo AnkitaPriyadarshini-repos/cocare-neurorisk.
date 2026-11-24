@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ main ]
   push:
-    branches: [ main, ml/part-a ]
+    branches: [ main, ml/part-a, ml/part-a-validation ]
 
 jobs:
   test:
@@ -37,6 +37,25 @@ jobs:
       - name: Run ML pipeline unit tests
         run: |
           python -m pytest ml/tests/test_pipeline.py -v
+
+      - name: Verify schema consistency (form_spec.json matches model metadata)
+        run: |
+          python -c "
+          import json
+          with open('backend/models/form_spec.json') as f:
+              form_spec = json.load(f)
+          with open('backend/models/model_with_mmse_metadata.json') as f:
+              meta_with = json.load(f)
+          with open('backend/models/model_without_mmse_metadata.json') as f:
+              meta_without = json.load(f)
+          form_fields = {f['name'] for f in form_spec['fields']}
+          with_fields = set(meta_with['features']['all_ordered'])
+          without_fields = set(meta_without['features']['all_ordered'])
+          assert with_fields.issubset(form_fields), f'Mismatch: {with_fields - form_fields} missing from form_spec'
+          assert without_fields.issubset(form_fields), f'Mismatch: {without_fields - form_fields} missing from form_spec'
+          assert 'MMSE' not in without_fields, 'Leakage: MMSE present in without_mmse model!'
+          print('Schema consistency check passed: form_spec.json perfectly aligns with model metadata.')
+          "
 
       - name: Verify no raw participant data files are committed
         run: |

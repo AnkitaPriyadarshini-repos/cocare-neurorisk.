@@ -100,6 +100,7 @@ def predict_risk(
         "band": band,
         "threshold": round(threshold, 4),
         "model_variant": variant,
+        "model_status": metadata.get("model_status", "demo_oasis_not_validated_for_lasi_dad"),
         "explanation": explanations,
         "disclaimer": metadata["disclaimer"],
         "model_version": metadata.get("version", "1.0.0")

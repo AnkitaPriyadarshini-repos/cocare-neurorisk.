@@ -174,6 +174,29 @@ def validate_profile(profile: Dict[str, Any], use_mmse: bool):
             )
 
 
+@router.get("/health")
+def get_risk_health():
+    """Health check for cognitive risk screening service, reporting load status and versions without DB access."""
+    status_dict = {}
+    for variant in ["model_with_mmse", "model_without_mmse"]:
+        try:
+            _, meta = get_model(variant)
+            status_dict[variant] = {
+                "loaded": True,
+                "version": meta.get("version", "1.0.0"),
+                "model_type": meta.get("model_type", "LogisticRegression"),
+                "model_status": meta.get("model_status", "demo_oasis_not_validated_for_lasi_dad")
+            }
+        except Exception as e:
+            status_dict[variant] = {"loaded": False, "error": str(e)}
+    return {
+        "status": "healthy" if all(v.get("loaded") for v in status_dict.values()) else "degraded",
+        "service": "risk_screening",
+        "models": status_dict,
+        "model_status": "demo_oasis_not_validated_for_lasi_dad"
+    }
+
+
 @router.get("/form-spec")
 def get_form_specification():
     """Retrieve the JSON schema specifying fields, bounds, and Odia labels for the screening form."""
@@ -189,6 +212,7 @@ def get_model_information():
         clean_meta = meta.copy()
         # Do not expose raw background participant summaries in API
         clean_meta.pop("background_summary", None)
+        clean_meta["model_status"] = clean_meta.get("model_status", "demo_oasis_not_validated_for_lasi_dad")
         info[variant] = clean_meta
     return info
 
@@ -230,6 +254,7 @@ def predict_cognitive_risk(body: PredictIn):
         "band": band,
         "threshold": round(threshold, 4),
         "model_variant": variant,
+        "model_status": metadata.get("model_status", "demo_oasis_not_validated_for_lasi_dad"),
         "explanation": explanations,
         "disclaimer": metadata["disclaimer"],
         "model_version": metadata.get("version", "1.0.0")

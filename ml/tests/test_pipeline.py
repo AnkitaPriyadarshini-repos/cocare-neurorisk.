@@ -1,4 +1,4 @@
-"""Tests for ML pipeline components, models, and predictions."""
+"""Unit and validation tests for ML pipeline components, models, and explainability."""
 import os
 import sys
 import json
@@ -9,25 +9,45 @@ import numpy as np
 import pandas as pd
 import joblib
 
-try:
-    import pytest
-except ImportError:
-    pytest = None
+from sklearn.model_selection import StratifiedGroupKFold, cross_validate
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
 
 from ml.src.datasets.oasis import load_oasis
 from ml.src.datasets.lasi_dad import load_lasi_dad
 from ml.src.preprocess import clean_raw_data, build_preprocessor
 from ml.src.predict import predict_risk, load_model_and_metadata
-from ml.src.explain import explain_one
+from ml.src.explain import explain_one, FEATURE_TEXTS
 
 
 class TestMLPipeline(unittest.TestCase):
 
-    def test_lasi_dad_stub(self):
-        """Verify LASI-DAD is a clearly marked stub and does not invent columns."""
-        with self.assertRaises(NotImplementedError) as context:
-            load_lasi_dad()
-        self.assertIn("stub awaiting the official LASI-DAD codebook", str(context.exception))
+    def test_lasi_dad_adapter_validation(self):
+        """Verify LASI-DAD adapter schema validation and loud failures on mismatch."""
+        # Test nonexistent file
+        with self.assertRaises(FileNotFoundError):
+            load_lasi_dad("ml/data/nonexistent_file.csv")
+
+        # Test loud failure on column mismatch
+        with self.assertRaises(ValueError) as context:
+            load_lasi_dad("ml/data/oasis_longitudinal.csv", allow_placeholders=True)
+        self.assertIn("LASI-DAD Schema Validation Error", str(context.exception))
+
+        # Test synthetic dataset ingestion
+        synthetic_path = os.path.join("ml", "data", "lasi_dad_synthetic.csv")
+        if not os.path.exists(synthetic_path):
+            from ml.src.make_synthetic_lasi import generate_synthetic_lasi_dataset
+            df_synth = generate_synthetic_lasi_dataset(seed=42)
+            os.makedirs(os.path.dirname(synthetic_path), exist_ok=True)
+            df_synth.to_csv(synthetic_path, index=False)
+
+        X, y, groups = load_lasi_dad(synthetic_path, allow_placeholders=True)
+        self.assertEqual(len(X), len(y))
+        self.assertIn("Age", X.columns)
+        self.assertIn("Sex", X.columns)
+        self.assertIn("EDUC", X.columns)
+        self.assertIn("MMSE", X.columns)
+        self.assertTrue(groups.nunique() > 50)
 
     def test_without_mmse_has_no_mmse(self):
         """Verify that model_without_mmse contains zero references to MMSE in features or pipeline."""
@@ -52,20 +72,8 @@ class TestMLPipeline(unittest.TestCase):
 
     def test_predict_risk_both_variants(self):
         """Verify predict_risk works for both with_mmse and without_mmse variants."""
-        profile_with = {
-            "Age": 75,
-            "Sex": "M",
-            "EDUC": 14,
-            "SES": 2,
-            "MMSE": 26
-        }
-
-        profile_without = {
-            "Age": 75,
-            "Sex": "F",
-            "EDUC": 10,
-            "SES": 3
-        }
+        profile_with = {"Age": 75, "Sex": "M", "EDUC": 14, "SES": 2, "MMSE": 26}
+        profile_without = {"Age": 75, "Sex": "F", "EDUC": 10, "SES": 3}
 
         # Test with MMSE
         res_with = predict_risk(profile_with, use_mmse=True, models_dir="ml/artifacts")
@@ -73,6 +81,7 @@ class TestMLPipeline(unittest.TestCase):
         self.assertTrue(0.0 <= res_with["probability"] <= 1.0)
         self.assertIn(res_with["band"], ["lower", "moderate", "higher"])
         self.assertEqual(res_with["model_variant"], "model_with_mmse")
+        self.assertEqual(res_with["model_status"], "demo_oasis_not_validated_for_lasi_dad")
         self.assertTrue(len(res_with["explanation"]) > 0)
 
         # Test without MMSE
@@ -81,27 +90,88 @@ class TestMLPipeline(unittest.TestCase):
         self.assertTrue(0.0 <= res_without["probability"] <= 1.0)
         self.assertIn(res_without["band"], ["lower", "moderate", "higher"])
         self.assertEqual(res_without["model_variant"], "model_without_mmse")
+        self.assertEqual(res_without["model_status"], "demo_oasis_not_validated_for_lasi_dad")
         self.assertTrue(len(res_without["explanation"]) > 0)
-        # Confirm MMSE is not in explanation
         self.assertFalse(any(e["feature"] == "MMSE" for e in res_without["explanation"]))
 
-    def test_explain_one_structure_and_localization(self):
-        """Verify that explanations contain stable keys and Odia placeholders."""
-        profile = {"Age": 82, "Sex": "M", "EDUC": 8, "SES": 4, "MMSE": 22}
-        res = predict_risk(profile, use_mmse=True, models_dir="ml/artifacts")
+    def test_participant_grouping_zero_overlap(self):
+        """Audit test: Verify zero participant ID overlap between train and test splits."""
+        data_path = os.path.join("ml", "data", "oasis_longitudinal.csv")
+        X_raw, y_raw, groups = load_oasis(data_path)
+        X_clean, _ = clean_raw_data(X_raw)
 
-        for item in res["explanation"]:
-            self.assertIn("feature", item)
-            self.assertIn(item["effect"], ["raises", "lowers"])
-            self.assertIn("magnitude", item)
-            self.assertIn("text_key", item)
-            self.assertIn("text_en", item)
-            self.assertIn("text_or", item)
-            self.assertIn("needs native review", item["text_or"])
+        sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
+        train_idx, test_idx = next(sgkf.split(X_clean, y_raw, groups=groups))
+
+        train_subjects = set(groups.iloc[train_idx])
+        test_subjects = set(groups.iloc[test_idx])
+        overlap = train_subjects.intersection(test_subjects)
+        self.assertEqual(len(overlap), 0, f"DATA LEAKAGE: {len(overlap)} subjects overlap between train and test!")
+
+    def test_preprocessing_fit_on_train_only(self):
+        """Audit test: Prove imputer and scaler statistics equal train split alone."""
+        data_path = os.path.join("ml", "data", "oasis_longitudinal.csv")
+        X_raw, y_raw, groups = load_oasis(data_path)
+        X_clean, _ = clean_raw_data(X_raw)
+
+        sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
+        train_idx, test_idx = next(sgkf.split(X_clean, y_raw, groups=groups))
+
+        X_train = X_clean.iloc[train_idx]
+        prep = build_preprocessor(["Age", "EDUC", "SES", "MMSE"], ["Sex"])
+        pipe = Pipeline([
+            ("preprocessor", prep),
+            ("classifier", LogisticRegression(class_weight="balanced", max_iter=1000, random_state=42))
+        ])
+        pipe.fit(X_train, y_raw.iloc[train_idx])
+
+        fitted_prep = pipe.named_steps["preprocessor"]
+        imputer = fitted_prep.named_transformers_["num"].named_steps["imputer"]
+        scaler = fitted_prep.named_transformers_["num"].named_steps["scaler"]
+
+        expected_medians = [float(X_train[c].median()) for c in ["Age", "EDUC", "SES", "MMSE"]]
+        expected_means = [float(X_train[c].fillna(X_train[c].median()).mean()) for c in ["Age", "EDUC", "SES", "MMSE"]]
+
+        np.testing.assert_allclose(list(imputer.statistics_), expected_medians)
+        np.testing.assert_allclose(list(scaler.mean_), expected_means)
+
+    def test_label_permutation_sanity_check(self):
+        """Sanity check: Label-shuffled CV ROC-AUC must collapse to near random chance (~0.50)."""
+        data_path = os.path.join("ml", "data", "oasis_longitudinal.csv")
+        X_raw, y_raw, groups = load_oasis(data_path)
+        X_clean, _ = clean_raw_data(X_raw)
+
+        rng = np.random.RandomState(42)
+        y_shuffled = pd.Series(rng.permutation(y_raw.values), index=y_raw.index)
+
+        prep = build_preprocessor(["Age", "EDUC", "SES", "MMSE"], ["Sex"])
+        pipe = Pipeline([
+            ("preprocessor", prep),
+            ("classifier", LogisticRegression(class_weight="balanced", max_iter=1000, random_state=42))
+        ])
+        cv = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
+        scores = cross_validate(pipe, X_clean, y_shuffled, groups=groups, cv=cv, scoring=["roc_auc"])
+        mean_auc = float(np.mean(scores["test_roc_auc"]))
+        self.assertTrue(0.40 <= mean_auc <= 0.60, f"Permutation AUC unexpected: {mean_auc}")
+
+    def test_all_features_have_localization_texts(self):
+        """Verify that every feature has stable text_keys in English and Odia with review flags."""
+        features = ["Age", "Sex", "EDUC", "SES", "MMSE"]
+        for feat in features:
+            self.assertIn(feat, FEATURE_TEXTS)
+            for eff in ["raises", "lowers"]:
+                entry = FEATURE_TEXTS[feat][eff]
+                self.assertIn("key", entry)
+                self.assertTrue(entry["key"].startswith(f"risk.{feat.lower()}."))
+                self.assertIn("en", entry)
+                self.assertTrue(len(entry["en"]) > 5)
+                self.assertIn("or", entry)
+                self.assertTrue(len(entry["or"]) > 5)
+                self.assertIn("[needs native review]", entry["or"])
 
     def test_input_validation_and_imputation(self):
         """Verify that missing optional fields like SES are imputed gracefully."""
-        profile = {"Age": 70, "Sex": "F", "EDUC": 12}  # SES omitted
+        profile = {"Age": 70, "Sex": "F", "EDUC": 12}
         res = predict_risk(profile, use_mmse=False, models_dir="ml/artifacts")
         self.assertTrue(0.0 <= res["probability"] <= 1.0)
 

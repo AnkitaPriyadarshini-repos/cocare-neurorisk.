@@ -204,5 +204,6 @@
     "scikit_learn": "1.6.1",
     "joblib": "1.5.1"
   },
-  "disclaimer": "This tool is a cognitive risk screening aid designed for preliminary assessment, NOT a clinical diagnosis."
+  "disclaimer": "This tool is a cognitive risk screening aid designed for preliminary assessment, NOT a clinical diagnosis.",
+  "model_status": "demo_oasis_not_validated_for_lasi_dad"
 }

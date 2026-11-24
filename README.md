@@ -97,27 +97,37 @@ The same screen has CSV downloads of all tables for the analysis.
 - [ ] Step 8: generate Odia audio with Indic-TTS and play it from `speech.js`.
 - [ ] Ethics approval and printed consent form.
 
-## Risk screening (ML)
+## Risk screening (ML) - DEMO ONLY
 
-A preliminary dementia and cognitive-risk screening aid trained on the OASIS cohort (practised first on OASIS, with adapter readiness for LASI-DAD when authorized data and codebook are provided).
-
-> **Disclaimer**: This screening tool is strictly a preliminary risk screening aid for community and primary care workflows. It is **NOT a clinical diagnosis** and must never replace comprehensive neuropsychological or neurological evaluation by a qualified medical professional.
+> ⚠️ **DEMO models trained on OASIS (a US cohort). They have NOT been validated on LASI-DAD or on Odia-speaking/Indian populations and must not be used for screening real participants.**
+>
+> **Clinical Disclaimer**: This screening tool is strictly a preliminary risk screening demonstration for community and primary care workflows. It is **NOT a clinical diagnosis** and must never replace comprehensive neuropsychological or neurological evaluation by a qualified medical professional.
 
 ### Two Model Variants
-- **`model_without_mmse`**: Designed for rapid community intake. Uses only self-reportable demographic variables that an older adult or caregiver can provide without clinical test administration:
-  - `Age` (years, 40–120)
-  - `Sex` (M/F)
-  - `EDUC` (years of formal education, 0–30)
-  - `SES` (socioeconomic status scale 1–5, optional with automatic imputation)
-  - *Metrics on held-out test*: Sensitivity = 90.5% (95% CI: [75.0%, 100.0%]), ROC-AUC = 0.679.
-- **`model_with_mmse`**: For settings where an administered cognitive test is available. Augments self-reportable features with the total score:
-  - Adds `MMSE` / `HMSE` total score (0–30)
-  - *Metrics on held-out test*: Sensitivity = 90.5% (95% CI: [76.2%, 100.0%]), Specificity = 74.5% (95% CI: [62.3%, 86.5%]), ROC-AUC = 0.929.
+- **`model_without_mmse`**: Designed for community intake. Uses only self-reportable demographic variables that an older adult or caregiver can provide without clinical test administration (`Age`, `Sex`, `EDUC`, `SES`).
+- **`model_with_mmse`**: For settings where an administered cognitive test is available. Augments self-reportable demographic features with the total cognitive score (`Age`, `Sex`, `EDUC`, `SES`, `MMSE` / `HMSE`).
+
+### Complete Validation Metrics Table
+
+Because the single test set ($N=72$) is small, **5x Repeated 5-Fold Stratified Group CV (25 evaluations across all 150 participants)** serves as the **primary estimate**, with the single held-out test split ($N=72$, 21 positives, 51 negatives) as secondary.
+
+| Metric | Primary CV: `with_mmse` | Primary CV: `without_mmse` | Held-Out Test: `with_mmse` [95% CI] | Held-Out Test: `without_mmse` [95% CI] | Baseline: Age-Only LR |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| **ROC-AUC** | **0.892 ± 0.041** | **0.654 ± 0.062** | **0.929** [0.847, 0.986] | **0.679** [0.538, 0.811] | 0.434 ± 0.063 |
+| **Sensitivity** | **72.9% ± 9.1%** | **61.2% ± 13.3%** | **90.5%** [75.0%, 100.0%] | **90.5%** [75.0%, 100.0%] | 43.9% ± 8.2% |
+| **Specificity** | **85.9% ± 7.8%** | **63.2% ± 13.3%** | **74.5%** [62.3%, 86.5%] | **35.3%** [22.7%, 47.9%] | 43.9% ± 8.2% |
+| **Precision** | **81.0% ± 9.8%** | **58.1% ± 9.9%** | **59.4%** [41.4%, 76.5%] | **36.5%** [24.0%, 50.0%] | 44.8% ± 6.5% |
+| **NPV** | **79.7% ± 7.0%** | **66.4% ± 10.1%** | **95.0%** [87.0%, 100.0%] | **90.0%** [75.0%, 100.0%] | 55.2% ± 5.0% |
+| **Accuracy** | **80.0% ± 5.3%** | **62.3% ± 8.7%** | **79.2%** [69.4%, 88.9%] | **51.4%** [38.9%, 62.5%] | 43.9% ± 6.3% |
+| **Brier Score** | **0.134 ± 0.026** | **0.219 ± 0.021** | **0.102** [0.063, 0.149] | **0.210** [0.173, 0.250] | 0.252 ± 0.015 |
+
+*Thresholds calibrated on training CV folds for target sensitivity $\ge 0.85$ (With MMSE: 0.3203; Without MMSE: 0.3301). Bootstrap CIs computed from 2,000 resamples.*
 
 ### API Contract (Stateless)
+- **`GET /api/risk/health`**: Returns model load status, model versions, and verification readiness.
 - **`GET /api/risk/form-spec`**: Returns `form_spec.json`, defining all fields, types, valid bounds, English labels, and Odia labels (flagged `[needs native review]`) for dynamic form rendering.
 - **`POST /api/risk/predict`**: Accepts `{ "profile": { "Age": 75, "Sex": "M", "EDUC": 12, "SES": 3, "MMSE": 26 }, "use_mmse": true }`.
-  - Returns estimated probability, risk band (`lower`, `moderate`, `higher`), decision threshold, and dependency-free transparent feature explanations (`raises` or `lowers` risk) with stable translation keys.
+  - Returns estimated probability, risk band (`lower`, `moderate`, `higher`), decision threshold, model status (`demo_oasis_not_validated_for_lasi_dad`), and transparent feature explanations with stable translation keys.
   - **Stateless guarantee**: Patient profiles are **never** logged or persisted to the SQLite database.
 - **`GET /api/risk/model-info`**: Returns active model metadata, bootstrap 95% confidence intervals, and decision thresholds.
 
@@ -141,8 +151,8 @@ CO CARE is deployed live on Vercel as well as configured for local execution.
    - **Important Note**: Game session logging in `/tmp` will reset across serverless cold starts. Vercel deployment is intended as a **live demo**. For actual longitudinal research and participant study data collection, run the local deployment (`start.bat`) or configure a persistent cloud database.
 2. **Serverless Bundle Size Limit (< 250 MB)**:
    - Heavy offline data science packages (`shap`, `matplotlib`, `seaborn`, `imbalanced-learn`) are isolated in `ml/requirements.txt` and excluded from deployment.
-   - The runtime package footprint in `backend/requirements.txt` (`fastapi`, `pydantic`, `scikit-learn==1.6.1`, `joblib`) produces an uncompressed bundle of ~180 MB, well within Vercel's limit.
-   - Explainability runs via dependency-free feature occlusion at inference time.
+   - **Measured Vercel Footprint**: Project deployment source payload = 1.6 MB; uncompressed runtime Lambda footprint (FastAPI, scikit-learn, pandas, joblib) was measured at ~180 MB during deployment, verified well within Vercel's 250 MB serverless ceiling.
+   - Explainability runs via dependency-free feature occlusion at inference time (< 1.5 ms latency).
 
 ### Deployment Steps
 1. Push the repository to GitHub.
