@@ -30,12 +30,16 @@ EXPECTED_FIGURE_NAMES = [
     "12_fairness_forest_plot",
     "13_learning_curve",
     "14_model_card_glance",
-    "15_signature_visual"
+    "15_signature_visual",
+    "16_training_loss_convergence",
+    "17_class_wise_evaluation",
+    "18_risk_factor_odds_ratios",
+    "19_longitudinal_trajectory",
 ]
 
 
-def test_all_15_figures_exist_in_light_and_dark():
-    """Ensure all 15 figures have both light and dark PNG variants."""
+def test_all_19_figures_exist_in_light_and_dark():
+    """Ensure all 19 figures have both light and dark PNG variants."""
     assert os.path.isdir(FIGURES_DIR), f"Figures directory missing: {FIGURES_DIR}"
     
     for name in EXPECTED_FIGURE_NAMES:
@@ -49,7 +53,7 @@ def test_all_figures_under_400kb():
     """Verify that every PNG file in figures directory is strictly < 400 KB."""
     max_bytes = 400 * 1024
     png_files = [f for f in os.listdir(FIGURES_DIR) if f.endswith(".png")]
-    assert len(png_files) >= 30, f"Expected at least 30 PNG files, found {len(png_files)}"
+    assert len(png_files) >= 38, f"Expected at least 38 PNG files, found {len(png_files)}"
     
     for fname in png_files:
         fpath = os.path.join(FIGURES_DIR, fname)
@@ -99,6 +103,26 @@ def test_figure_sidecars_match_source_artifacts():
     assert cal_sidecar["brier_scores"]["model_with_mmse"] == pytest.approx(
         test_source["model_with_mmse"]["metrics"]["brier_score"], rel=1e-4
     )
+    
+    # 5. Training convergence sidecar check
+    conv_sidecar = json.load(open(os.path.join(DATA_DIR, "16_training_loss_convergence.json")))
+    assert "iterations" in conv_sidecar
+    assert len(conv_sidecar["with_mmse"]["train_loss"]) > 0
+    
+    # 6. Class-wise metrics sidecar check
+    class_sidecar = json.load(open(os.path.join(DATA_DIR, "17_class_wise_evaluation.json")))
+    assert class_sidecar["with_mmse"]["class_0_healthy"]["precision"] == 0.950
+    assert class_sidecar["with_mmse"]["class_1_risk"]["recall_sensitivity"] == 0.905
+    
+    # 7. Risk factors sidecar check
+    rf_sidecar = json.load(open(os.path.join(DATA_DIR, "18_risk_factor_odds_ratios.json")))
+    assert "correlation_matrix" in rf_sidecar
+    assert len(rf_sidecar["odds_ratios"]) >= 5
+    
+    # 8. Longitudinal trajectories sidecar check
+    long_sidecar = json.load(open(os.path.join(DATA_DIR, "19_longitudinal_trajectory.json")))
+    assert "Converted" in long_sidecar["trajectories"]
+    assert long_sidecar["screening_threshold"] == pytest.approx(0.3163, rel=1e-3)
 
 
 def test_manifest_and_showcase_docs_exist():

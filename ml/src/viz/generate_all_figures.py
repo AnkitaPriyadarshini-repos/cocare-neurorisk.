@@ -26,6 +26,10 @@ from ml.src.viz import (
     fig_learning,
     fig_modelcard,
     fig_animated,
+    fig_training_curves,
+    fig_class_metrics,
+    fig_risk_factors,
+    fig_longitudinal,
 )
 
 
@@ -45,6 +49,10 @@ FIGURE_MODULES = [
     ("13_learning_curve", fig_learning, "Sample efficiency convergence curve motivating LASI-DAD transition", "ml/reports/learning_curve.json"),
     ("14_model_card_glance", fig_modelcard, "Executive one-page model card infographic covering use, data, and ethics", "MODEL_CARD.md"),
     ("15_signature_visual", fig_animated, "Animated CV fold convergence GIF and static high-res fallback", "Cross-validation fold evaluations"),
+    ("16_training_loss_convergence", fig_training_curves, "Training dynamics: Cross-entropy loss reduction and accuracy trajectory across solver iterations", "ml/reports/training_convergence.json"),
+    ("17_class_wise_evaluation", fig_class_metrics, "Class-wise Precision, Recall, Specificity, and F1 comparison with 95% cluster-bootstrap CIs", "ml/reports/class_wise_metrics.json"),
+    ("18_risk_factor_odds_ratios", fig_risk_factors, "Multifactor Pearson correlation matrix heatmap and multivariate adjusted odds ratios", "ml/reports/risk_factors.json"),
+    ("19_longitudinal_trajectory", fig_longitudinal, "Longitudinal risk progression and conversion inflection points across clinical visits", "ml/reports/longitudinal_trajectories.json"),
 ]
 
 

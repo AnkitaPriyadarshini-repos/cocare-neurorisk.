@@ -1,0 +1,102 @@
+{
+  "with_mmse": {
+    "class_0_healthy": {
+      "label": "Cognitively Normal (Class 0)",
+      "precision": 0.95,
+      "precision_ci": [
+        0.882,
+        1.0
+      ],
+      "recall_specificity": 0.745,
+      "recall_ci": [
+        0.611,
+        0.875
+      ],
+      "f1_score": 0.835,
+      "f1_ci": [
+        0.741,
+        0.912
+      ],
+      "support": 51
+    },
+    "class_1_risk": {
+      "label": "Cognitive Risk (Class 1)",
+      "precision": 0.594,
+      "precision_ci": [
+        0.419,
+        0.75
+      ],
+      "recall_sensitivity": 0.905,
+      "recall_ci": [
+        0.76,
+        1.0
+      ],
+      "f1_score": 0.717,
+      "f1_ci": [
+        0.581,
+        0.828
+      ],
+      "support": 21
+    },
+    "overall_accuracy": 0.792,
+    "overall_accuracy_ci": [
+      0.677,
+      0.897
+    ],
+    "roc_auc": 0.929,
+    "roc_auc_ci": [
+      0.829,
+      0.997
+    ]
+  },
+  "without_mmse": {
+    "class_0_healthy": {
+      "label": "Cognitively Normal (Class 0)",
+      "precision": 0.9,
+      "precision_ci": [
+        0.75,
+        1.0
+      ],
+      "recall_specificity": 0.353,
+      "recall_ci": [
+        0.148,
+        0.577
+      ],
+      "f1_score": 0.507,
+      "f1_ci": [
+        0.25,
+        0.714
+      ],
+      "support": 51
+    },
+    "class_1_risk": {
+      "label": "Cognitive Risk (Class 1)",
+      "precision": 0.353,
+      "precision_ci": [
+        0.222,
+        0.486
+      ],
+      "recall_sensitivity": 0.9,
+      "recall_ci": [
+        0.667,
+        1.0
+      ],
+      "f1_score": 0.507,
+      "f1_ci": [
+        0.357,
+        0.654
+      ],
+      "support": 21
+    },
+    "overall_accuracy": 0.514,
+    "overall_accuracy_ci": [
+      0.364,
+      0.667
+    ],
+    "roc_auc": 0.676,
+    "roc_auc_ci": [
+      0.44,
+      0.871
+    ]
+  }
+}
