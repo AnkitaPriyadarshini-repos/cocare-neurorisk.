@@ -1,6 +1,7 @@
 {
   "variant": "model_without_mmse",
   "model_type": "LogisticRegression",
+  "model_status": "demo_oasis_not_validated_for_lasi_dad",
   "features": {
     "numeric": [
       "Age",
