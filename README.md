@@ -140,8 +140,10 @@ CO CARE is deployed live on Vercel as well as configured for local execution.
 ### Live Production Deployment Links
 - 🌐 **Web Application**: [https://cocare-zeta.vercel.app](https://cocare-zeta.vercel.app)
 - 📖 **Interactive API Documentation (Swagger)**: [https://cocare-zeta.vercel.app/docs](https://cocare-zeta.vercel.app/docs)
+- 🏥 **Health Check & Diagnostics**: [https://cocare-zeta.vercel.app/api/risk/health](https://cocare-zeta.vercel.app/api/risk/health)
 - 🧠 **Risk Screening Model Info**: [https://cocare-zeta.vercel.app/api/risk/model-info](https://cocare-zeta.vercel.app/api/risk/model-info)
 - 📋 **Screening Form Specification**: [https://cocare-zeta.vercel.app/api/risk/form-spec](https://cocare-zeta.vercel.app/api/risk/form-spec)
+- 🐙 **GitHub Repository**: [https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.](https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.)
 - ⚡ **Vercel Project Dashboard**: [https://vercel.com/ankitapriyadarshini-repos-projects/cocare](https://vercel.com/ankitapriyadarshini-repos-projects/cocare)
 
 ### Architectural Constraints Handled
