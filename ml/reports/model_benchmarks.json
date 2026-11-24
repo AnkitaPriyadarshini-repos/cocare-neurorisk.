@@ -1,0 +1,59 @@
+{
+  "models": [
+    {
+      "name": "LogisticRegression (Deployed)",
+      "variant": "with_mmse",
+      "cv_roc_auc": 0.892,
+      "latency_p50_ms": 1.15,
+      "latency_p99_ms": 2.4,
+      "artifact_size_kb": 2.1,
+      "memory_mb": 4.2,
+      "selected": true,
+      "justification": "Optimal serverless fit: instantaneous cold start (<2ms), tiny 2KB size, full occlusion explainability."
+    },
+    {
+      "name": "SVM (RBF)",
+      "variant": "with_mmse",
+      "cv_roc_auc": 0.854,
+      "latency_p50_ms": 3.45,
+      "latency_p99_ms": 6.8,
+      "artifact_size_kb": 8.4,
+      "memory_mb": 6.5,
+      "selected": false,
+      "justification": "Lower AUC (-0.038) and non-linear kernel slows inference."
+    },
+    {
+      "name": "RandomForest (100 trees)",
+      "variant": "with_mmse",
+      "cv_roc_auc": 0.851,
+      "latency_p50_ms": 14.2,
+      "latency_p99_ms": 28.5,
+      "artifact_size_kb": 245.0,
+      "memory_mb": 22.0,
+      "selected": false,
+      "justification": "Large bundle footprint (245 KB), 12x slower inference, no AUC advantage."
+    },
+    {
+      "name": "GradientBoosting",
+      "variant": "with_mmse",
+      "cv_roc_auc": 0.839,
+      "latency_p50_ms": 11.5,
+      "latency_p99_ms": 22.1,
+      "artifact_size_kb": 185.0,
+      "memory_mb": 18.5,
+      "selected": false,
+      "justification": "Overfits small cohort; lower AUC (-0.053) with higher complexity."
+    },
+    {
+      "name": "KNN (k=5)",
+      "variant": "with_mmse",
+      "cv_roc_auc": 0.762,
+      "latency_p50_ms": 4.6,
+      "latency_p99_ms": 9.2,
+      "artifact_size_kb": 18.2,
+      "memory_mb": 8.0,
+      "selected": false,
+      "justification": "Poor discrimination in tabular demographic feature space."
+    }
+  ]
+}

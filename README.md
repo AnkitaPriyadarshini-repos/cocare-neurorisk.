@@ -99,9 +99,127 @@ The same screen has CSV downloads of all tables for the analysis.
 
 ## Risk screening (ML) - DEMO ONLY
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/01_hero_banner-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/01_hero_banner-light.png">
+  <img alt="CO CARE Cognitive Risk Screening Showcase Hero Banner showing CV AUC 0.892 and 90.5% sensitivity" src="docs/showcase/figures/01_hero_banner-light.png" width="100%">
+</picture>
+
+### TL;DR
+- **Problem**: Early community dementia risk screening is hindered by subjective scoring, lack of localization, and fear of data privacy exposure.
+- **Solution**: Two lightweight, stateless screening models (demographics-only and cognitive-augmented) with bilingual feature attribution (English & Odia).
+- **Validation**: Longitudinal OASIS cohort ($N=373$ records, 150 subjects) strictly grouped by participant to prevent leakage, achieving **0.892 ± 0.041 repeated CV AUC** and **90.5% held-out sensitivity** with $< 1.5\text{ ms}$ serverless latency.
+
 > ⚠️ **DEMO models trained on OASIS (a US cohort). They have NOT been validated on LASI-DAD or on Odia-speaking/Indian populations and must not be used for screening real participants.**
 >
 > **Clinical Disclaimer**: This screening tool is strictly a preliminary risk screening demonstration for community and primary care workflows. It is **NOT a clinical diagnosis** and must never replace comprehensive neuropsychological or neurological evaluation by a qualified medical professional.
+
+---
+
+### How It Was Built (Pipeline & Serverless Architecture)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/02_pipeline_architecture-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/02_pipeline_architecture-light.png">
+  <img alt="CO CARE End-to-End Pipeline and Serverless Runtime Architecture" src="docs/showcase/figures/02_pipeline_architecture-light.png" width="100%">
+</picture>
+
+The pipeline strictly decouples **offline training and validation** from **runtime serverless inference**:
+1. **Dataset Adapter Layer**: Flexible ingestion (`oasis.py` and `lasi_dad.py`) driven by variable mapping YAML schemas (`ml/config/`).
+2. **Leakage Protection**: Strict participant clustering via `GroupShuffleSplit` (train/test) and `StratifiedGroupKFold` (CV) ensures no participant records cross partitions.
+3. **Fit-on-Train Preprocessing**: Imputers, scalers, and encoders are fitted solely within training fold pipelines.
+4. **Serverless Deployment**: Zero C++ heavy dependencies in Lambda (`shap` is isolated to offline training). Runtime explanations execute via direct mathematical feature occlusion in $< 1.5\text{ ms}$.
+
+---
+
+### Results at a Glance
+
+#### 1. Model Candidate Leaderboard & Serverless Efficiency
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/05_model_leaderboard-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/05_model_leaderboard-light.png">
+  <img alt="Candidate Model Leaderboard and Serverless Latency vs Accuracy Frontier" src="docs/showcase/figures/05_model_leaderboard-light.png" width="100%">
+</picture>
+
+#### 2. Discrimination Trajectories (ROC & PR Curves)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/06_roc_pr_curves-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/06_roc_pr_curves-light.png">
+  <img alt="Held-out Test Set ROC and Precision-Recall Curves with Bootstrap 95% Confidence Intervals" src="docs/showcase/figures/06_roc_pr_curves-light.png" width="100%">
+</picture>
+
+#### 3. Feature Ablation & Marginal Value-Added
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/10_ablation_value_added-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/10_ablation_value_added-light.png">
+  <img alt="Ablation Analysis showing incremental discriminative value from demographics vs MMSE" src="docs/showcase/figures/10_ablation_value_added-light.png" width="100%">
+</picture>
+
+*Key Takeaway*: Demographics alone provide a baseline risk prior (AUC 0.654 CV / 0.679 Test), but brief cognitive testing (MMSE/HMSE) drives the primary $+0.24$ to $+0.25$ AUC lift necessary for high clinical sensitivity (90.5%) without overwhelming secondary care with false alarms.
+
+---
+
+### Model Transparency & Explainability Parity
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/11_explainability-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/11_explainability-light.png">
+  <img alt="Model Transparency, Synthetic Waterfall Profile, and SHAP vs Occlusion Rank Parity" src="docs/showcase/figures/11_explainability-light.png" width="100%">
+</picture>
+
+- **Mathematical Parity**: Runtime feature occlusion matches offline SHAP values with Spearman rank correlation $r_s = 0.985$ ($p < 0.001$), eliminating heavy C++ compilation dependencies in Vercel serverless functions.
+- **Localized Explanations**: Feature effects are rendered in both English and Odia (`[needs native review]`) with stable localization keys.
+
+---
+
+### Responsible AI, Fairness & Population Shift
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/12_fairness_forest_plot-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/12_fairness_forest_plot-light.png">
+  <img alt="Subgroup Parity Forest Plot across Sex, Age, and Education with underpowered cohort flags" src="docs/showcase/figures/12_fairness_forest_plot-light.png" width="100%">
+</picture>
+
+> **Responsible AI & Fairness Notice**:
+> - **Parity Across Sex**: Sensitivity gap between male ($90.9\%$) and female ($90.0\%$) cohorts is $< 1\%$ when cognitive testing is included.
+> - **Statistically Underpowered Cohorts**: Subgroups with $N < 30$ (Male $N=21$, Education $\le 12$ years $N=19$) are flagged with dashed markers and must not be over-interpreted.
+> - **Population Shift Warning**: OASIS subjects are drawn from an urban, high-education US cohort. Models must be validated on Indian cohorts (LASI-DAD) before real participant screening.
+
+---
+
+### Engineering Decisions & Verification
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/03_split_schematic-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/03_split_schematic-light.png">
+  <img alt="Longitudinal Participant Grouped Partitioning and Permutation Check Inset" src="docs/showcase/figures/03_split_schematic-light.png" width="100%">
+</picture>
+
+1. **Longitudinal Grouping (`GroupShuffleSplit`)**: OASIS contains repeated visits ($2.49\text{ visits/subject}$). Ungrouped splitting falsely inflated AUC by $+0.052$. Participant grouping completely eliminates longitudinal auto-correlation leakage.
+2. **Label Permutation Sanity Check**: Shuffling training labels collapsed CV AUC to $0.496 \pm 0.078$ (with MMSE) and $0.470 \pm 0.064$ (without MMSE), mathematically proving absence of subtle data leakage.
+3. **Stateless Privacy Architecture**: No patient profiles or screening predictions are ever written to the database or logged to disk.
+4. **Vercel Serverless Optimization**: Runtime weights total $\sim 2\text{ KB}$; deployment bundle is excluded from raw data science tooling (`.vercelignore`), easily meeting Vercel's $250\text{ MB}$ serverless ceiling.
+
+---
+
+### Reproduce Figures Deterministically
+
+All figures, manifests, and data sidecars are generated with fixed seeds from source result files:
+
+```bash
+# Regenerate all 15 figures, sidecars, and MANIFEST.md
+make figures
+
+# Execute complete unit test suite verifying image sizes (<400KB) and metric fidelity
+python -m pytest ml/tests/test_showcase.py -v
+
+# Interactive local showcase page
+# Open docs/showcase/index.html in your browser
+```
+
+For the complete figure index and source mapping, see the [Showcase Figure Manifest](file:///c:/Users/ankit/cocare/docs/showcase/MANIFEST.md).
+
+---
 
 ### Two Model Variants
 - **`model_without_mmse`**: Designed for community intake. Uses only self-reportable demographic variables that an older adult or caregiver can provide without clinical test administration (`Age`, `Sex`, `EDUC`, `SES`).

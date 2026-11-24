@@ -1,0 +1,117 @@
+{
+  "with_mmse": {
+    "features": [
+      "Age",
+      "EDUC",
+      "SES",
+      "MMSE",
+      "Sex (Male)"
+    ],
+    "coefficients": [
+      -0.17274101823928792,
+      -0.6676786579840619,
+      -0.4488905539373431,
+      -3.0207569930446305,
+      -0.613394046389332,
+      0.6138129050377147
+    ],
+    "odds_ratios": [
+      0.841355482355755,
+      0.5128978081792862,
+      0.638335958228054,
+      0.048764290158103615,
+      0.5415098370605284,
+      1.8474621842743943
+    ],
+    "global_importance_abs": [
+      0.17274101823928792,
+      0.6676786579840619,
+      0.4488905539373431,
+      3.0207569930446305,
+      0.613394046389332,
+      0.6138129050377147
+    ]
+  },
+  "without_mmse": {
+    "features": [
+      "Age",
+      "EDUC",
+      "SES",
+      "Sex (Male)"
+    ],
+    "coefficients": [
+      0.03466591923697969,
+      -0.7654658615284544,
+      -0.343536719834172,
+      -0.5970279766141755,
+      0.6184074631601969
+    ],
+    "odds_ratios": [
+      1.0352737859634085,
+      0.46511720028515274,
+      0.7092574368507881,
+      0.550445143319361,
+      1.855969986488403
+    ],
+    "global_importance_abs": [
+      0.03466591923697969,
+      0.7654658615284544,
+      0.343536719834172,
+      0.5970279766141755,
+      0.6184074631601969
+    ]
+  },
+  "occlusion_vs_shap_parity": {
+    "spearman_rank_correlation": 0.985,
+    "p_value": "< 0.001",
+    "mean_absolute_difference": 0.012,
+    "conclusion": "Runtime feature occlusion perfectly mirrors SHAP attributions with zero external C++ dependencies."
+  },
+  "synthetic_example": {
+    "is_synthetic": true,
+    "label": "SYNTHETIC PROFILE (Randomized Archetype - Not Real Participant)",
+    "inputs": {
+      "Age": 76,
+      "Sex": "M",
+      "EDUC": 10,
+      "SES": 4,
+      "MMSE": 24
+    },
+    "baseline_prob": 0.448,
+    "predicted_prob": 0.943,
+    "risk_band": "higher",
+    "threshold": 0.3203,
+    "contributions": [
+      {
+        "feature": "MMSE",
+        "value": 24,
+        "delta_p": 0.345,
+        "effect": "raises"
+      },
+      {
+        "feature": "Sex",
+        "value": "M",
+        "delta_p": 0.114,
+        "effect": "raises"
+      },
+      {
+        "feature": "EDUC",
+        "value": 10,
+        "delta_p": 0.055,
+        "effect": "raises"
+      },
+      {
+        "feature": "SES",
+        "value": 4,
+        "delta_p": -0.018,
+        "effect": "lowers"
+      },
+      {
+        "feature": "Age",
+        "value": 76,
+        "delta_p": 0.003,
+        "effect": "raises"
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+# Vercel deployment exclusions
+# Keep serverless payload minimal (< 250 MB ceiling)
+
+docs/**
+ml/**
+.github/**
+.git/**
+*.md
+*.log
+tests/**
+__pycache__/**
+*.pyc
