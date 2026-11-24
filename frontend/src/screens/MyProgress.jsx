@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
+import AssessmentCompare from '../components/risk/AssessmentCompare'
 import DemoBanner from '../components/risk/DemoBanner'
 import ProgressChart from '../components/risk/ProgressChart'
 import ScoreBandBadge from '../components/risk/ScoreBandBadge'
@@ -33,6 +34,12 @@ export default function MyProgress({ user, onRiskCheck, onBack }) {
         )
       : null
 
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const recentSessionsCount = sessions.filter(
+    (s) => s.started_at && new Date(s.started_at) >= thirtyDaysAgo
+  ).length
+
   const latestScreening = screeningHistory.length > 0 ? screeningHistory[0] : null
 
   function handleDeleteScreenings() {
@@ -40,6 +47,30 @@ export default function MyProgress({ user, onRiskCheck, onBack }) {
     setScreeningHistory([])
     setDeletedNotice(true)
     setTimeout(() => setDeletedNotice(false), 3000)
+  }
+
+  function handleExportCSV() {
+    if (screeningHistory.length === 0) return
+    const headers = ['Date', 'Model_Score', 'Risk_Band', 'Model_Variant']
+    const rows = screeningHistory.map((h) => [
+      h.date?.slice(0, 10),
+      typeof h.score === 'number' ? h.score.toFixed(4) : h.score,
+      h.band,
+      h.model_variant || h.variant,
+    ])
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `cocare_screening_history_${user?.id || 'record'}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  function handlePrint() {
+    window.print()
   }
 
   return (
@@ -70,34 +101,42 @@ export default function MyProgress({ user, onRiskCheck, onBack }) {
           👨‍👩‍👦 {t('caregiver_summary_title', lang)}
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
           <div style={{ background: '#faf8f5', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--line)' }}>
-            <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{t('caregiver_sessions_stat', lang)}</div>
-            <div style={{ fontSize: '1.8rem', fontWeight: '800' }}>{totalSessions}</div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{t('caregiver_sessions_stat', lang)}</div>
+            <div style={{ fontSize: '1.7rem', fontWeight: '800' }}>{totalSessions}</div>
           </div>
 
           <div style={{ background: '#faf8f5', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--line)' }}>
-            <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{t('caregiver_avg_acc', lang)}</div>
-            <div style={{ fontSize: '1.8rem', fontWeight: '800' }}>
+            <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{t('caregiver_avg_acc', lang)}</div>
+            <div style={{ fontSize: '1.7rem', fontWeight: '800' }}>
               {avgAccuracy !== null ? `${avgAccuracy}%` : '—'}
             </div>
           </div>
 
           <div style={{ background: '#faf8f5', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--line)' }}>
-            <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{t('caregiver_last_check', lang)}</div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{t('caregiver_last_check', lang)}</div>
             <div style={{ marginTop: '0.35rem' }}>
               {latestScreening ? (
-                <ScoreBandBadge band={latestScreening.band} lang={lang} size="normal" />
+                <ScoreBandBadge band={latestScreening.band} lang={lang} size="small" />
               ) : (
                 <span style={{ fontSize: '0.95rem', color: 'var(--muted)' }}>—</span>
               )}
             </div>
+          </div>
+
+          <div style={{ background: '#faf8f5', padding: '0.75rem', borderRadius: '12px', border: '1px solid var(--line)' }}>
+            <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{t('active_30_days', lang)}</div>
+            <div style={{ fontSize: '1.7rem', fontWeight: '800' }}>{recentSessionsCount}</div>
           </div>
         </div>
       </div>
 
       {/* Cognitive Game Trends (ProgressChart) */}
       <ProgressChart sessions={sessions} lang={lang} />
+
+      {/* Longitudinal Assessment Trajectory Comparison (when >= 2 checks exist) */}
+      <AssessmentCompare history={screeningHistory} lang={lang} />
 
       {/* Opt-in Local Screening Records */}
       <div
@@ -109,19 +148,39 @@ export default function MyProgress({ user, onRiskCheck, onBack }) {
           marginBottom: '1.5rem',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <h2 style={{ margin: 0, fontSize: '1.15rem' }}>
             📋 {t('screening_records_title', lang)}
           </h2>
           {screeningHistory.length > 0 && (
-            <button
-              type="button"
-              className="small link"
-              onClick={handleDeleteScreenings}
-              style={{ margin: 0, color: 'var(--wrong)' }}
-            >
-              🗑️ {t('delete_my_data', lang)}
-            </button>
+            <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="small"
+                onClick={handlePrint}
+                style={{ fontSize: '0.85rem', padding: '0.3rem 0.6rem' }}
+                aria-label={t('print_progress_report', lang)}
+              >
+                🖨️ {t('print_progress_report', lang)}
+              </button>
+              <button
+                type="button"
+                className="small"
+                onClick={handleExportCSV}
+                style={{ fontSize: '0.85rem', padding: '0.3rem 0.6rem' }}
+                aria-label={t('export_csv', lang)}
+              >
+                📥 CSV
+              </button>
+              <button
+                type="button"
+                className="small link"
+                onClick={handleDeleteScreenings}
+                style={{ margin: 0, color: 'var(--wrong)', fontSize: '0.85rem' }}
+              >
+                🗑️ {t('delete_my_data', lang)}
+              </button>
+            </div>
           )}
         </div>
 
@@ -132,9 +191,29 @@ export default function MyProgress({ user, onRiskCheck, onBack }) {
         )}
 
         {screeningHistory.length === 0 ? (
-          <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.95rem' }}>
-            {t('no_screening_history', lang)}
-          </p>
+          <div
+            style={{
+              background: '#faf8f5',
+              border: '2px dashed var(--line)',
+              borderRadius: '14px',
+              padding: '1.5rem',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: '2.2rem', marginBottom: '0.4rem' }}>🩺</div>
+            <h3 style={{ margin: '0 0 0.4rem', fontSize: '1.1rem' }}>{t('empty_screening_title', lang)}</h3>
+            <p style={{ margin: '0 0 1rem', color: 'var(--muted)', fontSize: '0.92rem', lineHeight: '1.4', maxWidth: '420px', marginLeft: 'auto', marginRight: 'auto' }}>
+              {t('empty_screening_desc', lang)}
+            </p>
+            <button
+              type="button"
+              className="small primary"
+              onClick={onRiskCheck}
+              style={{ minHeight: '44px', padding: '0.5rem 1.25rem', fontSize: '1rem', fontWeight: '700' }}
+            >
+              ✨ {t('start_first_check', lang)}
+            </button>
+          </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="history" style={{ width: '100%', fontSize: '0.88rem' }}>

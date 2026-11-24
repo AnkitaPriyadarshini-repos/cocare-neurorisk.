@@ -169,8 +169,8 @@ Key accessibility & ergonomic enhancements:
 Measured from the production Vite build (`npm run build`):
 - `frontend/dist/index.html`: **0.40 kB** (gzip: 0.27 kB)
 - `frontend/dist/assets/index-*.css`: **3.64 kB** (gzip: 1.27 kB)
-- `frontend/dist/assets/index-*.js`: **289.19 kB** (gzip: 87.38 kB)
-- **Total uncompressed bundle**: **~293.2 kB** (**~88.9 kB** gzip). Lightweight vector SVG charting (`ProgressChart.jsx`) avoids heavy external visualization libraries, keeping the bundle fast on rural 3G/4G connections.
+- `frontend/dist/assets/index-*.js`: **298.49 kB** (gzip: 89.36 kB)
+- **Total uncompressed bundle**: **~302.5 kB** (**~90.9 kB** gzip). Lightweight vector SVG charting (`ProgressChart.jsx` and `AssessmentCompare.jsx`) avoids heavy external visualization libraries, keeping the bundle fast on rural 3G/4G connections.
 
 ---
 
@@ -203,13 +203,18 @@ Measured from the production Vite build (`npm run build`):
   - One-click print-ready summary formatted specifically for a primary care clinician or neurologist, detailing demographic covariates, model variant, threshold, calibration notes, and feature contributions.
 
 ### 3. My Progress Dashboard (`frontend/src/screens/MyProgress.jsx`)
-- **Caregiver & Family Overview**:
-  - Quick summary cards reporting total game sessions, historical average accuracy, and latest risk screening status.
+- **Caregiver & Family Triage Tiles**:
+  - Four responsive overview tiles reporting: total game sessions, historical average accuracy (%), latest risk screening band, and 30-day activity count.
+- **Interactive Longitudinal Trajectory Comparison (`AssessmentCompare.jsx`)**:
+  - Allows caregivers and clinicians to select any baseline assessment and recent follow-up to compute exact score delta ($\Delta$) and trajectory categorization (`Stable`, `Improving`, `Review Recommended`).
 - **Lightweight Inline SVG Charts (`ProgressChart.jsx`)**:
   - Custom vector charts illustrating session accuracy trends (%) and level progression over time.
-  - Zero heavy third-party charting libraries: frontend bundle impact is only $\approx 44\text{ KB}$ uncompressed ($\approx 11\text{ KB}$ gzip).
-- **Screening History Ledger**:
+  - Zero heavy third-party charting libraries (unlike desktop-heavy clinical dashboards that bundle 300+ KB charting dependencies), keeping the bundle ultra-fast on mobile rural connections.
+- **Screening History Ledger & Guided Baseline State**:
   - Chronological history of opted-in assessments with dates, scores, risk bands, and model variants.
+  - Illustrated guided empty state with single-click CTA prompting first baseline assessment.
+- **Clinician Export & Print Handover**:
+  - One-click print-formatted progress report for family physicians and neurologists (`🖨️ Print Report`) and client-side on-device CSV export (`📥 CSV`) with zero server persistence.
 
 ---
 

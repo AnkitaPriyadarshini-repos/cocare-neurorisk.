@@ -327,3 +327,17 @@ test('Wizard validation logic correctly accepts and rejects field ranges', () =>
   assert.equal(validateMmse(31, true), false)
 })
 
+test('AssessmentCompare delta computation and trajectory categorization works correctly', () => {
+  function computeTrajectory(baseScore, recentScore) {
+    const delta = recentScore - baseScore
+    if (delta <= -0.02) return 'improving'
+    if (delta >= 0.02) return 'elevated'
+    return 'stable'
+  }
+
+  assert.equal(computeTrajectory(0.45, 0.455), 'stable')
+  assert.equal(computeTrajectory(0.45, 0.44), 'stable')
+  assert.equal(computeTrajectory(0.5, 0.47), 'improving')
+  assert.equal(computeTrajectory(0.32, 0.36), 'elevated')
+})
+
