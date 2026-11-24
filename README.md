@@ -1,11 +1,15 @@
 # CO CARE
 
-AI-assisted, culturally adapted cognitive games for elderly users.
+AI-assisted, culturally adapted cognitive games for elderly users.  
 Primary language: **Odia** · Fallback: **English**
 
 This is the Minor-phase build: an elderly-friendly web app with 3 games, Odia-localized and generic content, session logging, and a transparent rule-based adaptive difficulty engine.
 
-## Run it (Windows)
+Repository: [https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk](https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk)
+
+---
+
+## Run It (Windows)
 
 **Only Python is needed to run the app.** The frontend is already built into `frontend/dist`.
 
@@ -15,7 +19,7 @@ This is the Minor-phase build: an elderly-friendly web app with 3 games, Odia-lo
 
 You can also run it by hand:
 
-```
+```bash
 cd backend
 pip install -r requirements.txt
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
@@ -23,24 +27,34 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 API docs: http://localhost:8000/docs
 
-## Editing the frontend (needs Node.js 20+)
+---
 
-```
+## Editing the Frontend (needs Node.js 20+)
+
+```bash
 cd frontend
 npm install
 npm run dev        # live-reload dev server on http://localhost:5173 (keep the backend running too)
 npm run build      # rebuild frontend/dist so the backend serves your changes
 ```
 
-## Run the tests
+---
 
-```
+## Run the Tests
+
+```bash
+# Backend & ML tests
 cd backend
 pip install pytest httpx
 python -m pytest -q
+
+# From repo root: run backend, ML pipeline, and showcase tests
+pytest backend/tests/ ml/tests/
 ```
 
-## Project structure
+---
+
+## Project Structure
 
 ```
 backend/
@@ -48,56 +62,78 @@ backend/
   app/adaptive.py    Adaptive difficulty rules + level settings per game   <- core research logic
   app/db.py          SQLite schema (users, user_levels, sessions, attempts, adaptation_log)
   app/content.py     Loads game content
+  app/risk.py        Stateless risk screening inference & model loading
+  app/explain.py     Lightweight runtime feature occlusion explanation
+  models/            Exported production models & JSON metadata
   content/items_localized.json   Odia cultural items (study condition A)
   content/items_generic.json     Generic items        (study condition B)
-  tests/test_api.py
+  tests/             API, adaptive logic, and risk endpoint tests
 frontend/
   src/App.jsx        Screen flow and API calls
   src/games/         MemoryMatch, PictureRecall, FindIt
   src/screens/       Welcome (consent), Home, Result, History, Settings
+  src/components/    Risk check wizard and progress visualization
   src/i18n.js        Odia + English UI text (English is used when an Odia string is missing)
   src/speech.js      Read-aloud (browser voice for now; Indic-TTS audio in step 8)
+ml/
+  src/               Ingestion, training, evaluation, calibration, and visualization
+  config/            YAML schemas for OASIS and LASI-DAD feature mapping
+  reports/           Reproducible JSON metrics, operating points, and audit logs
+docs/
+  RISK_SCREENING.md  Full 19-figure ML showcase, validation methodology, and odds ratios
+  DEPLOY.md          Deployment guide (local vs Vercel live demo, smoke tests)
+  showcase/          Generated visual assets, data sidecars, and figure manifest
 ```
 
-## The three games
+---
+
+## The Three Games
 
 | Game | Skill | What gets harder with level (1 to 5) |
-|---|---|---|
-| Match the Pairs (ଯୋଡ଼ି ମିଳାନ୍ତୁ) | Memory | 3 to 8 pairs; preview 5 s to 2 s |
-| Remember the Pictures (ଛବି ମନେ ରଖନ୍ତୁ) | Recall | 2 to 6 pictures to remember among 4 to 12 options |
-| Find It (ଖୋଜି ବାହାର କରନ୍ତୁ) | Attention | Grid of 4 to 16; time limit 15 s to 8 s |
+|:---|:---|:---|
+| **Match the Pairs** (ଯୋଡ଼ି ମିଳାନ୍ତୁ) | Memory | 3 to 8 pairs; preview 5 s to 2 s |
+| **Remember the Pictures** (ଛବି ମନେ ରଖନ୍ତୁ) | Recall | 2 to 6 pictures to remember among 4 to 12 options |
+| **Find It** (ଖୋଜି ବାହାର କରନ୍ତୁ) | Attention | Grid of 4 to 16; time limit 15 s to 8 s |
 
-## Adaptive rules (`backend/app/adaptive.py`)
+---
 
-The rules are checked at the end of every game. The first rule that matches decides the result.
+## Adaptive Rules (`backend/app/adaptive.py`)
+
+The rules are checked at the end of every game. The first rule that matches decides the result:
 
 | Rule | Condition | Effect |
-|---|---|---|
-| R0_FIXED_MODE | User is in the fixed-difficulty condition | No change |
-| R1_ABANDONED | Game stopped before finishing | Level −1 |
-| R2_LOW_ACCURACY | Accuracy < down threshold (40% memory, 50% others) | Level −1 |
-| R3_STRUGGLING | Accuracy < 70% **and** median response > 1.5 × target time | Level −1 |
-| R4_HIGH_PERFORMANCE | Accuracy ≥ up threshold (70% memory, 85% others) **and** median response ≤ target time | Level +1 |
-| R5_KEEP | Anything else | No change |
+|:---|:---|:---:|
+| `R0_FIXED_MODE` | User is in the fixed-difficulty condition | No change |
+| `R1_ABANDONED` | Game stopped before finishing | Level −1 |
+| `R2_LOW_ACCURACY` | Accuracy < down threshold (40% memory, 50% others) | Level −1 |
+| `R3_STRUGGLING` | Accuracy < 70% **and** median response > 1.5 × target time | Level −1 |
+| `R4_HIGH_PERFORMANCE` | Accuracy ≥ up threshold (70% memory, 85% others) **and** median response ≤ target time | Level +1 |
+| `R5_KEEP` | Anything else | No change |
 
-Every decision is saved in `adaptation_log` with the rule name, the reason and the numbers behind it.
+Every decision is saved in `adaptation_log` with the rule name, the reason, and the numbers behind it.
 
-## Study conditions
+---
+
+## Study Conditions
 
 Set them per player in **Caregiver / researcher settings** on the home screen:
-- **Content:** Odia (localized) or Generic. Tests research question 1.
-- **Difficulty:** Adaptive or Fixed. Tests research question 2.
+- **Content**: Odia (localized) or Generic. Tests research question 1.
+- **Difficulty**: Adaptive or Fixed. Tests research question 2.
 
-The same screen has CSV downloads of all tables for the analysis.
+The same screen has CSV downloads of all tables for analysis.
 
-## Before the user study (TODO)
+---
+
+## Before the User Study (TODO)
 
 - [ ] A native Odia speaker checks all Odia text (`src/i18n.js` and `content/*.json`).
 - [ ] Replace approximate emoji with real photos for items marked `"needs_photo": true` (e.g. pakhala, rasagola, chhena poda, Sambalpuri saree). Put images in `frontend/public/images/` and set `"image": "/images/<file>.jpg"`.
 - [ ] Step 8: generate Odia audio with Indic-TTS and play it from `speech.js`.
 - [ ] Ethics approval and printed consent form.
 
-## Risk screening (ML) - DEMO ONLY
+---
+
+## Cognitive Risk Screening (ML) — Overview
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/01_hero_banner-dark.png">
@@ -105,279 +141,49 @@ The same screen has CSV downloads of all tables for the analysis.
   <img alt="CO CARE Cognitive Risk Screening Showcase Hero Banner showing CV AUC 0.892 and 90.5% sensitivity" src="docs/showcase/figures/01_hero_banner-light.png" width="100%">
 </picture>
 
-### TL;DR
-- **Problem**: Early community dementia risk screening is hindered by subjective scoring, lack of localization, and fear of data privacy exposure.
-- **Solution**: Two lightweight, stateless screening models (demographics-only and cognitive-augmented) with bilingual feature attribution (English & Odia).
-- **Validation**: Longitudinal OASIS cohort ($N=373$ records, 150 subjects) strictly grouped by participant to prevent leakage, achieving **0.892 ± 0.041 repeated CV AUC** and **90.5% held-out sensitivity** with $< 1.5\text{ ms}$ serverless latency.
+CO CARE includes two lightweight, stateless screening models designed for community intake:
+1. **`model_without_mmse`**: Demographics-only intake model (`Age`, `Sex`, `EDUC`, `SES`) for settings where clinical testing is unavailable.
+2. **`model_with_mmse`**: Cognitive-augmented model augmenting demographics with total cognitive score (`Age`, `Sex`, `EDUC`, `SES`, `MMSE`/`HMSE`).
+
+### Key Validation Performance (OASIS Longitudinal Cohort)
+
+| Model Variant | Primary CV ROC-AUC | Held-Out Test ROC-AUC [95% CI] | Sensitivity | Specificity | Inference Latency |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| **`model_with_mmse`** | **0.892 ± 0.041** | **0.929** [0.847, 0.986] | **90.5%** [75.0%, 100.0%] | **74.5%** [62.3%, 86.5%] | ~1 ms (local, warm) |
+| **`model_without_mmse`** | **0.654 ± 0.062** | **0.679** [0.538, 0.811] | **90.5%** [75.0%, 100.0%] | **35.3%** [22.7%, 47.9%] | ~1 ms (local, warm) |
 
 > ⚠️ **DEMO models trained on OASIS (a US cohort). They have NOT been validated on LASI-DAD or on Odia-speaking/Indian populations and must not be used for screening real participants.**
 >
 > **Clinical Disclaimer**: This screening tool is strictly a preliminary risk screening demonstration for community and primary care workflows. It is **NOT a clinical diagnosis** and must never replace comprehensive neuropsychological or neurological evaluation by a qualified medical professional.
 
----
-
-### How It Was Built (Pipeline & Serverless Architecture)
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/02_pipeline_architecture-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/02_pipeline_architecture-light.png">
-  <img alt="CO CARE End-to-End Pipeline and Serverless Runtime Architecture" src="docs/showcase/figures/02_pipeline_architecture-light.png" width="100%">
-</picture>
-
-The pipeline strictly decouples **offline training and validation** from **runtime serverless inference**:
-1. **Dataset Adapter Layer**: Flexible ingestion (`oasis.py` and `lasi_dad.py`) driven by variable mapping YAML schemas (`ml/config/`).
-2. **Leakage Protection**: Strict participant clustering via `GroupShuffleSplit` (train/test) and `StratifiedGroupKFold` (CV) ensures no participant records cross partitions.
-3. **Fit-on-Train Preprocessing**: Imputers, scalers, and encoders are fitted solely within training fold pipelines.
-4. **Serverless Deployment**: Zero C++ heavy dependencies in Lambda (`shap` is isolated to offline training). Runtime explanations execute via direct mathematical feature occlusion in $< 1.5\text{ ms}$.
+👉 **For the complete 19-figure showcase, training dynamics, odds ratios, longitudinal trajectories, and Bayes prevalence analysis, see [docs/RISK_SCREENING.md](docs/RISK_SCREENING.md).**
 
 ---
 
-### Results at a Glance
+## Deployment Summary
 
-#### 1. Model Candidate Leaderboard & Serverless Efficiency
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/05_model_leaderboard-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/05_model_leaderboard-light.png">
-  <img alt="Candidate Model Leaderboard and Serverless Latency vs Accuracy Frontier" src="docs/showcase/figures/05_model_leaderboard-light.png" width="100%">
-</picture>
+CO CARE can run locally (recommended for collecting study data) or on Vercel as a live demo:
 
-#### 2. Discrimination Trajectories (ROC & PR Curves)
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/06_roc_pr_curves-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/06_roc_pr_curves-light.png">
-  <img alt="Held-out Test Set ROC and Precision-Recall Curves with Bootstrap 95% Confidence Intervals" src="docs/showcase/figures/06_roc_pr_curves-light.png" width="100%">
-</picture>
+| Feature / Aspect | Local (`start.bat`) | Vercel Live Demo |
+|:---|:---|:---|
+| **Game session logging** | Persistent SQLite file (`backend/cocare.db`) | In-memory/ephemeral (`/tmp/cocare.db`, resets on cold starts) |
+| **Intended use** | Research study data collection | Live public demo and technical review |
+| **Risk-screening screens** | Controlled by `VITE_ENABLE_RISK_CHECK` | Controlled by `VITE_ENABLE_RISK_CHECK` |
+| **Live URL** | `http://localhost:8000` | [https://cocare-zeta.vercel.app](https://cocare-zeta.vercel.app) |
 
-#### 3. Feature Ablation & Marginal Value-Added
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/10_ablation_value_added-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/10_ablation_value_added-light.png">
-  <img alt="Ablation Analysis showing incremental discriminative value from demographics vs MMSE" src="docs/showcase/figures/10_ablation_value_added-light.png" width="100%">
-</picture>
-
-*Key Takeaway*: Demographics alone provide a baseline risk prior (AUC 0.654 CV / 0.679 Test), but brief cognitive testing (MMSE/HMSE) drives the primary $+0.24$ to $+0.25$ AUC lift necessary for high clinical sensitivity (90.5%) without overwhelming secondary care with false alarms.
+👉 **For step-by-step Vercel setup, dual-deployment configuration, serverless size limits, and smoke tests, see [docs/DEPLOY.md](docs/DEPLOY.md).**
 
 ---
 
-### Model Training Dynamics, Convergence & Class-Wise Performance
+## Related Work and Acknowledgements
 
-*(Adapted and elevated from classical deep-learning and clinical benchmarks including JacobW4 and Memora Health)*
+This showcase references concepts and problem formulations from related open-source research projects:
+- **[JacobW4/cnn-dementia-classification](https://github.com/JacobW4/cnn-dementia-classification)**: A deep learning binary CNN classifying brain MRI images (Healthy vs. Very Mild Dementia) using TensorFlow/Keras, which demonstrated the value of presenting clear optimization convergence trajectories (loss and accuracy curves) and class-wise precision/recall evaluation.
+- **[Albert-L-Phan/Dementia](https://github.com/Albert-L-Phan/Dementia)**: A spatial regression study of self-reported dementia incidence across Australian Local Government Areas (LGAs), which highlighted the importance of analyzing demographic, socioeconomic, and environmental risk factors.
 
-#### 4. Training & Validation Loss Convergence Trajectory
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/16_training_loss_convergence-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/16_training_loss_convergence-light.png">
-  <img alt="Model Training Dynamics: Cross-Entropy Loss Reduction and Metric Trajectory across Iterations" src="docs/showcase/figures/16_training_loss_convergence-light.png" width="100%">
-</picture>
-
-- **Optimization Dynamics**: Cross-entropy log loss decreases monotonically from $0.693$ to $0.347$ (train) and $0.388$ (out-of-fold validation), stabilizing fully by iteration 16.
-- **Zero Overfitting**: L2 weight penalty ($\lambda=1.0$) bounds the generalization gap to $\Delta 	ext{Loss} < 0.04$, ensuring robust out-of-sample deployment stability on serverless edge runtimes.
-
-#### 5. Class-Wise Diagnostic Performance Breakdown
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/17_class_wise_evaluation-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/17_class_wise_evaluation-light.png">
-  <img alt="Class-Wise Diagnostic Performance Breakdown comparing Precision, Recall, Specificity, and F1 by Class" src="docs/showcase/figures/17_class_wise_evaluation-light.png" width="100%">
-</picture>
-
-| Evaluation Metric | Cognitively Normal (Class 0, N=51) | Cognitive Risk (Class 1, N=21) | Diagnostic Clinical Role |
-|:---|:---:|:---:|:---|
-| **Precision (PPV / NPV)** | **95.0%** [88.2%, 100.0%] | **59.4%** [41.9%, 75.0%] | Rule-out high confidence; low false-reassurance rate |
-| **Recall (Sensitivity / Specificity)** | **74.5%** [61.1%, 87.5%] | **90.5%** [76.0%, 100.0%] | High sensitivity screening prevents missed mild cognitive cases |
-| **F1-Score** | **83.5%** [74.1%, 91.2%] | **71.7%** [58.1%, 82.8%] | Balanced harmonic utility across both diagnostic classes |
-| **Overall Accuracy** | **79.2%** [67.7%, 89.7%] | | ROC-AUC: **0.929** [0.829, 0.997], Brier Score: **0.102** |
-
----
-
-### Multifactor Risk Factors & Longitudinal Tracking
-
-*(Incorporating epidemiological regression from Albert-L-Phan and longitudinal patient trajectory tracking from Memora Health)*
-
-#### 6. Multifactor Risk Correlation & Adjusted Odds Ratios
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/18_risk_factor_odds_ratios-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/18_risk_factor_odds_ratios-light.png">
-  <img alt="Multifactor Feature Correlation Heatmap and Adjusted Odds Ratios Forest Plot" src="docs/showcase/figures/18_risk_factor_odds_ratios-light.png" width="100%">
-</picture>
-
-- **Multicollinearity Check**: Low correlation between Age and cognitive scores ($r = +0.05$) confirms independent prognostic information; Education and SES show expected inverse relationship ($r = -0.72$).
-- **Adjusted Odds Ratios ($e^\beta$)**: MMSE decrement confers an adjusted odds ratio of **1.48 per point drop** ($p < 0.001$), while each decade of age adds **1.34x adjusted risk** ($p = 0.019$). Education acts as a cognitive reserve buffer ($	ext{OR} = 0.81$, $p = 0.076$).
-
-#### 7. Longitudinal Cognitive Trajectory & Conversion Dynamics
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/19_longitudinal_trajectory-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/19_longitudinal_trajectory-light.png">
-  <img alt="Longitudinal Risk Progression and Conversion Inflection Points across Clinical Assessment Visits" src="docs/showcase/figures/19_longitudinal_trajectory-light.png" width="100%">
-</picture>
-
-- **Early Conversion Inflection**: For participants who convert from normal to mild impairment (`Converted`), baseline risk begins low ($0.272$, below threshold $0.316$). By Visit 2, risk sharply surges to **0.462** (crossing into the elevated risk band) while the clinical CDR rating is still very mild ($0.333$).
-- **Longitudinal Stability**: Stable non-demented participants maintain flat, sub-threshold trajectories across years ($0.276 \to 0.235$), confirming low false-positive drift over time.
-
----
-
-### Benchmark Comparison: CO CARE vs. Prior Art & Ecosystem
-
-| Feature Dimension | JacobW4 (`cnn-dementia-classification`) | Albert-L-Phan (`Dementia`) | Memora Health (`memora-health`) | **CO CARE (This Work)** |
-|:---|:---|:---|:---|:---|
-| **Data Modality** | Brain MRI Scan Images ($180\times 180$) | Census / LGA Administrative Statistics | Audio / Speech Recordings & Clinical Surveys | **Demographics + Brief Cognitive Test (MMSE/HMSE)** |
-| **Screening Setting** | Specialized Hospital (MRI required) | Macro Geographic & Epidemiological | Clinical Workflow / Telehealth | **Primary Care & Rural Community Intake** |
-| **Model Architecture** | 3-Layer Conv2D + Dense Deep CNN | Bayesian Spatial INLA Regression | Proprietary Cloud ML Platform | **Calibrated Regularized Logistic + Group CV** |
-| **Inference Hardware** | GPU / Heavy TensorFlow runtime | Offline R / Spatial runtime | Cloud Web Application | **$< 1.5\text{ ms}$ Serverless Lambda ($2\text{ KB}$ weights)** |
-| **Training Dynamics** | Accuracy & Loss curves (TensorFlow) | Not reported | Not open-source | **Empirical Log-Loss Convergence + Group CV** |
-| **Cultural Adaptation** | English / US Kaggle Dataset | Australian LGA Census | English Clinical Interface | **Odia-Ready (translations pending review) + LASI-DAD ready** |
-| **Privacy & Persist.** | Offline Notebook | Macro Public Datasets | Enterprise Database | **100% Stateless: Zero DB logging of patient profiles** |
-| **Open Source URL** | [JacobW4 Repo](https://github.com/JacobW4/cnn-dementia-classification) | [Albert-L-Phan Repo](https://github.com/Albert-L-Phan/Dementia) | [Memora App](https://memora-health.vercel.app/) | **[CO CARE Repo](https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.)** |
-
----
-
-### Model Transparency & Explainability Parity
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/11_explainability-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/11_explainability-light.png">
-  <img alt="Model Transparency, Synthetic Waterfall Profile, and SHAP vs Occlusion Rank Parity" src="docs/showcase/figures/11_explainability-light.png" width="100%">
-</picture>
-
-- **Mathematical Parity**: Runtime feature occlusion matches offline SHAP values with Spearman rank correlation $r_s = 0.985$ ($p < 0.001$), eliminating heavy C++ compilation dependencies in Vercel serverless functions.
-- **Localized Explanations**: Feature effects are rendered in both English and Odia (`[needs native review]`) with stable localization keys.
-
----
-
-### Responsible AI, Fairness & Population Shift
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/12_fairness_forest_plot-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/12_fairness_forest_plot-light.png">
-  <img alt="Subgroup Parity Forest Plot across Sex, Age, and Education with underpowered cohort flags" src="docs/showcase/figures/12_fairness_forest_plot-light.png" width="100%">
-</picture>
-
-> **Responsible AI & Fairness Notice**:
-> - **Parity Across Sex**: Sensitivity gap between male ($90.9\%$) and female ($90.0\%$) cohorts is $< 1\%$ when cognitive testing is included.
-> - **Statistically Underpowered Cohorts**: Subgroups with $N < 30$ (Male $N=21$, Education $\le 12$ years $N=19$) are flagged with dashed markers and must not be over-interpreted.
-> - **Population Shift Warning**: OASIS subjects are drawn from an urban, high-education US cohort. Models must be validated on Indian cohorts (LASI-DAD) before real participant screening.
-
----
-
-### Engineering Decisions & Verification
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/03_split_schematic-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/03_split_schematic-light.png">
-  <img alt="Longitudinal Participant Grouped Partitioning and Permutation Check Inset" src="docs/showcase/figures/03_split_schematic-light.png" width="100%">
-</picture>
-
-1. **Longitudinal Grouping (`GroupShuffleSplit`)**: OASIS contains repeated visits ($2.49\text{ visits/subject}$). Ungrouped splitting falsely inflated AUC by $+0.052$. Participant grouping completely eliminates longitudinal auto-correlation leakage.
-2. **Label Permutation Sanity Check**: Shuffling training labels collapsed CV AUC to $0.496 \pm 0.078$ (with MMSE) and $0.470 \pm 0.064$ (without MMSE), mathematically proving absence of subtle data leakage.
-3. **Stateless Privacy Architecture**: No patient profiles or screening predictions are ever written to the database or logged to disk.
-4. **Vercel Serverless Optimization**: Runtime weights total $\sim 2\text{ KB}$; deployment bundle is excluded from raw data science tooling (`.vercelignore`), easily meeting Vercel's $250\text{ MB}$ serverless ceiling.
-
----
-
-### Reproduce Figures Deterministically
-
-All figures, manifests, and data sidecars are generated with fixed seeds from source result files:
-
-```bash
-# Regenerate all 15 figures, sidecars, and MANIFEST.md
-make figures
-
-# Execute complete unit test suite verifying image sizes (<400KB) and metric fidelity
-python -m pytest ml/tests/test_showcase.py -v
-
-# Interactive local showcase page
-# Open docs/showcase/index.html in your browser
-```
-
-For the complete figure index and source mapping, see the [Showcase Figure Manifest](file:///c:/Users/ankit/cocare/docs/showcase/MANIFEST.md).
-
----
-
-### Two Model Variants
-- **`model_without_mmse`**: Designed for community intake. Uses only self-reportable demographic variables that an older adult or caregiver can provide without clinical test administration (`Age`, `Sex`, `EDUC`, `SES`).
-- **`model_with_mmse`**: For settings where an administered cognitive test is available. Augments self-reportable demographic features with the total cognitive score (`Age`, `Sex`, `EDUC`, `SES`, `MMSE` / `HMSE`).
-
-### Complete Validation Metrics Table
-
-Because the single test set ($N=72$) is small, **5x Repeated 5-Fold Stratified Group CV (25 evaluations across all 150 participants)** serves as the **primary estimate**, with the single held-out test split ($N=72$, 21 positives, 51 negatives) as secondary.
-
-| Metric | Primary CV: `with_mmse` | Primary CV: `without_mmse` | Held-Out Test: `with_mmse` [95% CI] | Held-Out Test: `without_mmse` [95% CI] | Baseline: Age-Only LR |
-|:---|:---:|:---:|:---:|:---:|:---:|
-| **ROC-AUC** | **0.892 ± 0.041** | **0.654 ± 0.062** | **0.929** [0.847, 0.986] | **0.679** [0.538, 0.811] | 0.434 ± 0.063 |
-| **Sensitivity** | **72.9% ± 9.1%** | **61.2% ± 13.3%** | **90.5%** [75.0%, 100.0%] | **90.5%** [75.0%, 100.0%] | 43.9% ± 8.2% |
-| **Specificity** | **85.9% ± 7.8%** | **63.2% ± 13.3%** | **74.5%** [62.3%, 86.5%] | **35.3%** [22.7%, 47.9%] | 43.9% ± 8.2% |
-| **Precision** | **81.0% ± 9.8%** | **58.1% ± 9.9%** | **59.4%** [41.4%, 76.5%] | **36.5%** [24.0%, 50.0%] | 44.8% ± 6.5% |
-| **NPV** | **79.7% ± 7.0%** | **66.4% ± 10.1%** | **95.0%** [87.0%, 100.0%] | **90.0%** [75.0%, 100.0%] | 55.2% ± 5.0% |
-| **Accuracy** | **80.0% ± 5.3%** | **62.3% ± 8.7%** | **79.2%** [69.4%, 88.9%] | **51.4%** [38.9%, 62.5%] | 43.9% ± 6.3% |
-| **Brier Score** | **0.134 ± 0.026** | **0.219 ± 0.021** | **0.102** [0.063, 0.149] | **0.210** [0.173, 0.250] | 0.252 ± 0.015 |
-
-*Thresholds calibrated on training CV folds for target sensitivity $\ge 0.85$ (With MMSE: 0.3203; Without MMSE: 0.3301). Bootstrap CIs computed from 2,000 resamples.*
-
-### API Contract (Stateless)
-- **`GET /api/risk/health`**: Returns model load status, model versions, and verification readiness.
-- **`GET /api/risk/form-spec`**: Returns `form_spec.json`, defining all fields, types, valid bounds, English labels, and Odia labels (flagged `[needs native review]`) for dynamic form rendering.
-- **`POST /api/risk/predict`**: Accepts `{ "profile": { "Age": 75, "Sex": "M", "EDUC": 12, "SES": 3, "MMSE": 26 }, "use_mmse": true }`.
-  - Returns estimated probability, risk band (`lower`, `moderate`, `higher`), decision threshold, model status (`demo_oasis_not_validated_for_lasi_dad`), and transparent feature explanations with stable translation keys.
-  - **Stateless guarantee**: Patient profiles are **never** logged or persisted to the SQLite database.
-- **`GET /api/risk/model-info`**: Returns active model metadata, bootstrap 95% confidence intervals, and decision thresholds.
-
----
-
-## Deploy on Vercel
-
-CO CARE is deployed live on Vercel as well as configured for local execution.
-
-### Live Production Deployment Links
-- 🌐 **Web Application**: [https://cocare-zeta.vercel.app](https://cocare-zeta.vercel.app)
-- 📖 **Interactive API Documentation (Swagger)**: [https://cocare-zeta.vercel.app/docs](https://cocare-zeta.vercel.app/docs)
-- 🏥 **Health Check & Diagnostics**: [https://cocare-zeta.vercel.app/api/risk/health](https://cocare-zeta.vercel.app/api/risk/health)
-- 🧠 **Risk Screening Model Info**: [https://cocare-zeta.vercel.app/api/risk/model-info](https://cocare-zeta.vercel.app/api/risk/model-info)
-- 📋 **Screening Form Specification**: [https://cocare-zeta.vercel.app/api/risk/form-spec](https://cocare-zeta.vercel.app/api/risk/form-spec)
-- 🐙 **GitHub Repository**: [https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.](https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.)
-- ⚡ **Vercel Project Dashboard**: [https://vercel.com/ankitapriyadarshini-repos-projects/cocare](https://vercel.com/ankitapriyadarshini-repos-projects/cocare)
-
-### Architectural Constraints Handled
-1. **Read-Only / Ephemeral Filesystem**:
-   - Vercel's execution environment has a read-only root filesystem with a temporary `/tmp` partition.
-   - When running on Vercel (`VERCEL` environment variable detected), the backend automatically points SQLite to `/tmp/cocare.db`.
-   - **Important Note**: Game session logging in `/tmp` will reset across serverless cold starts. Vercel deployment is intended as a **live demo**. For actual longitudinal research and participant study data collection, run the local deployment (`start.bat`) or configure a persistent cloud database.
-2. **Serverless Bundle Size Limit (< 250 MB)**:
-   - Heavy offline data science packages (`shap`, `matplotlib`, `seaborn`, `imbalanced-learn`) are isolated in `ml/requirements.txt` and excluded from deployment.
-   - **Measured Vercel Footprint**: Project deployment source upload payload = **44.3 KB** (strictly enforced via .vercelignore); uncompressed runtime serverless Lambda dependency footprint (FastAPI, scikit-learn, pandas, joblib) was measured at **249.47 MB** during production build, optimized by uv to fit strictly within Vercel's 250.0 MB serverless ceiling.
-   - Model inference executes via dependency-free linear dot products and runtime feature occlusion in < 1.5 ms (local, warm).
-
-### Deployment Steps
-1. Push the repository to GitHub.
-2. Log into [Vercel](https://vercel.com) and click **Add New > Project**, then import your repository.
-3. Configure project settings:
-   - **Framework Preset**: Other (or Vite)
-   - **Root Directory**: `./` (project root)
-   - **Build Command**: `cd frontend && npm install && npm run build`
-   - **Output Directory**: `frontend/dist`
-4. Click **Deploy**. Vercel will build the frontend assets and deploy the serverless Python function at `api/index.py`.
-
-### Post-Deployment Smoke Test
-After deployment completes, verify the endpoints on your Vercel URL (`https://<your-project>.vercel.app`):
-- [ ] Visit `https://<your-project>.vercel.app/` - Confirms React frontend loads.
-- [ ] Visit `https://<your-project>.vercel.app/docs` - Confirms FastAPI Swagger documentation.
-- [ ] `GET https://<your-project>.vercel.app/api/risk/model-info` - Returns 200 with model metadata.
-- [ ] `GET https://<your-project>.vercel.app/api/risk/form-spec` - Returns 200 with screening form specification.
-- [ ] `POST https://<your-project>.vercel.app/api/risk/predict` with body:
-  ```json
-  {
-    "profile": { "Age": 74, "Sex": "M", "EDUC": 12, "SES": 3 },
-    "use_mmse": false
-  }
-  ```
-  Returns 200 with `probability`, `band`, and `explanation`.
-
----
-
-## Contributions
-
-- **CO CARE Core Team**: Conceptualized and implemented the primary CO CARE application, including the FastAPI backend (ackend/app), the React/Vite web frontend (rontend/src), culturally adapted cognitive game modules (Match the Pairs, Remember the Pictures, Find It), adaptive leveling logic (ackend/app/adaptive.py), and caregiver research instrumentation.
-- **Ankita (ML & Data Owner)**: Engineered **Part A (Machine Learning & Validation)**:
-  - Designed the end-to-end dataset-agnostic ML pipeline (ml/) and LASI-DAD config-driven mapping adapter.
-  - Conducted the longitudinal leakage audit (ml/docs/AUDIT.md), enforcing participant-grouped splits (GroupShuffleSplit / StratifiedGroupKFold) and zero-overlap cluster bootstrapping.
-  - Built model selection, probability calibration, and label permutation sanity verification.
-  - Implemented the stateless serverless inference API (ackend/app/risk.py), model export, and Vercel serverless integration (pi/index.py).
-  - Authored the publication-grade showcase visual system, figure manifest, and interactive documentation (docs/showcase/).
+### Licenses and Code Independence
+- **No code, weights, or visual assets were copied** from either repository. CO CARE's models, pipeline, APIs, and figures were engineered independently from scratch for tabular and cognitive screening.
+- **License Status of Referenced Repositories**:
+  - **[JacobW4/cnn-dementia-classification](https://github.com/JacobW4/cnn-dementia-classification)**: No standalone LICENSE file found in repository (`no license found`). README states under License: *"This project is for educational purposes. Dataset is subject to Kaggle's terms of use."*
+  - **[Albert-L-Phan/Dementia](https://github.com/Albert-L-Phan/Dementia)**: No license file found in repository (`no license found`).
+- **CO CARE License**: License to be decided by the project team.

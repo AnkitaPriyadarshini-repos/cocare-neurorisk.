@@ -42,7 +42,7 @@ def create_class_metrics_figure(theme: dict, mode: str) -> plt.Figure:
     bars2 = ax1.bar(x + width/2, vals_c1_w, width, yerr=[err_c1_w_low, err_c1_w_high], capsize=4,
                     color=theme["cyan"], label="Class 1: Cognitive Risk (N=21)", alpha=0.9, edgecolor=theme["border"])
     
-    ax1.set_title("Variant B: Cognitive-Augmented (With MMSE)\nOverall Accuracy: 79.2% | ROC-AUC: 0.929 [0.83, 1.00]", fontsize=12, fontweight="bold", pad=12)
+    ax1.set_title("Variant B: Cognitive-Augmented (With MMSE)\nOverall Accuracy: 79.2% | Specificity: 74.5% [61.1%, 87.5%]", fontsize=11.5, fontweight="bold", pad=12)
     ax1.set_xticks(x)
     ax1.set_xticklabels(metrics, fontsize=10.5, fontweight="bold")
     ax1.set_ylabel("Score (0.0 to 1.0)", fontsize=11)
@@ -52,6 +52,12 @@ def create_class_metrics_figure(theme: dict, mode: str) -> plt.Figure:
     for b in bars1 + bars2:
         h = b.get_height()
         ax1.text(b.get_x() + b.get_width()/2, h + 0.03, f"{h*100:.1f}%", ha="center", va="bottom", fontsize=8.5, fontweight="bold", color=theme["text"])
+
+    # Callout in subplot 1
+    ax1.text(0.5, 0.05, "With MMSE: High Specificity (74.5%) prevents false alarms",
+             ha="center", fontsize=9, fontweight="bold", color=theme["success"],
+             transform=ax1.transAxes,
+             bbox=dict(boxstyle="round,pad=0.3", fc=theme["card_bg"], ec=theme["success"], lw=0.9))
 
     # --- SUBPLOT 2: Model Without MMSE (Demographics Only) ---
     apply_axes_style(ax2, theme)
@@ -72,7 +78,7 @@ def create_class_metrics_figure(theme: dict, mode: str) -> plt.Figure:
     bars4 = ax2.bar(x + width/2, vals_c1_wo, width, yerr=[err_c1_wo_low, err_c1_wo_high], capsize=4,
                     color=theme["accent_secondary"], label="Class 1: Cognitive Risk (N=21)", alpha=0.9, edgecolor=theme["border"])
     
-    ax2.set_title("Variant A: Demographic Baseline (Without MMSE)\nOverall Accuracy: 51.4% | ROC-AUC: 0.676 [0.44, 0.87]", fontsize=12, fontweight="bold", pad=12)
+    ax2.set_title("Variant A: Demographic Baseline (Without MMSE)\nOverall Accuracy: 51.4% | Specificity: 35.3% [14.8%, 57.7%]", fontsize=11.5, fontweight="bold", pad=12)
     ax2.set_xticks(x)
     ax2.set_xticklabels(metrics, fontsize=10.5, fontweight="bold")
     ax2.set_ylabel("Score (0.0 to 1.0)", fontsize=11)
@@ -82,6 +88,12 @@ def create_class_metrics_figure(theme: dict, mode: str) -> plt.Figure:
     for b in bars3 + bars4:
         h = b.get_height()
         ax2.text(b.get_x() + b.get_width()/2, h + 0.03, f"{h*100:.1f}%", ha="center", va="bottom", fontsize=8.5, fontweight="bold", color=theme["text"])
+
+    # Callout in subplot 2
+    ax2.text(0.5, 0.05, "Without MMSE: High Sensitivity (90.0%), Low Specificity (~35%)",
+             ha="center", fontsize=9, fontweight="bold", color=theme["accent_secondary"],
+             transform=ax2.transAxes,
+             bbox=dict(boxstyle="round,pad=0.3", fc=theme["card_bg"], ec=theme["accent_secondary"], lw=0.9))
 
     add_figure_footer(
         fig, theme,

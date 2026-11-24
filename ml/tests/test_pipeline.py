@@ -29,9 +29,11 @@ class TestMLPipeline(unittest.TestCase):
             load_lasi_dad("ml/data/nonexistent_file.csv")
 
         # Test loud failure on column mismatch
-        with self.assertRaises(ValueError) as context:
-            load_lasi_dad("ml/data/oasis_longitudinal.csv", allow_placeholders=True)
-        self.assertIn("LASI-DAD Schema Validation Error", str(context.exception))
+        oasis_path = "ml/data/oasis_longitudinal.csv"
+        if os.path.exists(oasis_path):
+            with self.assertRaises(ValueError) as context:
+                load_lasi_dad(oasis_path, allow_placeholders=True)
+            self.assertIn("LASI-DAD Schema Validation Error", str(context.exception))
 
         # Test synthetic dataset ingestion
         synthetic_path = os.path.join("ml", "data", "lasi_dad_synthetic.csv")
@@ -97,6 +99,8 @@ class TestMLPipeline(unittest.TestCase):
     def test_participant_grouping_zero_overlap(self):
         """Audit test: Verify zero participant ID overlap between train and test splits."""
         data_path = os.path.join("ml", "data", "oasis_longitudinal.csv")
+        if not os.path.exists(data_path):
+            self.skipTest("Raw participant-level OASIS dataset omitted from repo for data privacy.")
         X_raw, y_raw, groups = load_oasis(data_path)
         X_clean, _ = clean_raw_data(X_raw)
 
@@ -111,6 +115,8 @@ class TestMLPipeline(unittest.TestCase):
     def test_preprocessing_fit_on_train_only(self):
         """Audit test: Prove imputer and scaler statistics equal train split alone."""
         data_path = os.path.join("ml", "data", "oasis_longitudinal.csv")
+        if not os.path.exists(data_path):
+            self.skipTest("Raw participant-level OASIS dataset omitted from repo for data privacy.")
         X_raw, y_raw, groups = load_oasis(data_path)
         X_clean, _ = clean_raw_data(X_raw)
 
@@ -138,6 +144,8 @@ class TestMLPipeline(unittest.TestCase):
     def test_label_permutation_sanity_check(self):
         """Sanity check: Label-shuffled CV ROC-AUC must collapse to near random chance (~0.50)."""
         data_path = os.path.join("ml", "data", "oasis_longitudinal.csv")
+        if not os.path.exists(data_path):
+            self.skipTest("Raw participant-level OASIS dataset omitted from repo for data privacy.")
         X_raw, y_raw, groups = load_oasis(data_path)
         X_clean, _ = clean_raw_data(X_raw)
 
@@ -153,6 +161,27 @@ class TestMLPipeline(unittest.TestCase):
         scores = cross_validate(pipe, X_clean, y_shuffled, groups=groups, cv=cv, scoring=["roc_auc"])
         mean_auc = float(np.mean(scores["test_roc_auc"]))
         self.assertTrue(0.40 <= mean_auc <= 0.60, f"Permutation AUC unexpected: {mean_auc}")
+
+    def test_mmse_monotonicity(self):
+        """Monotonicity test: For fixed Age, Sex, EDUC, SES, predicted risk must be non-increasing as MMSE rises 10 to 30."""
+        reference_profiles = [
+            {"Age": 75, "Sex": "F", "EDUC": 14, "SES": 2.0},
+            {"Age": 68, "Sex": "M", "EDUC": 16, "SES": 1.0},
+            {"Age": 82, "Sex": "F", "EDUC": 8, "SES": 4.0},
+        ]
+        for ref in reference_profiles:
+            risks = []
+            for mmse in range(10, 31):
+                p = ref.copy()
+                p["MMSE"] = float(mmse)
+                res = predict_risk(p, use_mmse=True, models_dir="backend/models" if os.path.exists("backend/models/model_with_mmse.joblib") else "ml/artifacts")
+                risks.append(res["probability"])
+            for i in range(len(risks) - 1):
+                self.assertGreaterEqual(
+                    risks[i],
+                    risks[i + 1],
+                    f"Monotonicity violation for profile {ref} at MMSE={10+i} ({risks[i]}) -> MMSE={11+i} ({risks[i+1]})"
+                )
 
     def test_all_features_have_localization_texts(self):
         """Verify that every feature has stable text_keys in English and Odia with review flags."""
@@ -174,6 +203,43 @@ class TestMLPipeline(unittest.TestCase):
         profile = {"Age": 70, "Sex": "F", "EDUC": 12}
         res = predict_risk(profile, use_mmse=False, models_dir="ml/artifacts")
         self.assertTrue(0.0 <= res["probability"] <= 1.0)
+        self.assertIn("score_note", res)
+        self.assertIn("calibrated to OASIS sample prevalence", res["score_note"])
+
+    def test_model_load_and_metadata_integrity(self):
+        """Verify model weights and metadata load properly and contain required keys in CI."""
+        models_dir = "backend/models" if os.path.exists("backend/models/model_with_mmse.joblib") else "ml/artifacts"
+        for variant in ["model_with_mmse", "model_without_mmse"]:
+            model, meta = load_model_and_metadata(variant, models_dir=models_dir)
+            self.assertIsNotNone(model)
+            self.assertIn("threshold", meta)
+            self.assertIn("reference_medians", meta)
+            self.assertIn("risk_bands", meta)
+            self.assertIn("features", meta)
+
+    def test_explanation_direction_matches_effect(self):
+        """Verify that for BOTH variants the explanation direction matches the mathematical sign of feature effects."""
+        models_dir = "backend/models" if os.path.exists("backend/models/model_with_mmse.joblib") else "ml/artifacts"
+        
+        # Test Profiles: Low cognitive / higher risk vs preserved cognitive / lower risk
+        p_high = {"Age": 85, "Sex": "M", "EDUC": 6, "SES": 4, "MMSE": 18}
+        p_low = {"Age": 62, "Sex": "F", "EDUC": 18, "SES": 1, "MMSE": 30}
+        
+        for use_mmse in [True, False]:
+            variant = "model_with_mmse" if use_mmse else "model_without_mmse"
+            pipe, meta = load_model_and_metadata(variant, models_dir=models_dir)
+            ref_medians = meta.get("reference_medians", {})
+            features = meta["features"]["all_ordered"]
+            
+            for profile in [p_high, p_low]:
+                exps = explain_one(profile, pipe, ref_medians, features)
+                for exp in exps:
+                    effect = exp["effect"]
+                    en_text = exp["text_en"]
+                    if effect == "raises":
+                        self.assertIn("raises predicted score relative to typical training-data values", en_text)
+                    elif effect == "lowers":
+                        self.assertIn("lowers predicted score relative to typical training-data values", en_text)
 
 
 if __name__ == "__main__":
