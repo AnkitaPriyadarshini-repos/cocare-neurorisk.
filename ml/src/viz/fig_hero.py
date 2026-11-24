@@ -38,7 +38,7 @@ def generate_hero_banner(theme, mode="light"):
         ("Scikit-Learn", "1.6.1", theme["cyan"]),
         ("FastAPI", "Serverless", theme["purple"]),
         ("Vercel", "Production Live", theme["accent_secondary"]),
-        ("License", "MIT", theme["baseline"]),
+        ("License", "TBD by Team", theme["baseline"]),
     ]
     
     bx_start = 0.05
@@ -97,19 +97,19 @@ def generate_hero_banner(theme, mode="light"):
         },
         {
             "tag": "WITHOUT MMSE: OPERATING POINT",
-            "headline": f"{test_data['model_without_mmse']['metrics']['sensitivity']*100:.1f}%",
-            "unit": f"[{test_data['model_without_mmse']['bootstrap_95_ci_2000']['sensitivity']['ci_lower']*100:.0f}% - {test_data['model_without_mmse']['bootstrap_95_ci_2000']['sensitivity']['ci_upper']*100:.0f}% Sens]",
-            "sub": f"Spec: {test_data['model_without_mmse']['metrics']['specificity']*100:.1f}% [{test_data['model_without_mmse']['bootstrap_95_ci_2000']['specificity']['ci_lower']*100:.0f}%-{test_data['model_without_mmse']['bootstrap_95_ci_2000']['specificity']['ci_upper']*100:.0f}%] | Thresh: 0.3301",
+            "headline": f"{test_data['model_without_mmse']['metrics']['specificity']*100:.1f}%",
+            "unit": f"Specificity (at {test_data['model_without_mmse']['metrics']['sensitivity']*100:.1f}% Sens)",
+            "sub": f"Spec 95% CI: [{test_data['model_without_mmse']['bootstrap_95_ci_2000']['specificity']['ci_lower']*100:.0f}%-{test_data['model_without_mmse']['bootstrap_95_ci_2000']['specificity']['ci_upper']*100:.0f}%] | Thresh: 0.3301",
             "color": theme["accent_secondary"],
-            "desc": "High sensitivity triage at cost of false alarms"
+            "desc": "High sensitivity triage, low specificity (~35%)"
         },
         {
             "tag": "WITH MMSE: OPERATING POINT",
-            "headline": f"{test_sens_w:.1f}%",
-            "unit": f"[{test_sens_ci['ci_lower']*100:.0f}% - {test_sens_ci['ci_upper']*100:.0f}% Sens]",
-            "sub": f"Spec: {test_spec_w:.1f}% [{test_spec_ci['ci_lower']*100:.0f}%-{test_spec_ci['ci_upper']*100:.0f}%] | NPV: 95.0%",
+            "headline": f"{test_spec_w:.1f}%",
+            "unit": f"Specificity (at {test_sens_w:.1f}% Sens)",
+            "sub": f"Spec 95% CI: [{test_spec_ci['ci_lower']*100:.0f}%-{test_spec_ci['ci_upper']*100:.0f}%] | NPV: 95.0%",
             "color": theme["success"],
-            "desc": "High sensitivity (90.5%) + low false positives"
+            "desc": "Adding MMSE lifts specificity from ~35% to 75%"
         }
     ]
     

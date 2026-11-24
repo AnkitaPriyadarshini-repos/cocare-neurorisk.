@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 1000" width="700" height="1000" style="background:#fdf8f0; font-family:'Noto Sans Oriya', 'Kalinga', 'Segoe UI', system-ui, sans-serif;">
+  <!-- Header -->
+  <g transform="translate(30, 30)">
+    <text x="0" y="28" font-size="26" font-weight="bold" fill="#1d1d1b">📈 ମୋର ପ୍ରଗତି (My Progress)</text>
+    <rect x="520" y="0" width="120" height="42" rx="10" fill="#ffffff" stroke="#d8cfc2" stroke-width="2"/>
+    <text x="580" y="26" text-anchor="middle" font-size="16" fill="#1d1d1b">← ମୂଳ ପୃଷ୍ଠା</text>
+  </g>
+
+  <!-- Caregiver Overview Card -->
+  <g transform="translate(30, 90)">
+    <rect x="0" y="0" width="640" height="175" rx="18" fill="#ffffff" stroke="#d8cfc2" stroke-width="3" filter="drop-shadow(0 3px 10px rgba(0,0,0,0.04))"/>
+    <text x="28" y="38" font-size="19" font-weight="bold" fill="#b4471b">👨‍👩‍👦 ଯତ୍ନକାରୀ ଓ ପରିବାର ସାରାଂଶ (Caregiver Overview)</text>
+
+    <!-- Stat 1 -->
+    <rect x="28" y="58" width="180" height="95" rx="12" fill="#faf8f5" stroke="#d8cfc2" stroke-width="1.5"/>
+    <text x="118" y="88" text-anchor="middle" font-size="14" fill="#5a5650">ସମୁଦାୟ ଖେଳ</text>
+    <text x="118" y="132" text-anchor="middle" font-size="34" font-weight="800" fill="#1d1d1b">18</text>
+
+    <!-- Stat 2 -->
+    <rect x="230" y="58" width="180" height="95" rx="12" fill="#faf8f5" stroke="#d8cfc2" stroke-width="1.5"/>
+    <text x="320" y="88" text-anchor="middle" font-size="14" fill="#5a5650">ହାରାହାରି ସଠିକତା</text>
+    <text x="320" y="132" text-anchor="middle" font-size="34" font-weight="800" fill="#1d1d1b">84%</text>
+
+    <!-- Stat 3 -->
+    <rect x="432" y="58" width="180" height="95" rx="12" fill="#faf8f5" stroke="#d8cfc2" stroke-width="1.5"/>
+    <text x="522" y="88" text-anchor="middle" font-size="14" fill="#5a5650">ଶେଷ ସ୍ୱାସ୍ଥ୍ୟ ଯାଞ୍ଚ</text>
+    <rect x="457" y="102" width="130" height="36" rx="8" fill="#e8f5e9" stroke="#a5d6a7"/>
+    <text x="522" y="126" text-anchor="middle" font-size="15" font-weight="bold" fill="#1b5e20">🛡️ Lower</text>
+  </g>
+
+  <!-- ProgressChart (Inline SVG Card) -->
+  <g transform="translate(30, 285)">
+    <rect x="0" y="0" width="640" height="280" rx="18" fill="#ffffff" stroke="#d8cfc2" stroke-width="2"/>
+    <text x="28" y="36" font-size="19" font-weight="bold" fill="#1d1d1b">📈 ଖେଳର ସଠିକତା ଧାରା (Game Accuracy % Trend)</text>
+    <text x="612" y="36" text-anchor="end" font-size="14" fill="#5a5650">8 sessions</text>
+
+    <!-- Chart Grid -->
+    <g transform="translate(45, 55)">
+      <!-- Grid lines -->
+      <line x1="40" y1="30" x2="540" y2="30" stroke="#e0d7cb" stroke-dasharray="4 4"/>
+      <text x="30" y="35" text-anchor="end" font-size="13" fill="#777">100%</text>
+      <line x1="40" y1="75" x2="540" y2="75" stroke="#e0d7cb" stroke-dasharray="4 4"/>
+      <text x="30" y="80" text-anchor="end" font-size="13" fill="#777">75%</text>
+      <line x1="40" y1="120" x2="540" y2="120" stroke="#e0d7cb" stroke-dasharray="4 4"/>
+      <text x="30" y="125" text-anchor="end" font-size="13" fill="#777">50%</text>
+      <line x1="40" y1="165" x2="540" y2="165" stroke="#e0d7cb" stroke-width="2"/>
+      <text x="30" y="170" text-anchor="end" font-size="13" fill="#777">0%</text>
+
+      <!-- Shaded area -->
+      <polygon points="60,95 125,85 190,65 255,75 320,50 385,40 450,45 515,35 515,165 60,165" fill="#b4471b" fill-opacity="0.12"/>
+
+      <!-- Spline line -->
+      <polyline points="60,95 125,85 190,65 255,75 320,50 385,40 450,45 515,35" fill="none" stroke="#b4471b" stroke-width="4" stroke-linecap="round"/>
+
+      <!-- Dots & Values -->
+      <!-- Dot 1 -->
+      <circle cx="60" cy="95" r="6" fill="#ffffff" stroke="#b4471b" stroke-width="3"/>
+      <text x="60" y="82" text-anchor="middle" font-size="12" font-weight="bold">60%</text>
+      <text x="60" y="185" text-anchor="middle" font-size="12" fill="#777">#1</text>
+      <!-- Dot 4 -->
+      <circle cx="255" cy="75" r="6" fill="#ffffff" stroke="#b4471b" stroke-width="3"/>
+      <text x="255" y="62" text-anchor="middle" font-size="12" font-weight="bold">75%</text>
+      <text x="255" y="185" text-anchor="middle" font-size="12" fill="#777">#4</text>
+      <!-- Dot 8 -->
+      <circle cx="515" cy="35" r="6" fill="#ffffff" stroke="#b4471b" stroke-width="3"/>
+      <text x="515" y="22" text-anchor="middle" font-size="12" font-weight="bold">95%</text>
+      <text x="515" y="185" text-anchor="middle" font-size="12" fill="#777">#8</text>
+    </g>
+  </g>
+
+  <!-- Opt-in Screening History Table -->
+  <g transform="translate(30, 585)">
+    <rect x="0" y="0" width="640" height="230" rx="18" fill="#ffffff" stroke="#d8cfc2" stroke-width="2"/>
+    <text x="28" y="38" font-size="18" font-weight="bold" fill="#1d1d1b">📋 ସଞ୍ଚିତ ସ୍ୱାସ୍ଥ୍ୟ ଯାଞ୍ଚ ରେକର୍ଡ (Saved Screening History)</text>
+    <text x="612" y="38" text-anchor="end" font-size="14" fill="#c62828">🗑️ ଡାଟା ଲିଭାନ୍ତୁ</text>
+
+    <!-- Table header -->
+    <rect x="25" y="55" width="590" height="38" rx="8" fill="#faf8f5"/>
+    <text x="45" y="80" font-size="14" font-weight="bold" fill="#5a5650">ତାରିଖ (Date)</text>
+    <text x="180" y="80" font-size="14" font-weight="bold" fill="#5a5650">ସ୍କୋର (Score)</text>
+    <text x="320" y="80" font-size="14" font-weight="bold" fill="#5a5650">ସ୍ତର (Risk Band)</text>
+    <text x="490" y="80" font-size="14" font-weight="bold" fill="#5a5650">ମଡେଲ (Model)</text>
+
+    <!-- Row 1 -->
+    <line x1="25" y1="135" x2="615" y2="135" stroke="#eee" stroke-width="1"/>
+    <text x="45" y="118" font-size="15" fill="#1d1d1b">2026-11-24</text>
+    <text x="180" y="118" font-size="15" font-weight="bold" fill="#1d1d1b">0.285</text>
+    <text x="320" y="118" font-size="15" fill="#1b5e20">🛡️ Lower</text>
+    <text x="490" y="118" font-size="14" fill="#5a5650">Demographics Only</text>
+
+    <!-- Row 2 -->
+    <text x="45" y="168" font-size="15" fill="#1d1d1b">2026-11-18</text>
+    <text x="180" y="168" font-size="15" font-weight="bold" fill="#1d1d1b">0.142</text>
+    <text x="320" y="168" font-size="15" fill="#1b5e20">🛡️ Lower</text>
+    <text x="490" y="168" font-size="14" fill="#5a5650">With MMSE (29/30)</text>
+  </g>
+
+  <!-- Big Risk Check Button -->
+  <g transform="translate(30, 840)">
+    <rect x="0" y="0" width="640" height="74" rx="16" fill="#b4471b"/>
+    <text x="320" y="45" text-anchor="middle" font-size="20" font-weight="bold" fill="#ffffff">🩺 ନୂତନ ସ୍ୱାସ୍ଥ୍ୟ ଯାଞ୍ଚ କରନ୍ତୁ (Start Risk Check)</text>
+  </g>
+</svg>

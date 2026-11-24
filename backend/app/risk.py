@@ -251,6 +251,7 @@ def predict_cognitive_risk(body: PredictIn):
 
     return {
         "probability": round(prob, 4),
+        "score_note": "Model score calibrated to OASIS sample prevalence (48.5%). Not a population probability without local prevalence adjustment.",
         "band": band,
         "threshold": round(threshold, 4),
         "model_variant": variant,

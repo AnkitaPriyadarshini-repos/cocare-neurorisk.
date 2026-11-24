@@ -4,6 +4,10 @@ import FindIt from './games/FindIt'
 import MemoryMatch from './games/MemoryMatch'
 import PictureRecall from './games/PictureRecall'
 import { t } from './i18n'
+import { isRiskCheckEnabled } from './riskApi'
+import MyProgress from './screens/MyProgress'
+import RiskCheckResult from './screens/RiskCheckResult'
+import RiskCheckWizard from './screens/RiskCheckWizard'
 import { History, Home, Result, Settings } from './screens/Screens'
 import Welcome from './screens/Welcome'
 
@@ -14,6 +18,7 @@ export default function App() {
   const [screen, setScreen] = useState('welcome')
   const [session, setSession] = useState(null)
   const [result, setResult] = useState(null)
+  const [riskData, setRiskData] = useState(null)
   const [error, setError] = useState('')
   const pending = useRef(Promise.resolve()) // keeps attempt logging in order
 
@@ -66,6 +71,39 @@ export default function App() {
         onHistory={() => setScreen('history')}
         onSettings={() => setScreen('settings')}
         onSwitch={() => { setUser(null); setScreen('welcome') }}
+        onRiskCheck={() => setScreen('risk_check')}
+        onProgress={() => setScreen('progress')}
+      />
+    )
+  else if (screen === 'risk_check' && isRiskCheckEnabled())
+    body = (
+      <RiskCheckWizard
+        user={user}
+        onComplete={(res, prof, mmse) => {
+          setRiskData({ result: res, profile: prof, useMmse: mmse })
+          setScreen('risk_result')
+        }}
+        onCancel={() => setScreen('home')}
+      />
+    )
+  else if (screen === 'risk_result' && isRiskCheckEnabled())
+    body = (
+      <RiskCheckResult
+        user={user}
+        result={riskData?.result}
+        profile={riskData?.profile}
+        useMmse={riskData?.useMmse}
+        onRetake={() => setScreen('risk_check')}
+        onViewProgress={() => setScreen('progress')}
+        onHome={() => setScreen('home')}
+      />
+    )
+  else if (screen === 'progress' && isRiskCheckEnabled())
+    body = (
+      <MyProgress
+        user={user}
+        onRiskCheck={() => setScreen('risk_check')}
+        onBack={() => setScreen('home')}
       />
     )
   else if (screen === 'play') {

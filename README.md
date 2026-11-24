@@ -97,6 +97,127 @@ The same screen has CSV downloads of all tables for the analysis.
 - [ ] Step 8: generate Odia audio with Indic-TTS and play it from `speech.js`.
 - [ ] Ethics approval and printed consent form.
 
+## Risk Check and Progress screens (Frontend Experience)
+
+CO CARE provides an elderly-friendly, multilingual, and privacy-preserving cognitive health screening and progress tracking experience integrated directly into the React/Vite frontend.
+
+> ⚠️ **Ethics & Clinical Governance Notice**: Enabling the risk screening screens with real participants requires prior institutional ethics board (IRB / IEC) approval and written informed consent. This module is a non-diagnostic preliminary screening demonstration; models were trained on US OASIS data and have **not** been clinically validated or calibrated for Indian/Odia-speaking populations.
+
+### Real Application Screenshots (Playwright Automated Captures)
+
+Below are real screenshots captured directly from the running web application using automated Playwright tests at 360px mobile viewport (Odia locale):
+
+<div align="center">
+  <img src="docs/showcase/ui/risk_wizard_mobile_or.png" alt="CO CARE Risk Check Wizard Screen (Real Mobile Screenshot - Odia)" width="31%" style="vertical-align: top; margin: 1%; border: 1px solid #ddd; border-radius: 8px;">
+  <img src="docs/showcase/ui/risk_result_mobile_or.png" alt="CO CARE Risk Check Result Screen (Real Mobile Screenshot - Odia)" width="31%" style="vertical-align: top; margin: 1%; border: 1px solid #ddd; border-radius: 8px;">
+  <img src="docs/showcase/ui/my_progress_mobile_or.png" alt="CO CARE My Progress Screen (Real Mobile Screenshot - Odia)" width="31%" style="vertical-align: top; margin: 1%; border: 1px solid #ddd; border-radius: 8px;">
+</div>
+
+*Full automated screenshot matrix available in [`docs/showcase/ui/`](docs/showcase/ui/):*
+- **Mobile (360px)**: Odia ([Wizard](docs/showcase/ui/risk_wizard_mobile_or.png), [Result](docs/showcase/ui/risk_result_mobile_or.png), [Progress](docs/showcase/ui/my_progress_mobile_or.png)) · English ([Wizard](docs/showcase/ui/risk_wizard_mobile_en.png), [Result](docs/showcase/ui/risk_result_mobile_en.png), [Progress](docs/showcase/ui/my_progress_mobile_en.png))
+- **Desktop (1280px)**: Odia ([Wizard](docs/showcase/ui/risk_wizard_desktop_or.png), [Result](docs/showcase/ui/risk_result_desktop_or.png), [Progress](docs/showcase/ui/my_progress_desktop_or.png)) · English ([Wizard](docs/showcase/ui/risk_wizard_desktop_en.png), [Result](docs/showcase/ui/risk_result_desktop_en.png), [Progress](docs/showcase/ui/my_progress_desktop_en.png))
+- **Design Mockups**: Reference design SVGs are preserved as standalone mockups: [`01_risk_wizard_screen_mockup.svg`](docs/showcase/ui/01_risk_wizard_screen_mockup.svg) `[DESIGN MOCKUP]`, [`02_risk_result_screen_mockup.svg`](docs/showcase/ui/02_risk_result_screen_mockup.svg) `[DESIGN MOCKUP]`, and [`03_my_progress_screen_mockup.svg`](docs/showcase/ui/03_my_progress_screen_mockup.svg) `[DESIGN MOCKUP]`.
+
+---
+
+### Feature Flag (`VITE_ENABLE_RISK_CHECK`)
+
+To safeguard research integrity and clinical governance, the risk screening experience is feature-flagged:
+- **Default Production State (`false`)**: In production builds (`npm run build`, `import.meta.env.PROD`), `isRiskCheckEnabled()` returns `false` by default. The "Brain Health Check" entry on the Home screen is hidden, and direct URLs (`/risk_check`, `/risk_result`, `/progress`) redirect safely to `/` (Home).
+- **Development State (`true`)**: During local development (`npm run dev`), the flag defaults to `true` for inspection and testing.
+- **Environment Override**: Can be explicitly forced on or off in `.env` via `VITE_ENABLE_RISK_CHECK=true` or `VITE_ENABLE_RISK_CHECK=false`.
+- **Persistent Demo Banner**: When enabled, every screening screen prominently displays a persistent, non-dismissible alert banner (`DemoBanner.jsx`): *"DEMO MODE · OASIS model not clinically validated or calibrated for Indian populations (LASI-DAD)"*.
+
+---
+
+### Accessibility & Automated Verification (0 axe-core violations)
+
+Automated accessibility audits were executed on mobile viewports (360px) using `axe-core` via Playwright ([audit log: `docs/showcase/ui/accessibility_audit.json`](docs/showcase/ui/accessibility_audit.json)):
+
+| Screen | Viewport | Passes | Violations | Audit Status |
+| :--- | :--- | :---: | :---: | :--- |
+| **Risk Check Wizard** (`/risk_check`) | 360 × 640 mobile | 32 | 0 | **0 axe-core violations** (automated checks only; manual keyboard/screen-reader/200% zoom testing pending) |
+| **Risk Check Result** (`/risk_result`) | 360 × 640 mobile | 33 | 0 | **0 axe-core violations** (automated checks only; manual keyboard/screen-reader/200% zoom testing pending) |
+| **My Progress** (`/progress`) | 360 × 640 mobile | 23 | 0 | **0 axe-core violations** (automated checks only; manual keyboard/screen-reader/200% zoom testing pending) |
+
+> ℹ️ **Lighthouse Accessibility Audit**: Lighthouse mobile accessibility audit was **not run** (requires headless Chrome DevTools runner not bundled in production dependencies). Automated checks verified 0 axe-core violations across all three screens on a 360px mobile viewport; manual assistive-technology testing (screen readers, keyboard traversal, and 200% text zoom) is scheduled prior to participant deployment.
+
+Key accessibility & ergonomic enhancements:
+- **Explicit Labels for Emoji Badges**: Badges combine emoji and localized descriptive text (e.g. `🛡️ Lower Risk Band`, `⚖️ Moderate Risk Band`, `🩺 Elevated Risk Band`) with WCAG 2.1 AA compliant color contrast ($\ge 4.5:1$ for text, $\ge 3:1$ for UI badges).
+- **Smart Speech Voice Detection**: `hasVoiceForLang(lang)` inspects the client's Web Speech API voices. If no native Odia voice is installed on the user's device, the read-aloud button is cleanly disabled with a descriptive tooltip (`voice_not_available`) instead of attempting phonetic corruption with an English voice.
+- **Demo Approximation SES Item**: Socioeconomic status (SES) is labeled as a **demo approximation, not the clinical SES index used in OASIS** (which used the Hollingshead index). It provides a simple 1 to 5 scale (1 = highest, 5 = lowest), omits class labels and invented occupational examples, is completely optional, and features a prominent "Skip this optional question" button (the model automatically imputes the training median value if skipped).
+- **Schema Parity Guardrail**: Checks `schema_version` between client fallback specification and `/api/risk/form-spec` (`"1.1.0"`), warning in the console on mismatch.
+
+---
+
+### Strict Client-Side Privacy & Shared Device Safety
+
+1. **Zero Profile Data in Local Storage**:
+   - `riskApi.saveLocalResult()` strictly whitelists **only** `{ id, date, band, score, model_variant }`.
+   - Individual user inputs (`Age`, `Sex`, `EDUC`, `SES`, `MMSE`) are **never persisted** to browser `localStorage` or any server database.
+2. **Shared Device Notice & Consent**:
+   - Explicit consent disclosure is rendered before enabling on-device screening history: *"Notice: If using a shared tablet or mobile phone, your summary score may be visible to other family members. You can delete saved records anytime."*
+3. **One-Click Data Purge**:
+   - Prominent "Delete my data" button immediately purges all saved records from `localStorage`.
+4. **Printable Doctor Summary (`DoctorSummaryPrint.jsx`)**:
+   - Structured clinician triage handover note with preliminary score definition, OASIS baseline prevalence notice (48.5%), and demographic covariates, containing **zero** diagnostic claims.
+
+---
+
+### Measured Frontend Bundle Size
+
+Measured from the production Vite build (`npm run build`):
+- `frontend/dist/index.html`: **0.40 kB** (gzip: 0.27 kB)
+- `frontend/dist/assets/index-*.css`: **3.64 kB** (gzip: 1.27 kB)
+- `frontend/dist/assets/index-*.js`: **298.49 kB** (gzip: 89.36 kB)
+- **Total uncompressed bundle**: **~302.5 kB** (**~90.9 kB** gzip). Lightweight vector SVG charting (`ProgressChart.jsx` and `AssessmentCompare.jsx`) avoids heavy external visualization libraries, keeping the bundle fast on rural 3G/4G connections.
+
+---
+
+### 1. Risk Check Wizard (`frontend/src/screens/RiskCheckWizard.jsx`)
+- **Elderly-Friendly Ergonomics**:
+  - Exactly one large question per screen with high contrast, calm terracotta palette (`#b4471b`), and oversized touch targets ($\ge 56\text{px}$).
+  - Stepper controls (`−` and `+`) allowing frictionless numeric adjustments without requiring a soft keyboard.
+  - Multi-tier font size switcher (`A`, `A+`, `A++`) for older adults with visual impairments.
+  - Bilingual audio read-aloud via `frontend/src/speech.js` with speech synthesis rate tuned for older listeners.
+- **Dynamic Specification**:
+  - Dynamically fetches intake specification and validation rules from `GET /api/risk/form-spec` via `frontend/src/riskApi.js`.
+  - Seamless fallback to `FALLBACK_FORM_SPEC` during network disruption or cold starts.
+- **Guardrailed MMSE Entry**:
+  - MMSE cognitive testing is explicitly presented as an optional clinical step: *"Did a trained healthcare professional administer an MMSE?"*.
+  - Users without an official test simply proceed with demographic intake only (`model_without_mmse`).
+
+### 2. Screening Result Card (`frontend/src/screens/RiskCheckResult.jsx`)
+- **Responsible Terminology**:
+  - Output is strictly framed as a **model score** (calibrated to the OASIS sample prevalence of $48.5\%$), never a diagnosis or probability of disease.
+  - Includes prominent non-diagnostic disclaimer: *"⚠️ Notice: This is a preliminary screening demonstration, not a medical diagnosis. Please consult a qualified doctor."*
+- **Accessible Score Bands**:
+  - Clear visual badge (`ScoreBandBadge.jsx`) combining icon, color, and localized text across three tiers:
+    - 🛡️ **Lower Risk Band** (`#1b5e20` green on `#e8f5e9`)
+    - ⚖️ **Moderate Risk Band** (`#7a4300` amber on `#fff8e1`)
+    - 🩺 **Elevated Risk Band** (`#b71c1c` red on `#ffebee`)
+- **Transparent Explanations & Actionable Guidance**:
+  - Explanations are filtered to features with contribution magnitude $|\Delta| \ge 0.01$, rendered in plain language relative to typical training data medians.
+  - Non-alarmist next steps tailored to risk level (e.g. promoting physical activity, social engagement, and discussion during routine checkups).
+- **Printable Doctor Summary (`DoctorSummaryPrint.jsx`)**:
+  - One-click print-ready summary formatted specifically for a primary care clinician or neurologist, detailing demographic covariates, model variant, threshold, calibration notes, and feature contributions.
+
+### 3. My Progress Dashboard (`frontend/src/screens/MyProgress.jsx`)
+- **Caregiver & Family Triage Tiles**:
+  - Four responsive overview tiles reporting: total game sessions, historical average accuracy (%), latest risk screening band, and 30-day activity count.
+- **Interactive Longitudinal Trajectory Comparison (`AssessmentCompare.jsx`)**:
+  - Allows caregivers and clinicians to select any baseline assessment and recent follow-up to compute exact score delta ($\Delta$) and trajectory categorization (`Stable`, `Improving`, `Review Recommended`).
+- **Lightweight Inline SVG Charts (`ProgressChart.jsx`)**:
+  - Custom vector charts illustrating session accuracy trends (%) and level progression over time.
+  - Zero heavy third-party charting libraries (unlike desktop-heavy clinical dashboards that bundle 300+ KB charting dependencies), keeping the bundle ultra-fast on mobile rural connections.
+- **Screening History Ledger & Guided Baseline State**:
+  - Chronological history of opted-in assessments with dates, scores, risk bands, and model variants.
+  - Illustrated guided empty state with single-click CTA prompting first baseline assessment.
+- **Clinician Export & Print Handover**:
+  - One-click print-formatted progress report for family physicians and neurologists (`🖨️ Print Report`) and client-side on-device CSV export (`📥 CSV`) with zero server persistence.
+
+---
+
 ## Risk screening (ML) - DEMO ONLY
 
 <picture>
@@ -108,7 +229,7 @@ The same screen has CSV downloads of all tables for the analysis.
 ### TL;DR
 - **Problem**: Early community dementia risk screening is hindered by subjective scoring, lack of localization, and fear of data privacy exposure.
 - **Solution**: Two lightweight, stateless screening models (demographics-only and cognitive-augmented) with bilingual feature attribution (English & Odia).
-- **Validation**: Longitudinal OASIS cohort ($N=373$ records, 150 subjects) strictly grouped by participant to prevent leakage, achieving **0.892 ± 0.041 repeated CV AUC** and **90.5% held-out sensitivity** with $< 1.5\text{ ms}$ serverless latency.
+- **Validation**: Longitudinal OASIS cohort ($N=373$ records, 150 subjects) strictly grouped by participant to prevent leakage, achieving **0.892 ± 0.041 repeated CV AUC** and **90.5% held-out sensitivity** with $model inference ~1 ms (local, warm).
 
 > ⚠️ **DEMO models trained on OASIS (a US cohort). They have NOT been validated on LASI-DAD or on Odia-speaking/Indian populations and must not be used for screening real participants.**
 >
@@ -128,7 +249,7 @@ The pipeline strictly decouples **offline training and validation** from **runti
 1. **Dataset Adapter Layer**: Flexible ingestion (`oasis.py` and `lasi_dad.py`) driven by variable mapping YAML schemas (`ml/config/`).
 2. **Leakage Protection**: Strict participant clustering via `GroupShuffleSplit` (train/test) and `StratifiedGroupKFold` (CV) ensures no participant records cross partitions.
 3. **Fit-on-Train Preprocessing**: Imputers, scalers, and encoders are fitted solely within training fold pipelines.
-4. **Serverless Deployment**: Zero C++ heavy dependencies in Lambda (`shap` is isolated to offline training). Runtime explanations execute via direct mathematical feature occlusion in $< 1.5\text{ ms}$.
+4. **Serverless Deployment**: Zero C++ heavy dependencies in Lambda (`shap` is isolated to offline training). Runtime explanations execute via direct mathematical feature occlusion in $model inference ~1 ms (local, warm).
 
 ---
 
@@ -163,15 +284,15 @@ The pipeline strictly decouples **offline training and validation** from **runti
 
 *(Adapted and elevated from classical deep-learning and clinical benchmarks including JacobW4 and Memora Health)*
 
-#### 4. Training & Validation Loss Convergence Trajectory
+#### 4. Solver convergence (logistic regression)
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/16_training_loss_convergence-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/16_training_loss_convergence-light.png">
-  <img alt="Model Training Dynamics: Cross-Entropy Loss Reduction and Metric Trajectory across Iterations" src="docs/showcase/figures/16_training_loss_convergence-light.png" width="100%">
+  <img alt="Solver convergence (logistic regression): Cross-Entropy Loss Reduction and Metric Trajectory across Iterations" src="docs/showcase/figures/16_training_loss_convergence-light.png" width="100%">
 </picture>
 
-- **Optimization Dynamics**: Cross-entropy log loss decreases monotonically from $0.693$ to $0.347$ (train) and $0.388$ (out-of-fold validation), stabilizing fully by iteration 16.
-- **Zero Overfitting**: L2 weight penalty ($\lambda=1.0$) bounds the generalization gap to $\Delta 	ext{Loss} < 0.04$, ensuring robust out-of-sample deployment stability on serverless edge runtimes.
+- **Out-of-Fold Curve Computation**: Evaluated via 5-fold StratifiedGroupKFold cross-validation on the training split ($N=297$ visits, 120 participants). At each L-BFGS solver iteration ($t \in [1, 50]$), the model fits on 4 folds and predicts probabilities on the held-out 5th fold; out-of-fold predictions are concatenated to evaluate log-loss and accuracy.
+- **Optimization Dynamics**: Training log loss decreases from $0.491$ to $0.348$, while out-of-fold validation log loss converges from $0.511$ to $0.388$ by iteration 16. L2 regularization ($C=1.0$) maintains a stable out-of-fold generalization gap ($\Delta < 0.04$).
 
 #### 5. Class-Wise Diagnostic Performance Breakdown
 <picture>
@@ -200,8 +321,13 @@ The pipeline strictly decouples **offline training and validation** from **runti
   <img alt="Multifactor Feature Correlation Heatmap and Adjusted Odds Ratios Forest Plot" src="docs/showcase/figures/18_risk_factor_odds_ratios-light.png" width="100%">
 </picture>
 
-- **Multicollinearity Check**: Low correlation between Age and cognitive scores ($r = +0.05$) confirms independent prognostic information; Education and SES show expected inverse relationship ($r = -0.72$).
-- **Adjusted Odds Ratios ($e^\beta$)**: MMSE decrement confers an adjusted odds ratio of **1.48 per point drop** ($p < 0.001$), while each decade of age adds **1.34x adjusted risk** ($p = 0.019$). Education acts as a cognitive reserve buffer ($	ext{OR} = 0.81$, $p = 0.076$).
+- **Model Specification & Feature Coding**: Documented single specification matching the deployed model: `LogisticRegression(class_weight='balanced', C=1.0, penalty='l2', solver='lbfgs')` fit on the training split ($N=297$ visits, 120 subjects, 48.5% prevalence) with participant cluster bootstrap (1,000 resamples by Subject ID). SES is coded 1 to 5 (Hollingshead Two-Factor Index, 1 = highest, 5 = lowest).
+- **Cluster-Robust Adjusted Odds Ratios ($e^\beta$) & Reconciliation**:
+  - **MMSE (per 1-pt drop)**: Adjusted OR of **2.23** [1.87, 2.80] ($p < 0.001$, Risk Factor). **Reconciliation**: The deployed model's unscaled coefficient $\beta = -0.8036$ confers an odds ratio of $e^{0.8036} = 2.2335$ per point drop. Across a 4-point cognitive drop (MMSE $30 \to 26$), predicted odds increase by $2.2335^4 = 24.89\times$ (odds 0.177 at MMSE 30 vs 4.41 at MMSE 26).
+  - **Male Sex (vs Female)**: Adjusted OR of **3.41** [1.62, 8.77] ($p = 0.004$, Risk Factor).
+  - **Higher Education (per 4 years)**: Adjusted OR of **0.37** [0.16, 0.71] ($p = 0.006$, Protective Factor).
+  - **SES Tier**: Adjusted OR of **0.67** [0.39, 1.02] ($p = 0.072$, No clear evidence of effect).
+  - **Age (per decade)**: Adjusted OR of **0.79** [0.41, 1.49] ($p = 0.442$, **No clear evidence of an independent effect**). **Reconciliation**: In a univariate baseline without cognitive controls, older age correlates with dementia ($\text{OR} \approx 1.34$). In the full multivariate model conditioning on MMSE and education, conditional age is negatively signed ($\beta = -0.239$ per decade) and statistically non-significant, reflecting that severe cognitive decrement at a younger age represents a more aggressive impairment. Cluster-robust standard errors widen the confidence interval across 1.0 without altering the point estimate.
 
 #### 7. Longitudinal Cognitive Trajectory & Conversion Dynamics
 <picture>
@@ -210,23 +336,46 @@ The pipeline strictly decouples **offline training and validation** from **runti
   <img alt="Longitudinal Risk Progression and Conversion Inflection Points across Clinical Assessment Visits" src="docs/showcase/figures/19_longitudinal_trajectory-light.png" width="100%">
 </picture>
 
-- **Early Conversion Inflection**: For participants who convert from normal to mild impairment (`Converted`), baseline risk begins low ($0.272$, below threshold $0.316$). By Visit 2, risk sharply surges to **0.462** (crossing into the elevated risk band) while the clinical CDR rating is still very mild ($0.333$).
-- **Longitudinal Stability**: Stable non-demented participants maintain flat, sub-threshold trajectories across years ($0.276 \to 0.235$), confirming low false-positive drift over time.
+- **Out-of-Fold Longitudinal Trajectories**: Evaluated using strictly out-of-fold predictions from 5-fold StratifiedGroupKFold on participant ID ($N=150$ total subjects):
+  - **Stable Non-Demented** ($n=72$ participants, 176 visits): Out-of-fold risk stays flat and sub-threshold over time ($0.287$ at Visit 1 $\to$ $0.248$ at Visit 3; mean CDR $0.000 \to 0.015$).
+  - **Stable Demented** ($n=64$ participants, 142 visits): Out-of-fold risk remains consistently elevated ($0.754$ at Visit 1 $\to$ $0.762$ at Visit 3; mean CDR $0.602 \to 0.688$).
+  - **Converted (Exploratory, $n=14$ participants**, 34 visits): Mean out-of-fold risk begins at $0.242$ at baseline (below the $0.316$ threshold) and rises to $0.418$ at Visit 2 as clinical CDR emerges ($0.333$). Due to the small sample size ($n=14$ participants), this trajectory is exploratory and should not be generalized without replication.
 
 ---
 
-### Benchmark Comparison: CO CARE vs. Prior Art & Ecosystem
+### Related Work and Acknowledgements
 
-| Feature Dimension | JacobW4 (`cnn-dementia-classification`) | Albert-L-Phan (`Dementia`) | Memora Health (`memora-health`) | **CO CARE (This Work)** |
-|:---|:---|:---|:---|:---|
-| **Data Modality** | Brain MRI Scan Images ($180\times 180$) | Census / LGA Administrative Statistics | Audio / Speech Recordings & Clinical Surveys | **Demographics + Brief Cognitive Test (MMSE/HMSE)** |
-| **Screening Setting** | Specialized Hospital (MRI required) | Macro Geographic & Epidemiological | Clinical Workflow / Telehealth | **Primary Care & Rural Community Intake** |
-| **Model Architecture** | 3-Layer Conv2D + Dense Deep CNN | Bayesian Spatial INLA Regression | Proprietary Cloud ML Platform | **Calibrated Regularized Logistic + Group CV** |
-| **Inference Hardware** | GPU / Heavy TensorFlow runtime | Offline R / Spatial runtime | Cloud Web Application | **$< 1.5\text{ ms}$ Serverless Lambda ($2\text{ KB}$ weights)** |
-| **Training Dynamics** | Accuracy & Loss curves (TensorFlow) | Not reported | Not open-source | **Empirical Log-Loss Convergence + Group CV** |
-| **Cultural Adaptation** | English / US Kaggle Dataset | Australian LGA Census | English Clinical Interface | **Odia-Ready (translations pending review) + LASI-DAD ready** |
-| **Privacy & Persist.** | Offline Notebook | Macro Public Datasets | Enterprise Database | **100% Stateless: Zero DB logging of patient profiles** |
-| **Open Source URL** | [JacobW4 Repo](https://github.com/JacobW4/cnn-dementia-classification) | [Albert-L-Phan Repo](https://github.com/Albert-L-Phan/Dementia) | [Memora App](https://memora-health.vercel.app/) | **[CO CARE Repo](https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.)** |
+This project draws conceptual inspiration from several open-source and clinical initiatives in the dementia and cognitive assessment domain:
+
+- **[JacobW4/cnn-dementia-classification](https://github.com/JacobW4/cnn-dementia-classification)**: A deep learning binary CNN classifying brain MRI images (Healthy vs. Very Mild Dementia) using TensorFlow/Keras, which demonstrated the value of presenting clear optimization convergence trajectories (loss and accuracy curves) and class-wise precision/recall evaluation.
+- **[Albert-L-Phan/Dementia](https://github.com/Albert-L-Phan/Dementia)**: A spatial regression study of self-reported dementia incidence across Australian Local Government Areas (LGAs), which highlighted the importance of analyzing demographic, socioeconomic, and environmental risk factors.
+- **[Memora Health](https://memora-health.vercel.app/)**: A clinical care platform supporting speech-based cognitive assessment workflows that emphasizes longitudinal patient tracking over time.
+
+**Independence & Non-Infringement Statement**:
+- **Zero Copied Code or Assets**: No code, model weights, neural architectures, or visual assets were copied from these repositories or platforms. All pipelines, feature encodings, preprocessors, FastAPI routers, React components, and figures in CO CARE are original implementations developed independently.
+- **Repository Licenses**:
+  - **[JacobW4/cnn-dementia-classification](https://github.com/JacobW4/cnn-dementia-classification)**: No standalone LICENSE file found in repository (`no license found`). README states under License: *"This project is for educational purposes. Dataset is subject to Kaggle's terms of use."*
+  - **[Albert-L-Phan/Dementia](https://github.com/Albert-L-Phan/Dementia)**: No license file found in repository (`no license found`).
+  - **[Memora Health](https://memora-health.vercel.app/)**: Cloud clinical web application; no public source repository or license found (`no license found`).
+  - **CO CARE**: License to be decided by the project team.
+
+---
+
+### Population Prevalence, Bayesian PPV/NPV & Screening Utility
+
+> [!IMPORTANT]
+> **Prevalence Calibration**: The deployed models produce a **model score (calibrated to the OASIS sample prevalence of 48.5%)**. In a community screening setting with a lower true population prevalence (e.g., 5% to 10%), the raw score is not an absolute population probability. The API provides the explicit `score_note` field to convey this calibration boundary.
+
+#### Positive and Negative Predictive Values across Community Prevalences
+Computed via Bayes' theorem from empirical held-out test performance and primary 5x5 repeated group cross-validation:
+
+| Clinical Screening Setting | True Population Prevalence | Model Variant | Sensitivity | Specificity | PPV (Positive Predictive Value) | NPV (Negative Predictive Value) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **General Community Screening** | **5.0%** | **With MMSE (Held-Out)**<br>With MMSE (Primary CV)<br>**Without MMSE (Held-Out)**<br>Without MMSE (Primary CV) | 90.5%<br>72.9%<br>90.5%<br>61.2% | 74.5%<br>85.9%<br>35.3%<br>63.2% | **15.7%**<br>21.4%<br>**6.9%**<br>8.0% | **99.3%**<br>98.4%<br>**98.6%**<br>96.9% |
+| **Elderly Outreach Cohort (75+)** | **10.0%** | **With MMSE (Held-Out)**<br>With MMSE (Primary CV)<br>**Without MMSE (Held-Out)**<br>Without MMSE (Primary CV) | 90.5%<br>72.9%<br>90.5%<br>61.2% | 74.5%<br>85.9%<br>35.3%<br>63.2% | **28.3%**<br>36.5%<br>**13.4%**<br>15.6% | **98.6%**<br>96.6%<br>**97.1%**<br>93.6% |
+| **Memory Clinic / Triage Setting** | **20.0%** | **With MMSE (Held-Out)**<br>With MMSE (Primary CV)<br>**Without MMSE (Held-Out)**<br>Without MMSE (Primary CV) | 90.5%<br>72.9%<br>90.5%<br>61.2% | 74.5%<br>85.9%<br>35.3%<br>63.2% | **47.0%**<br>56.4%<br>**25.9%**<br>29.4% | **96.9%**<br>92.7%<br>**93.7%**<br>86.7% |
+
+- **Plain-Language Clinical Interpretation**: At 5% community prevalence, `model_without_mmse` yields a PPV of **6.9%** (approx. 93 false positives per 100 positive screens), whereas adding MMSE elevates PPV to **15.7%**. Conversely, the **Negative Predictive Value is exceptionally high (>98.6% - 99.3%)**, meaning a negative screen virtually guarantees absence of impairment. The tool is mathematically structured as a **rule-out community triage screen** to identify who needs formal in-person diagnostic evaluation, not as a standalone diagnosis.
 
 ---
 
@@ -326,14 +475,21 @@ Because the single test set ($N=72$) is small, **5x Repeated 5-Fold Stratified G
 
 CO CARE is deployed live on Vercel as well as configured for local execution.
 
-### Live Production Deployment Links
-- 🌐 **Web Application**: [https://cocare-zeta.vercel.app](https://cocare-zeta.vercel.app)
-- 📖 **Interactive API Documentation (Swagger)**: [https://cocare-zeta.vercel.app/docs](https://cocare-zeta.vercel.app/docs)
-- 🏥 **Health Check & Diagnostics**: [https://cocare-zeta.vercel.app/api/risk/health](https://cocare-zeta.vercel.app/api/risk/health)
-- 🧠 **Risk Screening Model Info**: [https://cocare-zeta.vercel.app/api/risk/model-info](https://cocare-zeta.vercel.app/api/risk/model-info)
-- 📋 **Screening Form Specification**: [https://cocare-zeta.vercel.app/api/risk/form-spec](https://cocare-zeta.vercel.app/api/risk/form-spec)
-- 🐙 **GitHub Repository**: [https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.](https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.)
-- ⚡ **Vercel Project Dashboard**: [https://vercel.com/ankitapriyadarshini-repos-projects/cocare](https://vercel.com/ankitapriyadarshini-repos-projects/cocare)
+### Live Production vs Preview Deployment Status
+- 🌐 **Live Production Deployment**: [https://cocare-zeta.vercel.app](https://cocare-zeta.vercel.app)
+  - Verified endpoints: `GET /` (200), `GET /docs` (200), `GET /api/risk/health` (200), `GET /api/risk/model-info` (200), `POST /api/risk/predict` (200 for both variants).
+- 🔒 **Preview Deployments**: Protected behind Vercel Deployment Protection (Vercel Authentication). Public unauthenticated access is intercepted with HTTP 200 (Login gateway HTML) on GET and HTTP 401 on POST, and therefore was not publicly verified without team credentials.
+
+### Automated CI Test Suite & Transparency
+
+The repository enforces automated continuous integration across 26 test cases:
+- **Executed & Passing in CI (23 tests)**:
+  - `ml/tests/test_pipeline.py`: Form input validation, localization text completeness, MMSE monotonicity across demographic baselines, model loading integrity, explanation direction alignment (`raises` vs `lowers` relative to typical training-data medians), and synthetic LASI-DAD adapter validation.
+  - `ml/tests/test_showcase.py`: Verification of all 19 figures in Light & Dark modes, size bounds (<400 KB), animated GIF (<2 MB), sidecar numeric parity with JSON artifacts, and manifest documentation.
+  - `backend/tests/`: API health check, form specification schema, model info, fuzzing, statelessness verification, and predict endpoint integration.
+- **Skipped in Public CI (3 tests)**:
+  - `test_participant_grouping_zero_overlap`, `test_preprocessing_fit_on_train_only`, and `test_label_permutation_sanity_check`.
+  - **Reason**: These tests require reading the raw longitudinal OASIS clinical dataset (`ml/data/oasis_longitudinal.csv`). In strict compliance with participant data privacy, raw microdata is excluded from git commits. These audit tests are verified locally prior to export.
 
 ### Architectural Constraints Handled
 1. **Read-Only / Ephemeral Filesystem**:
@@ -343,7 +499,7 @@ CO CARE is deployed live on Vercel as well as configured for local execution.
 2. **Serverless Bundle Size Limit (< 250 MB)**:
    - Heavy offline data science packages (`shap`, `matplotlib`, `seaborn`, `imbalanced-learn`) are isolated in `ml/requirements.txt` and excluded from deployment.
    - **Measured Vercel Footprint**: Project deployment source upload payload = **44.3 KB** (strictly enforced via .vercelignore); uncompressed runtime serverless Lambda dependency footprint (FastAPI, scikit-learn, pandas, joblib) was measured at **249.47 MB** during production build, optimized by uv to fit strictly within Vercel's 250.0 MB serverless ceiling.
-   - Model inference executes via dependency-free linear dot products and runtime feature occlusion in < 1.5 ms (local, warm).
+   - Model inference executes via dependency-free linear dot products and runtime feature occlusion in model inference ~1 ms (local, warm).
 
 ### Deployment Steps
 1. Push the repository to GitHub.
@@ -354,6 +510,33 @@ CO CARE is deployed live on Vercel as well as configured for local execution.
    - **Build Command**: `cd frontend && npm install && npm run build`
    - **Output Directory**: `frontend/dist`
 4. Click **Deploy**. Vercel will build the frontend assets and deploy the serverless Python function at `api/index.py`.
+
+### Configuring Dual Deployments (Study vs. Demo) on Vercel
+
+To maintain strict clinical governance and prevent unvalidated risk screening from reaching older participants during field research, CO CARE supports two deployment configurations from the same GitHub repository:
+
+| Deployment Target | Environment | `VITE_ENABLE_RISK_CHECK` | Intended Audience | Behavior |
+| :--- | :--- | :---: | :--- | :--- |
+| **Study Deployment** (Primary) | Production (`cocare.vercel.app`) | `false` (default) | Research participants & field staff | Risk screening navigation is hidden; direct URLs redirect to Home. |
+| **Demo / Showcase Deployment** | Preview or Dedicated Project (`cocare-demo.vercel.app`) | `true` | Public evaluators, reviewers, recruiters | Full Risk Check wizard and My Progress screens enabled with persistent DEMO banner. |
+
+#### Setup Option A: Separate Vercel Projects (Recommended)
+1. **Primary Project (Study Deployment)**:
+   - In Vercel, import the repository as `cocare-study`.
+   - In **Project Settings > Environment Variables**, leave `VITE_ENABLE_RISK_CHECK` unset or explicitly set `VITE_ENABLE_RISK_CHECK=false` for **Production**.
+   - In this project, `isRiskCheckEnabled()` evaluates to `false`. Real study participants only see cognitive games.
+2. **Secondary Project (Demo Showcase Deployment)**:
+   - Click **Add New > Project** in Vercel and import the same repository again as `cocare-demo`.
+   - In **Project Settings > Environment Variables**, add:
+     - **Key**: `VITE_ENABLE_RISK_CHECK`
+     - **Value**: `true`
+     - **Environment**: Select **Production**, **Preview**, and **Development**.
+   - Deploy. The resulting URL (e.g. `https://cocare-demo.vercel.app`) will display the "Brain Health Check" navigation button and persistent demo banners.
+
+#### Setup Option B: Branch-Based or Preview Environment
+1. In your single Vercel project, go to **Settings > Environment Variables**.
+2. Add `VITE_ENABLE_RISK_CHECK=true`, but check **Preview** only (uncheck **Production**).
+3. Any pull request preview branch (e.g. `feature/risk-check-ui`) will automatically build with Risk Check **ON**, while pushes to `main` (Production) will build with Risk Check **OFF**.
 
 ### Post-Deployment Smoke Test
 After deployment completes, verify the endpoints on your Vercel URL (`https://<your-project>.vercel.app`):

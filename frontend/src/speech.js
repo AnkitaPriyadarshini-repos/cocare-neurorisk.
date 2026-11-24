@@ -1,26 +1,32 @@
 // Read text aloud.
-// Step 8 of the plan replaces this with pre-generated Indic-TTS audio files
-// (public/audio/<lang>/<key>.mp3). Until then we use the browser's built-in voices.
-// Many computers have no Odia voice, so if none is found we read the English text
-// instead of letting an English voice mispronounce Odia script.
+// Step 8 of the plan replaces this with pre-generated Indic-TTS audio files.
+// Detects available voices. If no native voice exists for the target language (e.g. Odia),
+// do NOT fall back to reading with another language's voice.
 
-function findVoice(lang) {
-  const voices = window.speechSynthesis?.getVoices() ?? []
-  return voices.find((v) => v.lang?.toLowerCase().startsWith(lang))
+export function findVoice(lang) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return null
+  const voices = window.speechSynthesis.getVoices() ?? []
+  return voices.find((v) => v.lang?.toLowerCase().startsWith(lang)) ?? null
+}
+
+export function hasVoiceForLang(lang) {
+  return Boolean(findVoice(lang))
 }
 
 export function speak(texts, lang) {
-  if (!window.speechSynthesis) return
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
   window.speechSynthesis.cancel()
-  let useLang = lang
-  let voice = findVoice(lang === 'or' ? 'or' : 'en')
-  if (!voice && lang === 'or') {
-    useLang = 'en'
-    voice = findVoice('en')
-  }
-  const u = new SpeechSynthesisUtterance(texts[useLang] ?? texts.en)
-  if (voice) u.voice = voice
-  u.lang = useLang === 'or' ? 'or-IN' : 'en-IN'
+
+  const voice = findVoice(lang)
+  // If no voice for target language, do not read with an alien voice
+  if (!voice) return
+
+  const textToRead = texts[lang] ?? texts.en
+  if (!textToRead) return
+
+  const u = new SpeechSynthesisUtterance(textToRead)
+  u.voice = voice
+  u.lang = lang === 'or' ? 'or-IN' : 'en-IN'
   u.rate = 0.85 // slower for elderly listeners
   window.speechSynthesis.speak(u)
 }

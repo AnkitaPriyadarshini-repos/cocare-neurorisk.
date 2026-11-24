@@ -2,7 +2,7 @@
 // for any key that is missing in Odia.
 // NOTE: Odia text must be checked by a native speaker before the user study.
 
-const STRINGS = {
+export const STRINGS = {
   en: {
     app_title: 'CO CARE',
     tagline: 'Games to keep the mind active',
@@ -52,6 +52,105 @@ const STRINGS = {
     listen: 'Listen',
     get_ready: 'Get ready…',
     error_server: 'Cannot reach the server. Is the backend running?',
+
+    // Risk Check & Progress navigation
+    risk_check: 'Brain Health Check',
+    risk_check_desc: 'Gentle, 3-minute screening questionnaire',
+    my_progress: 'My Progress',
+    my_progress_desc: 'Game trends and saved assessments',
+
+    // Risk Wizard
+    wizard_title: 'Health Risk Check',
+    step: 'Step',
+    of: 'of',
+    read_question: 'Listen',
+    next: 'Next',
+    skip: 'Skip this step',
+    submit_check: 'Check My Score',
+    optional_badge: 'Optional',
+    font_size: 'Text size',
+    font_normal: 'Standard',
+    font_large: 'Large',
+    font_xlarge: 'Extra Large',
+    mmse_step_title: 'Mental State Exam (MMSE)',
+    mmse_step_desc: 'Optional cognitive test score (0-30). Provide ONLY if administered by a trained healthcare professional.',
+    mmse_has_score: 'A doctor or nurse gave me an MMSE score',
+    mmse_no_score: 'No / Not tested (Skip to Next)',
+    val_age_req: 'Please enter your age between 40 and 120.',
+    val_sex_req: 'Please select biological sex.',
+    val_educ_req: 'Please enter completed years of education (0 to 30).',
+    val_ses_req: 'Please select a socioeconomic tier (1 to 5) or skip this question.',
+    val_mmse_range: 'MMSE score must be between 0 and 30.',
+    ses_plain_desc: 'Optional (1 = highest, 5 = lowest). Demo approximation, not the clinical SES index used in OASIS. If skipped, the model imputes typical training median.',
+    ses_tier_1: 'Tier 1 (Highest status in demo scale)',
+    ses_tier_2: 'Tier 2',
+    ses_tier_3: 'Tier 3',
+    ses_tier_4: 'Tier 4',
+    ses_tier_5: 'Tier 5 (Lowest status in demo scale)',
+    skip_ses: 'Skip this optional question',
+    demo_banner_title: 'DEMO MODE',
+    demo_banner_desc: 'OASIS model not clinically validated or calibrated for Indian populations (LASI-DAD).',
+    voice_not_available: 'Voice reading not available for this language on this device.',
+    shared_device_consent: 'Notice for shared devices: If family members share this device, anyone opening this app can view past dates and risk scores. You can delete saved records at any time.',
+    female: 'Female',
+    male: 'Male',
+
+    // Results & Guidance
+    result_title: 'Your Assessment Summary',
+    model_score_label: 'Model Score (calibrated to OASIS prevalence of 48.5%)',
+    band_lower: 'Lower Risk Band',
+    band_moderate: 'Moderate Risk Band',
+    band_higher: 'Elevated Risk Band',
+    what_to_do_next: 'Recommended Next Steps',
+    guidance_lower: 'Great! Continue playing brain health games, keep up physical activities like walking, and stay socially active with family and friends.',
+    guidance_moderate: 'Good effort! Share this with your family doctor during your next visit. Eating balanced meals, staying hydrated, and regular walks can support brain vitality.',
+    guidance_higher: 'We advise scheduling a comfortable check-in with your doctor or community health worker to review overall wellness, nutrition, and medications.',
+    print_doctor_summary: '📄 Summary to show your doctor',
+    doctor_summary_title: 'CO CARE Brain Health Screening Summary',
+    doctor_summary_note: 'You can print or show this screen to your healthcare provider.',
+    not_a_diagnosis: 'Important: This is a preliminary screening demonstration and NOT a clinical diagnosis. Only a qualified medical professional can diagnose cognitive conditions.',
+    demo_status_badge: 'OASIS Research Demo · Not validated for clinical diagnosis in Indian populations',
+    explanations_title: 'Key Factors Influencing This Score',
+    save_to_device: 'Save this result on this device',
+    save_to_device_desc: 'Stored only in your private browser storage. Never sent to any server.',
+    saved_locally: '✓ Saved on this device',
+    delete_my_data: 'Delete my saved screening history',
+    data_deleted: 'All saved screening checks deleted from this device.',
+
+    // My Progress
+    my_progress_title: 'My Progress & Health Overview',
+    game_history_chart: 'Game Accuracy Over Time (%)',
+    level_progression_chart: 'Game Levels Over Time',
+    caregiver_summary_title: 'Caregiver & Family Summary',
+    caregiver_sessions_stat: 'Game sessions completed',
+    caregiver_avg_acc: 'Average game accuracy',
+    caregiver_last_check: 'Latest brain check score',
+    no_game_history: 'No game sessions logged yet. Play games to track your progress!',
+    no_screening_history: 'No screening assessments saved yet. Complete a Brain Health Check to track trends.',
+    screening_records_title: 'Saved Health Checks (On-Device)',
+    date: 'Date',
+    score: 'Score',
+    band: 'Band',
+    variant: 'Model',
+    active_30_days: 'Activity in last 30 days',
+    cognitive_trajectory: 'Screening trajectory',
+    trajectory_stable: 'Stable',
+    trajectory_improving: 'Improving (Lower Risk)',
+    trajectory_review: 'Review Recommended',
+    compare_assessments: 'Compare Past Assessments',
+    comparison_title: 'Longitudinal Assessment Trajectory',
+    baseline: 'Baseline Check',
+    latest: 'Recent Check',
+    score_change: 'Score Change (Δ)',
+    status_stable: 'Stable across visits',
+    status_improving: 'Lower risk observed',
+    status_elevated: 'Elevated score observed',
+    empty_screening_title: 'No Screening Records Yet',
+    empty_screening_desc: 'Complete your first 3-minute Brain Health Check to establish your baseline score. Your data stays 100% private on this device.',
+    start_first_check: 'Start Your First Check',
+    print_progress_report: 'Print Clinician Progress Report',
+    export_csv: 'Export History (CSV)',
+    clinical_notes: 'Clinical Handover Notes',
   },
   or: {
     app_title: 'କୋ-କେୟାର',
@@ -92,16 +191,128 @@ const STRINGS = {
     switch_player: 'ଖେଳାଳି ବଦଳାନ୍ତୁ',
     listen: 'ଶୁଣନ୍ତୁ',
     get_ready: 'ପ୍ରସ୍ତୁତ ହୁଅନ୍ତୁ…',
+
+    // Risk Check & Progress navigation
+    risk_check: 'ସ୍ୱାସ୍ଥ୍ୟ ଯାଞ୍ଚ [needs native review]',
+    risk_check_desc: 'ସହଜ ୩-ମିନିଟ ପ୍ରଶ୍ନାବଳୀ [needs native review]',
+    my_progress: 'ମୋର ପ୍ରଗତି [needs native review]',
+    my_progress_desc: 'ଖେଳ ସ୍କୋର ଓ ଯାଞ୍ଚ ଇତିହାସ [needs native review]',
+
+    // Risk Wizard
+    wizard_title: 'ସ୍ୱାସ୍ଥ୍ୟ ଯାଞ୍ଚ [needs native review]',
+    step: 'ପଦକ୍ଷେପ [needs native review]',
+    of: 'ରୁ [needs native review]',
+    read_question: 'ଶୁଣନ୍ତୁ',
+    next: 'ଆଗକୁ [needs native review]',
+    skip: 'ଛାଡ଼ିଦିଅନ୍ତୁ [needs native review]',
+    submit_check: 'ଫଳାଫଳ ଦେଖନ୍ତୁ [needs native review]',
+    optional_badge: 'ଇଚ୍ଛାଧୀନ [needs native review]',
+    font_size: 'ଅକ୍ଷର ଆକାର [needs native review]',
+    font_normal: 'ସାଧାରଣ [needs native review]',
+    font_large: 'ବଡ଼ [needs native review]',
+    font_xlarge: 'ଅତି ବଡ଼ [needs native review]',
+    mmse_step_title: 'ମାନସିକ ସ୍ଥିତି ପରୀକ୍ଷା (MMSE) [needs native review]',
+    mmse_step_desc: 'କେବଳ ତାଲିମପ୍ରାପ୍ତ ସ୍ୱାସ୍ଥ୍ୟକର୍ମୀ ପରୀକ୍ଷା କରିଥିଲେ ଏହି ସ୍କୋର ଦିଅନ୍ତୁ। [needs native review]',
+    mmse_has_score: 'ମୋ ପାଖରେ ଡାକ୍ତରୀ MMSE ସ୍କୋର ଅଛି [needs native review]',
+    mmse_no_score: 'ନାହିଁ / ପରୀକ୍ଷା ହୋଇନାହିଁ [needs native review]',
+    val_age_req: 'ଦୟାକରି ଆପଣଙ୍କ ବୟସ ୪୦ ରୁ ୧୨୦ ମଧ୍ୟରେ ଲେଖନ୍ତୁ। [needs native review]',
+    val_sex_req: 'ଦୟାକରି ଜୈବିକ ଲିଙ୍ଗ ବାଛନ୍ତୁ। [needs native review]',
+    val_educ_req: 'ଦୟାକରି ଶିକ୍ଷା ବର୍ଷ (୦-୩୦) ଲେଖନ୍ତୁ। [needs native review]',
+    val_ses_req: 'ଦୟାକରି ସାମାଜିକ ସ୍ତର ବାଛନ୍ତୁ କିମ୍ବା ଛାଡ଼ନ୍ତୁ। [needs native review]',
+    val_mmse_range: 'MMSE ସ୍କୋର ୦ ରୁ ୩୦ ମଧ୍ୟରେ ହେବା ଉଚିତ। [needs native review]',
+    ses_plain_desc: 'ଇଚ୍ଛାଧୀନ (୧ = ସର୍ବୋଚ୍ଚ, ୫ = ସର୍ବନିମ୍ନ)। ଡେମୋ ଅନୁମାନ, OASIS କ୍ଲିନିକାଲ SES ସୂଚକାଙ୍କ ନୁହେଁ। ଏହାକୁ ଛାଡ଼ି ପାରିବେ। [needs native review]',
+    ses_tier_1: 'ସ୍ତର ୧ (ସର୍ବୋଚ୍ଚ) [needs native review]',
+    ses_tier_2: 'ସ୍ତର ୨ [needs native review]',
+    ses_tier_3: 'ସ୍ତର ୩ [needs native review]',
+    ses_tier_4: 'ସ୍ତର ୪ [needs native review]',
+    ses_tier_5: 'ସ୍ତର ୫ (ସର୍ବନିମ୍ନ) [needs native review]',
+    skip_ses: 'ଏହି ପ୍ରଶ୍ନ ଛାଡ଼ନ୍ତୁ [needs native review]',
+    demo_banner_title: 'ଡେମୋ ମୋଡ୍ [needs native review]',
+    demo_banner_desc: 'OASIS ମଡେଲ ଭାରତୀୟ ଜନସଂଖ୍ୟା (LASI-DAD) ପାଇଁ ପରୀକ୍ଷିତ ନୁହେଁ। [needs native review]',
+    voice_not_available: 'ଏହି ଡିଭାଇସରେ ଏହି ଭାଷାର ଭଏସ ଉପଲବ୍ଧ ନାହିଁ। [needs native review]',
+    shared_device_consent: 'ଅଂଶୀଦାର ଫୋନ ପାଇଁ ସୂଚନା: ଯଦି ଆପଣ ଏହି ଫୋନ ପରିବାର କିମ୍ବା ସାଙ୍ଗମାନଙ୍କ ସହିତ ବ୍ୟବହାର କରନ୍ତି, ଯେକୌଣସି ବ୍ୟକ୍ତି ଆପଣଙ୍କ ପୂର୍ବ ସ୍କୋର ଓ ସ୍ତର ଦେଖିପାରିବେ। ଆପଣ ଯେକୌଣସି ସମୟରେ ତଥ୍ୟ ଲିଭାଇ ପାରିବେ। [needs native review]',
+    female: 'ମହିଳା [needs native review]',
+    male: 'ପୁରୁଷ [needs native review]',
+
+    // Results & Guidance
+    result_title: 'ଆପଣଙ୍କ ସ୍କ୍ରିନିଂ ସାରାଂଶ [needs native review]',
+    model_score_label: 'ମଡେଲ ସ୍କୋର (OASIS ତଥ୍ୟ ଆଧାରିତ) [needs native review]',
+    band_lower: 'ନିମ୍ନ ସତର୍କତା ସ୍ତର [needs native review]',
+    band_moderate: 'ମଧ୍ୟମ ସତର୍କତା ସ୍ତର [needs native review]',
+    band_higher: 'ଉଚ୍ଚ ସତର୍କତା ସ୍ତର [needs native review]',
+    what_to_do_next: 'ପରବର୍ତ୍ତୀ ପଦକ୍ଷେପ [needs native review]',
+    guidance_lower: 'ବହୁତ ଭଲ! ନିୟମିତ ମନୋରଞ୍ଜକ ଖେଳ ଖେଳନ୍ତୁ, ସାଙ୍ଗସାଥୀଙ୍କ ସହ ସମୟ ବିତାନ୍ତୁ ଏବଂ ଶାରୀରିକ ବ୍ୟାୟାମ ଜାରି ରଖନ୍ତୁ। [needs native review]',
+    guidance_moderate: 'ଭଲ ଚେଷ୍ଟା! ପରବର୍ତ୍ତୀ ଡାକ୍ତରୀ ପରାମର୍ଶ ସମୟରେ ଏହା ଜଣାନ୍ତୁ। ସୁଷମ ଖାଦ୍ୟ ଓ ନିୟମିତ ଚାଲିବା ମନକୁ ସୁସ୍ଥ ରଖେ। [needs native review]',
+    guidance_higher: 'ସାଧାରଣ ସ୍ୱାସ୍ଥ୍ୟ ଏବଂ ଜୀବନଶୈଳୀ ସମ୍ପର୍କରେ ଜଣେ ଡାକ୍ତରଙ୍କ ସହ ପରାମର୍ଶ କରିବାକୁ ପରାମର୍ଶ ଦିଆଯାଉଛି। [needs native review]',
+    print_doctor_summary: '📄 ଡାକ୍ତରଙ୍କ ପାଇଁ ସାରାଂଶ [needs native review]',
+    doctor_summary_title: 'କୋ-କେୟାର ସ୍ୱାସ୍ଥ୍ୟ ସ୍କ୍ରିନିଂ ସାରାଂଶ [needs native review]',
+    doctor_summary_note: 'ଆପଣ ଏହାକୁ ଆପଣଙ୍କ ଡାକ୍ତରଙ୍କୁ ଦେଖାଇପାରିବେ। [needs native review]',
+    not_a_diagnosis: 'ସୂଚନା: ଏହା କେବଳ ଏକ ପ୍ରାଥମିକ ସ୍କ୍ରିନିଂ, କୌଣସି ଡାକ୍ତରୀ ରୋଗ ନିର୍ଣ୍ଣୟ ନୁହେଁ। କେବଳ ଡାକ୍ତର ହିଁ ରୋଗ ନିର୍ଣ୍ଣୟ କରିପାରିବେ। [needs native review]',
+    demo_status_badge: 'OASIS ଗବେଷଣା ଡେମୋ · ଭାରତୀୟ ଜନସଂଖ୍ୟା ପାଇଁ ପରୀକ୍ଷିତ ନୁହେଁ [needs native review]',
+    explanations_title: 'ସ୍କୋର ଉପରେ କାରକଗୁଡ଼ିକର ପ୍ରଭାବ [needs native review]',
+    save_to_device: 'ଫଳାଫଳକୁ ଏହି ଫୋନରେ ରଖନ୍ତୁ [needs native review]',
+    save_to_device_desc: 'କେବଳ ଏହି ଫୋନରେ ରହିବ, ସର୍ଭରକୁ ଯିବ ନାହିଁ। [needs native review]',
+    saved_locally: '✓ ସଞ୍ଚିତ ହେଲା [needs native review]',
+    delete_my_data: 'ମୋର ସ୍କ୍ରିନିଂ ଇତିହାସ ଲିଭାନ୍ତୁ [needs native review]',
+    data_deleted: 'ଫୋନରୁ ସମସ୍ତ ତଥ୍ୟ ଲିଭାଇ ଦିଆଗଲା। [needs native review]',
+
+    // My Progress
+    my_progress_title: 'ମୋର ପ୍ରଗତି [needs native review]',
+    game_history_chart: 'ଖେଳର ସଠିକତା ଧାରା (%) [needs native review]',
+    level_progression_chart: 'ସମୟ ସହ ସ୍ତର ପ୍ରଗତି [needs native review]',
+    caregiver_summary_title: 'ଯତ୍ନକାରୀ ଓ ପରିବାର ସାରାଂଶ [needs native review]',
+    caregiver_sessions_stat: 'ସମୁଦାୟ ଖେଳ [needs native review]',
+    caregiver_avg_acc: 'ହାରାହାରି ସଠିକତା [needs native review]',
+    caregiver_last_check: 'ଶେଷ ସ୍ୱାସ୍ଥ୍ୟ ଯାଞ୍ଚ [needs native review]',
+    no_game_history: 'ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଖେଳ ଖେଳାଯାଇ ନାହିଁ। [needs native review]',
+    no_screening_history: 'ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ସ୍କ୍ରିନିଂ ତଥ୍ୟ ସଞ୍ଚିତ ହୋଇନାହିଁ। [needs native review]',
+    screening_records_title: 'ସଞ୍ଚିତ ସ୍ୱାସ୍ଥ୍ୟ ଯାଞ୍ଚ ରେକର୍ଡ [needs native review]',
+    date: 'ତାରିଖ [needs native review]',
+    score: 'ସ୍କୋର [needs native review]',
+    band: 'ସ୍ତର [needs native review]',
+    variant: 'ମଡେଲ [needs native review]',
+    active_30_days: 'ଗତ ୩୦ ଦିନର କାର୍ଯ୍ୟକଳାପ [needs native review]',
+    cognitive_trajectory: 'ସ୍ୱାସ୍ଥ୍ୟ ଧାରା [needs native review]',
+    trajectory_stable: 'ସ୍ଥିର [needs native review]',
+    trajectory_improving: 'ଉନ୍ନତ (କମ୍ ବିପଦ) [needs native review]',
+    trajectory_review: 'ଡାକ୍ତରୀ ପରାମର୍ଶ ଆବଶ୍ୟକ [needs native review]',
+    compare_assessments: 'ଅତୀତର ଯାଞ୍ଚ ତୁଳନା କରନ୍ତୁ [needs native review]',
+    comparison_title: 'ସମୟକ୍ରମେ ସ୍କ୍ରିନିଂ ପରିବର୍ତ୍ତନ ତୁଳନା [needs native review]',
+    baseline: 'ପ୍ରାଥମିକ ଯାଞ୍ଚ [needs native review]',
+    latest: 'ନୂତନ ଯାଞ୍ଚ [needs native review]',
+    score_change: 'ସ୍କୋର ପରିବର୍ତ୍ତନ (Δ) [needs native review]',
+    status_stable: 'ସମସ୍ତ ଯାଞ୍ଚ ମଧ୍ୟରେ ସ୍ଥିର [needs native review]',
+    status_improving: 'କମ୍ ବିପଦ ଦେଖାଯାଇଛି [needs native review]',
+    status_elevated: 'ସ୍କୋର ବୃଦ୍ଧି ଦେଖାଯାଇଛି [needs native review]',
+    empty_screening_title: 'ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ସ୍କ୍ରିନିଂ ରେକର୍ଡ ନାହିଁ [needs native review]',
+    empty_screening_desc: 'ପ୍ରାଥମିକ ସ୍କୋର ଜାଣିବା ପାଇଁ ଏକ ୩-ମିନିଟ୍ ସ୍ୱାସ୍ଥ୍ୟ ଯାଞ୍ଚ କରନ୍ତୁ। ଆପଣଙ୍କ ତଥ୍ୟ ଏହି ଡିଭାଇସରେ ସମ୍ପୂର୍ଣ୍ଣ ସୁରକ୍ଷିତ ରହିବ। [needs native review]',
+    start_first_check: 'ପ୍ରଥମ ଯାଞ୍ଚ ଆରମ୍ଭ କରନ୍ତୁ [needs native review]',
+    print_progress_report: 'ଡାକ୍ତରୀ ପ୍ରଗତି ରିପୋର୍ଟ ପ୍ରିଣ୍ଟ କରନ୍ତୁ [needs native review]',
+    export_csv: 'ଇତିହାସ ଏକ୍ସପୋର୍ଟ କରନ୍ତୁ (CSV) [needs native review]',
+    clinical_notes: 'ଡାକ୍ତରୀ ହସ୍ତାନ୍ତର ଟିପ୍ପଣୀ [needs native review]',
     // settings / why / export are for caregivers and researchers: English fallback is fine.
   },
 }
 
+export function cleanDevTags(str, forceClean = false) {
+  if (typeof str !== 'string') return str
+  // In production builds (PROD is true) or when forced, strip developer tags
+  // In dev-only mode (DEV is true and not forced), retain them for linguists & devs
+  const isProd = Boolean(typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PROD)
+  if (isProd || forceClean) {
+    return str.replace(/\s*\[needs native review\]/g, '').trim()
+  }
+  return str
+}
+
 export function t(key, lang = 'or') {
-  return STRINGS[lang]?.[key] ?? STRINGS.en[key] ?? key
+  const val = STRINGS[lang]?.[key] ?? STRINGS.en[key] ?? key
+  return cleanDevTags(val)
 }
 
 export function label(item, lang) {
-  return item.label[lang] ?? item.label.en
+  const val = item.label[lang] ?? item.label.en
+  return cleanDevTags(val)
 }
 
 export const LANGS = [

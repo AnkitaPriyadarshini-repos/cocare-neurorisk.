@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { LANGS, t } from '../i18n'
+import { isRiskCheckEnabled } from '../riskApi'
 
 export const GAMES = [
   { id: 'memory_match', icon: '🃏' },
@@ -8,7 +9,7 @@ export const GAMES = [
   { id: 'find_it', icon: '🔍' },
 ]
 
-export function Home({ user, onPlay, onHistory, onSettings, onSwitch }) {
+export function Home({ user, onPlay, onHistory, onSettings, onSwitch, onRiskCheck, onProgress }) {
   const lang = user.lang
   return (
     <div className="screen">
@@ -25,6 +26,17 @@ export function Home({ user, onPlay, onHistory, onSettings, onSwitch }) {
           </button>
         ))}
       </div>
+      {/* Elderly-friendly Health Risk Check & My Progress navigation entry (guarded by VITE_ENABLE_RISK_CHECK) */}
+      {isRiskCheckEnabled() && (
+        <div className="row" style={{ marginTop: '0.25rem' }}>
+          <button className="primary" onClick={onRiskCheck} style={{ fontWeight: '700' }}>
+            🩺 {t('risk_check', lang)}
+          </button>
+          <button onClick={onProgress}>
+            📈 {t('my_progress', lang)}
+          </button>
+        </div>
+      )}
       <div className="row">
         <button onClick={onHistory}>📅 {t('history', lang)}</button>
         <button onClick={onSwitch}>👥 {t('switch_player', lang)}</button>

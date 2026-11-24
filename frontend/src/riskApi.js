@@ -1,0 +1,193 @@
+// Frontend API client for cognitive risk screening module.
+// Strictly privacy-preserving: patient profile is transmitted solely for stateless inference.
+// LocalStorage history is purely opt-in on the client device.
+
+async function request(method, path, body) {
+  const res = await fetch(`/api${path}`, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  if (!res.ok) {
+    let errMessage = `${method} ${path} failed with HTTP ${res.status}`
+    try {
+      const data = await res.json()
+      if (data.detail) errMessage = data.detail
+    } catch {}
+    throw new Error(errMessage)
+  }
+  return res.json()
+}
+
+// Feature flag: default false in production builds, true in dev
+export function isRiskCheckEnabled() {
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      const envFlag = import.meta.env.VITE_ENABLE_RISK_CHECK
+      if (envFlag !== undefined) {
+        return envFlag === 'true' || envFlag === true
+      }
+      return Boolean(import.meta.env.DEV)
+    }
+  } catch {}
+  return false
+}
+
+// Fallback form specification in case backend is offline or cold starting
+export const FALLBACK_FORM_SPEC = {
+  dataset: 'OASIS-demo',
+  schema_version: '1.0.0',
+  disclaimer:
+    'This screening tool is an educational and preliminary triage demonstration based on OASIS data. It is NOT a medical diagnostic instrument. Please consult a qualified healthcare professional or neurologist.',
+  fields: [
+    {
+      name: 'Age',
+      label: 'Age (years)',
+      label_or: 'ବୟସ (ବର୍ଷ) [needs native review]',
+      type: 'number',
+      required: true,
+      min: 40,
+      max: 120,
+      step: 1,
+      help_text: 'Participant age in complete years (40-120).',
+      help_text_or: 'ଅଂଶଗ୍ରହଣକାରୀଙ୍କ ସମ୍ପୂର୍ଣ୍ଣ ବୟସ (୪୦-୧୨୦)। [needs native review]',
+    },
+    {
+      name: 'Sex',
+      label: 'Biological Sex',
+      label_or: 'ଜୈବିକ ଲିଙ୍ଗ [needs native review]',
+      type: 'categorical',
+      required: true,
+      options: [
+        { value: 'F', label: 'Female', label_or: 'ମହିଳା [needs native review]' },
+        { value: 'M', label: 'Male', label_or: 'ପୁରୁଷ [needs native review]' },
+      ],
+      help_text: 'Biological sex assigned at birth.',
+      help_text_or: 'ଜନ୍ମ ସମୟର ଜୈବିକ ଲିଙ୍ଗ। [needs native review]',
+    },
+    {
+      name: 'EDUC',
+      label: 'Years of Formal Education',
+      label_or: 'ଆନୁଷ୍ଠାନିକ ଶିକ୍ଷା ବର୍ଷ [needs native review]',
+      type: 'number',
+      required: true,
+      min: 0,
+      max: 30,
+      step: 1,
+      help_text: 'Total completed years of school and college (0-30).',
+      help_text_or: 'ସ୍କୁଲ ଏବଂ କଲେଜ ଶିକ୍ଷାର ସମୁଦାୟ ବର୍ଷ (୦-୩୦)। [needs native review]',
+    },
+    {
+      name: 'SES',
+      label: 'Socioeconomic Status (demo approximation, not the clinical SES index used in OASIS)',
+      label_or: 'ସାମାଜିକ-ଅର୍ଥନୈତିକ ସ୍ଥିତି (ଡେମୋ ଅନୁମାନ, OASIS କ୍ଲିନିକାଲ SES ସୂଚକାଙ୍କ ନୁହେଁ) [needs native review]',
+      type: 'integer_tier',
+      required: false,
+      min: 1,
+      max: 5,
+      step: 1,
+      help_text: 'Optional 1-5 scale (1 = highest, 5 = lowest). Demo approximation, not the clinical SES index used in OASIS; automatically imputed if skipped.',
+      help_text_or: 'ଇଚ୍ଛାଧୀନ ୧-୫ ମାନ (୧ = ସର୍ବୋଚ୍ଚ, ୫ = ସର୍ବନିମ୍ନ)। ଡେମୋ ଅନୁମାନ, OASIS କ୍ଲିନିକାଲ SES ସୂଚକାଙ୍କ ନୁହେଁ। [needs native review]',
+    },
+    {
+      name: 'MMSE',
+      label: 'Mini-Mental State Examination Score (0-30)',
+      label_or: 'ମାନସିକ ସ୍ଥିତି ପରୀକ୍ଷା ସ୍କୋର (୦-୩୦) [needs native review]',
+      type: 'number',
+      required: false,
+      min: 0,
+      max: 30,
+      step: 1,
+      help_text: 'Standardized 30-point cognitive examination. Provide ONLY if administered by a trained health professional.',
+      help_text_or: 'ମାନକ ୩୦-ପଏଣ୍ଟ ପରୀକ୍ଷା। କେବଳ ତାଲିମପ୍ରାପ୍ତ କର୍ମୀଙ୍କ ଦ୍ୱାରା ହୋଇଥିଲେ ଦିଅନ୍ତୁ। [needs native review]',
+    },
+  ],
+}
+
+export const riskApi = {
+  // 1. Fetch intake form specification with schema_version verification
+  getFormSpec: async () => {
+    try {
+      const res = await request('GET', '/risk/form-spec')
+      if (res && res.schema_version && res.schema_version !== FALLBACK_FORM_SPEC.schema_version) {
+        console.warn(
+          `[riskApi] Form specification schema_version mismatch: backend returned "${res.schema_version}", local fallback expects "${FALLBACK_FORM_SPEC.schema_version}".`
+        )
+      }
+      return res
+    } catch (err) {
+      console.warn('Using fallback form specification due to network error:', err)
+      return FALLBACK_FORM_SPEC
+    }
+  },
+
+  // 2. Stateless assessment prediction
+  predictRisk: async (profile, useMmse = false) => {
+    return await request('POST', '/risk/predict', { profile, use_mmse: useMmse })
+  },
+
+  // 3. Model metadata and diagnostics
+  getModelInfo: async () => {
+    return await request('GET', '/risk/model-info')
+  },
+
+  // 4. Opt-in local-only screening history helpers (LocalStorage)
+  getLocalHistory: (userId) => {
+    if (!userId) return []
+    try {
+      const raw = localStorage.getItem(`cocare_risk_history_${userId}`)
+      return raw ? JSON.parse(raw) : []
+    } catch {
+      return []
+    }
+  },
+
+  // Stores ONLY { id, date, band, score, model_variant }. NEVER stores profile fields!
+  saveLocalResult: (userId, record) => {
+    if (!userId || !record) return
+    try {
+      const history = riskApi.getLocalHistory(userId)
+      const sanitized = {
+        id: record.id || Date.now(),
+        date: record.date || new Date().toISOString(),
+        band: record.band,
+        score: typeof record.score === 'number' ? Number(record.score.toFixed(4)) : record.score,
+        model_variant: record.model_variant || record.variant || 'without_mmse',
+      }
+      const updated = [sanitized, ...history].slice(0, 30) // keep last 30 assessments
+      localStorage.setItem(`cocare_risk_history_${userId}`, JSON.stringify(updated))
+    } catch (e) {
+      console.error('Failed to save assessment to localStorage:', e)
+    }
+  },
+
+  deleteLocalHistory: (userId) => {
+    if (!userId) return
+    try {
+      localStorage.removeItem(`cocare_risk_history_${userId}`)
+    } catch (e) {
+      console.error('Failed to clear localStorage assessment history:', e)
+    }
+  },
+
+  isOptedInHistory: (userId) => {
+    if (!userId) return false
+    try {
+      return localStorage.getItem(`cocare_risk_optin_${userId}`) === 'true'
+    } catch {
+      return false
+    }
+  },
+
+  setOptInHistory: (userId, enabled) => {
+    if (!userId) return
+    try {
+      localStorage.setItem(`cocare_risk_optin_${userId}`, enabled ? 'true' : 'false')
+      if (!enabled) {
+        riskApi.deleteLocalHistory(userId)
+      }
+    } catch (e) {
+      console.error('Failed to update opt-in preference:', e)
+    }
+  },
+}
