@@ -1,0 +1,13 @@
+variable,label,type,allowed_values_or_units,missing_codes,pct_missing,self_reportable,is_cognitive_test,include_exclude,reason
+Age,Chronological Age,numeric,40-120 years,None,0.0%,y,n,include_both,Primary demographic factor for cognitive decline
+Sex,Biological Sex,categorical,M/F,None,0.0%,y,n,include_both,Demographic factor and demographic stratification subgroup
+EDUC,Years of Education,numeric,0-30 years,None,0.0%,y,n,include_both,Key proxy for cognitive reserve
+SES,Socioeconomic Status,numeric,1-5 scale,-1/NA,5.1%,y,n,include_both,Social determinant of health; median imputed
+MMSE,Mini-Mental State Exam,numeric,0-30 points,-1/NA,0.5%,n,y,include_with_only,Administered cognitive test score; excluded from without-mmse model
+CDR,Clinical Dementia Rating,numeric,0.0-2.0,None,0.0%,n,n,exclude_target,Diagnostic target definition; direct leakage if included
+eTIV,Estimated Total Intracranial Volume,numeric,1000-2500 cm3,None,0.0%,n,n,exclude_clinical_cost,Requires hospital MRI scan; unavailable in community web screening
+nWBV,Normalized Whole Brain Volume,numeric,0.6-0.9,None,0.0%,n,n,exclude_clinical_cost,Requires hospital MRI scan; unavailable in community web screening
+ASF,Atlas Scaling Factor,numeric,0.8-1.6,None,0.0%,n,n,exclude_clinical_cost,Requires hospital MRI scan; unavailable in community web screening
+Visit,Visit Number,integer,1-5,None,0.0%,n,n,exclude_study_metadata,Longitudinal study artifact
+MR Delay,Magnetic Resonance Delay,integer,days,None,0.0%,n,n,exclude_study_metadata,Longitudinal study artifact
+Hand,Handedness,categorical,R/L,None,0.0%,n,n,exclude_invariant,Zero variance in cohort (100% R)

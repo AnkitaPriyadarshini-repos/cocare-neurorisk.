@@ -1,0 +1,105 @@
+{
+  "version": "1.0.0",
+  "disclaimer": "This tool is a cognitive risk screening aid designed for preliminary assessment, NOT a clinical diagnosis. Results should be interpreted by healthcare professionals.",
+  "disclaimer_or": "ଏହି ଉପକରଣଟି କେବଳ ଏକ ପ୍ରାଥମିକ ଜ୍ଞାନଗତ ବିପଦ ଯାଞ୍ଚ ସହାୟକ, କୌଣସି ଡାକ୍ତରୀ ନିଦାନ ନୁହେଁ। (needs native review)",
+  "fields": [
+    {
+      "name": "Age",
+      "label": "Age (years)",
+      "label_or": "ବୟସ (ବର୍ଷ) [needs native review]",
+      "type": "number",
+      "min": 40,
+      "max": 120,
+      "step": 1,
+      "required": true,
+      "help_text": "Age of the participant in completed years.",
+      "help_text_or": "ଅଂଶଗ୍ରହଣକାରୀଙ୍କ ସମ୍ପୂର୍ଣ୍ଣ ବର୍ଷରେ ବୟସ। [needs native review]",
+      "model_variant": "both"
+    },
+    {
+      "name": "Sex",
+      "label": "Biological Sex",
+      "label_or": "ଲିଙ୍ଗ [needs native review]",
+      "type": "select",
+      "options": [
+        {
+          "value": "M",
+          "label": "Male",
+          "label_or": "ପୁରୁଷ [needs native review]"
+        },
+        {
+          "value": "F",
+          "label": "Female",
+          "label_or": "ମହିଳା [needs native review]"
+        }
+      ],
+      "required": true,
+      "help_text": "Biological sex recorded at birth or official documentation.",
+      "help_text_or": "ଜନ୍ମ କିମ୍ବା ସରକାରୀ ପରିଚୟପତ୍ରରେ ଥିବା ଲିଙ୍ଗ। [needs native review]",
+      "model_variant": "both"
+    },
+    {
+      "name": "EDUC",
+      "label": "Years of Formal Education",
+      "label_or": "ଶିକ୍ଷାର ବର୍ଷ [needs native review]",
+      "type": "number",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "required": true,
+      "help_text": "Total years of formal schooling completed (e.g., 0 for no formal schooling, 10 for matriculation, 15 for degree).",
+      "help_text_or": "ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଥିବା ବିଦ୍ୟାଳୟ ଶିକ୍ଷାର ମୋଟ ବର୍ଷ (ଯଥା: ୦ ନିରକ୍ଷର, ୧୦ ମାଟ୍ରିକ, ୧୫ ସ୍ନାତକ)। [needs native review]",
+      "model_variant": "both"
+    },
+    {
+      "name": "SES",
+      "label": "Socioeconomic Status (1-5)",
+      "label_or": "ସାମାଜିକ-ଅର୍ଥନୈତିକ ସ୍ଥିତି (୧-୫) [needs native review]",
+      "type": "select",
+      "options": [
+        {
+          "value": 1,
+          "label": "1 - Upper Class",
+          "label_or": "୧ - ଉଚ୍ଚ ଶ୍ରେଣୀ [needs native review]"
+        },
+        {
+          "value": 2,
+          "label": "2 - Upper-Middle Class",
+          "label_or": "୨ - ଉଚ୍ଚ-ମଧ୍ୟମ ଶ୍ରେଣୀ [needs native review]"
+        },
+        {
+          "value": 3,
+          "label": "3 - Middle Class",
+          "label_or": "୩ - ମଧ୍ୟମ ଶ୍ରେଣୀ [needs native review]"
+        },
+        {
+          "value": 4,
+          "label": "4 - Lower-Middle Class",
+          "label_or": "୪ - ନିମ୍ନ-ମଧ୍ୟମ ଶ୍ରେଣୀ [needs native review]"
+        },
+        {
+          "value": 5,
+          "label": "5 - Lower Class",
+          "label_or": "୫ - ନିମ୍ନ ଶ୍ରେଣୀ [needs native review]"
+        }
+      ],
+      "required": false,
+      "help_text": "Estimated socioeconomic band on a 1-5 scale (optional, automatically imputed if unknown).",
+      "help_text_or": "୧ ରୁ ୫ ସ୍କେଲ୍ ରେ ସାମାଜିକ-ଅର୍ଥନୈତିକ ବର୍ଗ (ଇଚ୍ଛାଧୀନ, ଅଜ୍ଞାତ ଥିଲେ ସ୍ୱତଃ ଗଣନା ହେବ)। [needs native review]",
+      "model_variant": "both"
+    },
+    {
+      "name": "MMSE",
+      "label": "MMSE / HMSE Total Score (0-30)",
+      "label_or": "ଏମ୍.ଏମ୍.ଏସ୍.ଇ / ଏଚ୍.ଏମ୍.ଏସ୍.ଇ ମୋଟ ସ୍କୋର (୦-୩୦) [needs native review]",
+      "type": "number",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "required": true,
+      "help_text": "Total score from Mini-Mental State Examination or Hindi/Odia Mental State Examination (0-30). Only required for test-assisted screening.",
+      "help_text_or": "ଜ୍ଞାନଗତ ପରୀକ୍ଷଣର ମୋଟ ସ୍କୋର (୦-୩୦)। କେବଳ ପରୀକ୍ଷା-ଆଧାରିତ ସ୍କ୍ରିନିଂ ପାଇଁ ଆବଶ୍ୟକ। [needs native review]",
+      "model_variant": "with_mmse"
+    }
+  ]
+}

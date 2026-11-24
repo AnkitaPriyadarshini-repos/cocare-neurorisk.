@@ -1,0 +1,86 @@
+# Global ML Pipeline Configuration
+dataset:
+  active: oasis
+  oasis:
+    raw_path: ml/data/oasis_longitudinal.csv
+    participant_col: Subject ID
+    target_col: Group
+    cdr_col: CDR
+  lasi_dad:
+    raw_path: ml/data/lasi_dad.csv
+    codebook_path: ml/docs/lasi_dad_codebook.pdf
+    participant_col: ID
+    target_col: dementia_status
+    note: "Stub adapter until LASI-DAD codebook and access are provided"
+
+seed: 42
+
+features:
+  without_mmse:
+    numeric:
+      - Age
+      - EDUC
+      - SES
+    categorical:
+      - Sex
+    excluded:
+      - MMSE
+      - CDR
+      - eTIV
+      - nWBV
+      - ASF
+      - Visit
+      - MR Delay
+      - Subject ID
+      - MRI ID
+      - Hand
+  with_mmse:
+    numeric:
+      - Age
+      - EDUC
+      - SES
+      - MMSE
+    categorical:
+      - Sex
+    excluded:
+      - CDR
+      - eTIV
+      - nWBV
+      - ASF
+      - Visit
+      - MR Delay
+      - Subject ID
+      - MRI ID
+      - Hand
+
+split:
+  test_size: 0.20
+  cv_folds: 5
+  stratified: true
+  group_by_participant: true
+
+training:
+  class_weight: balanced
+  resampling: smote_or_weight  # implemented cleanly in pipeline
+  models_to_compare:
+    - LogisticRegression
+    - RandomForest
+    - GradientBoosting
+    - SVM
+    - KNN
+
+evaluation:
+  target_sensitivity: 0.85
+  bootstrap_rounds: 1000
+  confidence_interval: 0.95
+  risk_bands:
+    lower: [0.0, 0.33]
+    moderate: [0.33, 0.66]
+    higher: [0.66, 1.0]
+
+paths:
+  artifacts: ml/artifacts
+  backend_models: backend/models
+  reports: ml/reports
+  figures: ml/reports/figures
+  docs: ml/docs

@@ -3,3 +3,10 @@ __pycache__/
 backend/cocare.db
 node_modules/
 .venv/
+
+# ML Data (participant-level data must never be committed)
+data/
+ml/data/
+*.dta
+*.sav
+
