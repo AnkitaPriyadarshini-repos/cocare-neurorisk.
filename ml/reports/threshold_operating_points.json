@@ -1,0 +1,96 @@
+{
+  "with_mmse": {
+    "target_sens_80": {
+      "target_sensitivity": 0.8,
+      "selected_threshold": 0.3439,
+      "achieved_sensitivity": 0.8014,
+      "achieved_specificity": 0.6839,
+      "achieved_precision": 0.7048,
+      "achieved_npv": 0.7852,
+      "achieved_f1": 0.75,
+      "achieved_accuracy": 0.7409,
+      "tp": 117,
+      "fp": 49,
+      "tn": 106,
+      "fn": 29,
+      "clinical_tradeoff_note": "At 80% sensitivity threshold (0.3439), the model misses only 29 cases out of 146 at the expense of 49 false positives (68.4% specificity)."
+    },
+    "target_sens_85": {
+      "target_sensitivity": 0.85,
+      "selected_threshold": 0.3203,
+      "achieved_sensitivity": 0.8562,
+      "achieved_specificity": 0.6323,
+      "achieved_precision": 0.6868,
+      "achieved_npv": 0.8235,
+      "achieved_f1": 0.7622,
+      "achieved_accuracy": 0.7409,
+      "tp": 125,
+      "fp": 57,
+      "tn": 98,
+      "fn": 21,
+      "clinical_tradeoff_note": "At 85% sensitivity threshold (0.3203), the model misses only 21 cases out of 146 at the expense of 57 false positives (63.2% specificity)."
+    },
+    "target_sens_90": {
+      "target_sensitivity": 0.9,
+      "selected_threshold": 0.2417,
+      "achieved_sensitivity": 0.9041,
+      "achieved_specificity": 0.5226,
+      "achieved_precision": 0.6408,
+      "achieved_npv": 0.8526,
+      "achieved_f1": 0.75,
+      "achieved_accuracy": 0.7076,
+      "tp": 132,
+      "fp": 74,
+      "tn": 81,
+      "fn": 14,
+      "clinical_tradeoff_note": "At 90% sensitivity threshold (0.2417), the model misses only 14 cases out of 146 at the expense of 74 false positives (52.3% specificity)."
+    }
+  },
+  "without_mmse": {
+    "target_sens_80": {
+      "target_sensitivity": 0.8,
+      "selected_threshold": 0.3753,
+      "achieved_sensitivity": 0.8014,
+      "achieved_specificity": 0.3742,
+      "achieved_precision": 0.5467,
+      "achieved_npv": 0.6667,
+      "achieved_f1": 0.65,
+      "achieved_accuracy": 0.5814,
+      "tp": 117,
+      "fp": 97,
+      "tn": 58,
+      "fn": 29,
+      "clinical_tradeoff_note": "At 80% sensitivity threshold (0.3753), the model misses only 29 cases out of 146 at the expense of 97 false positives (37.4% specificity)."
+    },
+    "target_sens_85": {
+      "target_sensitivity": 0.85,
+      "selected_threshold": 0.3301,
+      "achieved_sensitivity": 0.8562,
+      "achieved_specificity": 0.3355,
+      "achieved_precision": 0.5482,
+      "achieved_npv": 0.7123,
+      "achieved_f1": 0.6684,
+      "achieved_accuracy": 0.588,
+      "tp": 125,
+      "fp": 103,
+      "tn": 52,
+      "fn": 21,
+      "clinical_tradeoff_note": "At 85% sensitivity threshold (0.3301), the model misses only 21 cases out of 146 at the expense of 103 false positives (33.5% specificity)."
+    },
+    "target_sens_90": {
+      "target_sensitivity": 0.9,
+      "selected_threshold": 0.3105,
+      "achieved_sensitivity": 0.911,
+      "achieved_specificity": 0.3097,
+      "achieved_precision": 0.5542,
+      "achieved_npv": 0.7869,
+      "achieved_f1": 0.6891,
+      "achieved_accuracy": 0.6013,
+      "tp": 133,
+      "fp": 107,
+      "tn": 48,
+      "fn": 13,
+      "clinical_tradeoff_note": "At 90% sensitivity threshold (0.3105), the model misses only 13 cases out of 146 at the expense of 107 false positives (31.0% specificity)."
+    }
+  }
+}

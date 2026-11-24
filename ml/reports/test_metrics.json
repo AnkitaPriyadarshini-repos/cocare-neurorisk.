@@ -1,0 +1,250 @@
+{
+  "model_with_mmse": {
+    "metrics": {
+      "n_total": 72,
+      "n_positives": 21,
+      "n_negatives": 51,
+      "threshold": 0.3203,
+      "tp": 19,
+      "fp": 13,
+      "tn": 38,
+      "fn": 2,
+      "sensitivity": 0.9047619047619048,
+      "specificity": 0.7450980392156863,
+      "precision": 0.59375,
+      "npv": 0.95,
+      "f1": 0.7169811320754718,
+      "accuracy": 0.7916666666666666,
+      "roc_auc": 0.9290382819794585,
+      "pr_auc": 0.8911195691091085,
+      "brier_score": 0.10201647318866162
+    },
+    "bootstrap_95_ci_2000": {
+      "sensitivity": {
+        "mean": 0.9030041696968547,
+        "std": 0.06595236558346317,
+        "ci_lower": 0.75,
+        "ci_upper": 1.0
+      },
+      "specificity": {
+        "mean": 0.745059781726715,
+        "std": 0.06173371447052261,
+        "ci_lower": 0.6226415094339622,
+        "ci_upper": 0.8653846153846154
+      },
+      "precision": {
+        "mean": 0.5936217377869827,
+        "std": 0.08911231469991265,
+        "ci_lower": 0.4137423935091278,
+        "ci_upper": 0.764754901960784
+      },
+      "npv": {
+        "mean": 0.9491204798456889,
+        "std": 0.03507623408446968,
+        "ci_lower": 0.8695652173913043,
+        "ci_upper": 1.0
+      },
+      "f1": {
+        "mean": 0.7123837719661336,
+        "std": 0.07312477025874575,
+        "ci_lower": 0.5581395348837209,
+        "ci_upper": 0.8444600938967135
+      },
+      "accuracy": {
+        "mean": 0.7912013888888889,
+        "std": 0.0486535087925226,
+        "ci_lower": 0.6944444444444444,
+        "ci_upper": 0.8888888888888888
+      },
+      "roc_auc": {
+        "mean": 0.9282764407946624,
+        "std": 0.03578402721996726,
+        "ci_lower": 0.8471153846153846,
+        "ci_upper": 0.986103976708495
+      },
+      "pr_auc": {
+        "mean": 0.890622578698466,
+        "std": 0.05317328452433844,
+        "ci_lower": 0.7649557823129254,
+        "ci_upper": 0.972086978844714
+      },
+      "brier_score": {
+        "mean": 0.10243561047795707,
+        "std": 0.02173945087143657,
+        "ci_lower": 0.06308527464000425,
+        "ci_upper": 0.1486860875327522
+      }
+    },
+    "operating_points": {
+      "target_sens_80": {
+        "target_sensitivity": 0.8,
+        "selected_threshold": 0.3439,
+        "achieved_sensitivity": 0.8014,
+        "achieved_specificity": 0.6839,
+        "achieved_precision": 0.7048,
+        "achieved_npv": 0.7852,
+        "achieved_f1": 0.75,
+        "achieved_accuracy": 0.7409,
+        "tp": 117,
+        "fp": 49,
+        "tn": 106,
+        "fn": 29,
+        "clinical_tradeoff_note": "At 80% sensitivity threshold (0.3439), the model misses only 29 cases out of 146 at the expense of 49 false positives (68.4% specificity)."
+      },
+      "target_sens_85": {
+        "target_sensitivity": 0.85,
+        "selected_threshold": 0.3203,
+        "achieved_sensitivity": 0.8562,
+        "achieved_specificity": 0.6323,
+        "achieved_precision": 0.6868,
+        "achieved_npv": 0.8235,
+        "achieved_f1": 0.7622,
+        "achieved_accuracy": 0.7409,
+        "tp": 125,
+        "fp": 57,
+        "tn": 98,
+        "fn": 21,
+        "clinical_tradeoff_note": "At 85% sensitivity threshold (0.3203), the model misses only 21 cases out of 146 at the expense of 57 false positives (63.2% specificity)."
+      },
+      "target_sens_90": {
+        "target_sensitivity": 0.9,
+        "selected_threshold": 0.2417,
+        "achieved_sensitivity": 0.9041,
+        "achieved_specificity": 0.5226,
+        "achieved_precision": 0.6408,
+        "achieved_npv": 0.8526,
+        "achieved_f1": 0.75,
+        "achieved_accuracy": 0.7076,
+        "tp": 132,
+        "fp": 74,
+        "tn": 81,
+        "fn": 14,
+        "clinical_tradeoff_note": "At 90% sensitivity threshold (0.2417), the model misses only 14 cases out of 146 at the expense of 74 false positives (52.3% specificity)."
+      }
+    }
+  },
+  "model_without_mmse": {
+    "metrics": {
+      "n_total": 72,
+      "n_positives": 21,
+      "n_negatives": 51,
+      "threshold": 0.3301,
+      "tp": 19,
+      "fp": 33,
+      "tn": 18,
+      "fn": 2,
+      "sensitivity": 0.9047619047619048,
+      "specificity": 0.35294117647058826,
+      "precision": 0.36538461538461536,
+      "npv": 0.9,
+      "f1": 0.5205479452054794,
+      "accuracy": 0.5138888888888888,
+      "roc_auc": 0.6792717086834733,
+      "pr_auc": 0.5493817737083246,
+      "brier_score": 0.21014063558809484
+    },
+    "bootstrap_95_ci_2000": {
+      "sensitivity": {
+        "mean": 0.9061044916590142,
+        "std": 0.06621054079002471,
+        "ci_lower": 0.75,
+        "ci_upper": 1.0
+      },
+      "specificity": {
+        "mean": 0.3516803246919386,
+        "std": 0.06550916915069162,
+        "ci_lower": 0.22727272727272727,
+        "ci_upper": 0.4792067307692306
+      },
+      "precision": {
+        "mean": 0.365489514600579,
+        "std": 0.06659316049350432,
+        "ci_lower": 0.23995238095238094,
+        "ci_upper": 0.5
+      },
+      "npv": {
+        "mean": 0.9013094989581407,
+        "std": 0.06944411848301434,
+        "ci_lower": 0.75,
+        "ci_upper": 1.0
+      },
+      "f1": {
+        "mean": 0.5174083482697942,
+        "std": 0.07142237964478566,
+        "ci_lower": 0.3728450363196126,
+        "ci_upper": 0.6506024096385542
+      },
+      "accuracy": {
+        "mean": 0.5133888888888889,
+        "std": 0.058484763764527534,
+        "ci_lower": 0.3888888888888889,
+        "ci_upper": 0.625
+      },
+      "roc_auc": {
+        "mean": 0.6798867105633787,
+        "std": 0.0697685916936394,
+        "ci_lower": 0.5379895476709202,
+        "ci_upper": 0.8106995884773662
+      },
+      "pr_auc": {
+        "mean": 0.55762405648343,
+        "std": 0.0967181236012933,
+        "ci_lower": 0.3465493832248974,
+        "ci_upper": 0.7279528543483696
+      },
+      "brier_score": {
+        "mean": 0.21003878478531016,
+        "std": 0.019667681721797753,
+        "ci_lower": 0.172868048214319,
+        "ci_upper": 0.2503176171450341
+      }
+    },
+    "operating_points": {
+      "target_sens_80": {
+        "target_sensitivity": 0.8,
+        "selected_threshold": 0.3753,
+        "achieved_sensitivity": 0.8014,
+        "achieved_specificity": 0.3742,
+        "achieved_precision": 0.5467,
+        "achieved_npv": 0.6667,
+        "achieved_f1": 0.65,
+        "achieved_accuracy": 0.5814,
+        "tp": 117,
+        "fp": 97,
+        "tn": 58,
+        "fn": 29,
+        "clinical_tradeoff_note": "At 80% sensitivity threshold (0.3753), the model misses only 29 cases out of 146 at the expense of 97 false positives (37.4% specificity)."
+      },
+      "target_sens_85": {
+        "target_sensitivity": 0.85,
+        "selected_threshold": 0.3301,
+        "achieved_sensitivity": 0.8562,
+        "achieved_specificity": 0.3355,
+        "achieved_precision": 0.5482,
+        "achieved_npv": 0.7123,
+        "achieved_f1": 0.6684,
+        "achieved_accuracy": 0.588,
+        "tp": 125,
+        "fp": 103,
+        "tn": 52,
+        "fn": 21,
+        "clinical_tradeoff_note": "At 85% sensitivity threshold (0.3301), the model misses only 21 cases out of 146 at the expense of 103 false positives (33.5% specificity)."
+      },
+      "target_sens_90": {
+        "target_sensitivity": 0.9,
+        "selected_threshold": 0.3105,
+        "achieved_sensitivity": 0.911,
+        "achieved_specificity": 0.3097,
+        "achieved_precision": 0.5542,
+        "achieved_npv": 0.7869,
+        "achieved_f1": 0.6891,
+        "achieved_accuracy": 0.6013,
+        "tp": 133,
+        "fp": 107,
+        "tn": 48,
+        "fn": 13,
+        "clinical_tradeoff_note": "At 90% sensitivity threshold (0.3105), the model misses only 13 cases out of 146 at the expense of 107 false positives (31.0% specificity)."
+      }
+    }
+  }
+}
