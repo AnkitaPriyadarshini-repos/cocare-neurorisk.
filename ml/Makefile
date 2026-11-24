@@ -1,8 +1,13 @@
-.PHONY: all eda train evaluate explain export test
+.PHONY: all eda train evaluate explain export test retrain
 
 PYTHON ?= python
+DATASET ?= oasis
+CONFIG ?= ml/config.yaml
 
 all: eda train evaluate explain export test
+
+retrain:
+	$(PYTHON) -m ml.src.retrain --dataset $(DATASET) --config $(CONFIG)
 
 eda:
 	$(PYTHON) ml/src/generate_figures.py

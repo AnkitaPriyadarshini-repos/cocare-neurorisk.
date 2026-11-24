@@ -1,0 +1,109 @@
+# LASI-DAD Variable Mapping Specification
+# Maps raw LASI-DAD survey/harmonized variables to CO CARE standardized screening features.
+# NOTE: Source variable placeholders below are marked TEMPLATE until the official access-controlled codebook is integrated.
+dataset_name: LASI-DAD
+schema_version: "1.1.0"
+dataset_type: survey_harmonized
+description: "Harmonized diagnostic dementia assessment for Longitudinal Aging Study in India"
+
+variables:
+  - source_variable: "TEMPLATE_AGE_YEARS"
+    standard_name: "Age"
+    label: "Age (years)"
+    label_or: "ବୟସ (ବର୍ଷ) [needs native review]"
+    type: "number"
+    min: 40
+    max: 120
+    step: 1
+    required: true
+    missing_codes: [-99, -98, -1, 999]
+    self_reportable: true
+    is_cognitive_test: false
+    units: "years"
+    help_text: "Participant age in complete years (40-120)."
+    help_text_or: "ଅଂଶଗ୍ରହଣକାରୀଙ୍କ ସମ୍ପୂର୍ଣ୍ଣ ବୟସ (୪୦-୧୨୦)। [needs native review]"
+    model_variant: "both"
+
+  - source_variable: "TEMPLATE_GENDER"
+    standard_name: "Sex"
+    label: "Biological Sex"
+    label_or: "ଲିଙ୍ଗ [needs native review]"
+    type: "select"
+    options: ["M", "F"]
+    required: true
+    missing_codes: [-99, -98, -1]
+    self_reportable: true
+    is_cognitive_test: false
+    units: "category"
+    value_mapping:
+      1: "M"
+      2: "F"
+      "1": "M"
+      "2": "F"
+      "M": "M"
+      "F": "F"
+      "Male": "M"
+      "Female": "F"
+    help_text: "Biological sex assigned at birth."
+    help_text_or: "ଜନ୍ମ ସମୟର ଜୈବିକ ଲିଙ୍ଗ। [needs native review]"
+    model_variant: "both"
+
+  - source_variable: "TEMPLATE_EDUCATION_YEARS"
+    standard_name: "EDUC"
+    label: "Education (years)"
+    label_or: "ଶିକ୍ଷା (ବର୍ଷ) [needs native review]"
+    type: "number"
+    min: 0
+    max: 30
+    step: 1
+    required: true
+    missing_codes: [-99, -98, -1, 999]
+    self_reportable: true
+    is_cognitive_test: false
+    units: "years"
+    help_text: "Total years of completed formal schooling (0-30)."
+    help_text_or: "ସମ୍ପୂର୍ଣ୍ଣ ଶିକ୍ଷାର ମୋଟ ବର୍ଷ (୦-୩୦)। [needs native review]"
+    model_variant: "both"
+
+  - source_variable: "TEMPLATE_SES_SCALE"
+    standard_name: "SES"
+    label: "Socioeconomic Status (1-5)"
+    label_or: "ସାମାଜିକ-ଅର୍ଥନୈତିକ ସ୍ଥିତି (୧-୫) [needs native review]"
+    type: "number"
+    min: 1
+    max: 5
+    step: 1
+    required: false
+    missing_codes: [-99, -98, -1]
+    self_reportable: true
+    is_cognitive_test: false
+    units: "scale"
+    help_text: "Socioeconomic status ranking (1=Highest, 5=Lowest). Optional."
+    help_text_or: "ସାମାଜିକ-ଅର୍ଥନୈତିକ ସ୍ଥିତି (୧=ସର୍ବୋଚ୍ଚ, ୫=ନିମ୍ନତମ)। ଇଚ୍ଛାଧୀନ। [needs native review]"
+    model_variant: "both"
+
+  - source_variable: "TEMPLATE_HMSE_TOTAL"
+    standard_name: "MMSE"
+    label: "HMSE / MMSE Total Score (0-30)"
+    label_or: "ଏଚ୍.ଏମ୍.ଏସ୍.ଇ / ଏମ୍.ଏମ୍.ଏସ୍.ଇ ମୋଟ ସ୍କୋର (୦-୩୦) [needs native review]"
+    type: "number"
+    min: 0
+    max: 30
+    step: 1
+    required: true
+    missing_codes: [-99, -98, -1]
+    self_reportable: false
+    is_cognitive_test: true
+    units: "score"
+    help_text: "Total score from Hindi/Odia Mental State Examination (0-30). Only required for test-assisted screening."
+    help_text_or: "ଜ୍ଞାନଗତ ପରୀକ୍ଷଣର ମୋଟ ସ୍କୋର (୦-୩୦)। କେବଳ ପରୀକ୍ଷା-ଆଧାରିତ ସ୍କ୍ରିନିଂ ପାଇଁ ଆବଶ୍ୟକ। [needs native review]"
+    model_variant: "with_mmse"
+
+target_definition:
+  source_variable: "TEMPLATE_DEMENTIA_STATUS"
+  standard_name: "target"
+  positive_values: [1, "1", "Dementia", "Impaired"]
+  negative_values: [0, "0", "Normal", "Nondemented"]
+  missing_codes: [-99, -98, -1]
+
+participant_id_variable: "TEMPLATE_PARTICIPANT_ID"

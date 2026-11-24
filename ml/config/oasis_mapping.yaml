@@ -1,0 +1,102 @@
+# OASIS-2 Longitudinal Variable Mapping Specification
+dataset_name: OASIS-demo
+schema_version: "1.1.0"
+dataset_type: clinical_longitudinal
+description: "OASIS longitudinal dementia cohort (US Washington University ADRC practice benchmark)"
+
+variables:
+  - source_variable: "Age"
+    standard_name: "Age"
+    label: "Age (years)"
+    label_or: "ବୟସ (ବର୍ଷ) [needs native review]"
+    type: "number"
+    min: 40
+    max: 120
+    step: 1
+    required: true
+    missing_codes: [-1, 999]
+    self_reportable: true
+    is_cognitive_test: false
+    units: "years"
+    help_text: "Participant age in complete years (40-120)."
+    help_text_or: "ଅଂଶଗ୍ରହଣକାରୀଙ୍କ ସମ୍ପୂର୍ଣ୍ଣ ବୟସ (୪୦-୧୨୦)। [needs native review]"
+    model_variant: "both"
+
+  - source_variable: "Sex"
+    standard_name: "Sex"
+    label: "Biological Sex"
+    label_or: "ଲିଙ୍ଗ [needs native review]"
+    type: "select"
+    options: ["M", "F"]
+    required: true
+    missing_codes: [-1]
+    self_reportable: true
+    is_cognitive_test: false
+    units: "category"
+    value_mapping:
+      "M": "M"
+      "F": "F"
+    help_text: "Biological sex assigned at birth."
+    help_text_or: "ଜନ୍ମ ସମୟର ଜୈବିକ ଲିଙ୍ଗ। [needs native review]"
+    model_variant: "both"
+
+  - source_variable: "EDUC"
+    standard_name: "EDUC"
+    label: "Education (years)"
+    label_or: "ଶିକ୍ଷା (ବର୍ଷ) [needs native review]"
+    type: "number"
+    min: 0
+    max: 30
+    step: 1
+    required: true
+    missing_codes: [-1, 999]
+    self_reportable: true
+    is_cognitive_test: false
+    units: "years"
+    help_text: "Total years of completed formal schooling (0-30)."
+    help_text_or: "ସମ୍ପୂର୍ଣ୍ଣ ଶିକ୍ଷାର ମୋଟ ବର୍ଷ (୦-୩୦)। [needs native review]"
+    model_variant: "both"
+
+  - source_variable: "SES"
+    standard_name: "SES"
+    label: "Socioeconomic Status (1-5)"
+    label_or: "ସାମାଜିକ-ଅର୍ଥନୈତିକ ସ୍ଥିତି (୧-୫) [needs native review]"
+    type: "number"
+    min: 1
+    max: 5
+    step: 1
+    required: false
+    missing_codes: [-1]
+    self_reportable: true
+    is_cognitive_test: false
+    units: "scale"
+    help_text: "Hollingshead socioeconomic status index (1=Highest, 5=Lowest). Optional, automatically imputed if missing."
+    help_text_or: "ସାମାଜିକ-ଅର୍ଥନୈତିକ ସ୍ଥିତି ସୂଚକାଙ୍କ (୧ ରୁ ୫)। ଅନୁପସ୍ଥିତ ଥିଲେ ସ୍ୱୟଂଚାଳିତ ଭାବେ ପୂରଣ ହେବ। [needs native review]"
+    model_variant: "both"
+
+  - source_variable: "MMSE"
+    standard_name: "MMSE"
+    label: "MMSE / HMSE Total Score (0-30)"
+    label_or: "ଏମ୍.ଏମ୍.ଏସ୍.ଇ / ଏଚ୍.ଏମ୍.ଏସ୍.ଇ ମୋଟ ସ୍କୋର (୦-୩୦) [needs native review]"
+    type: "number"
+    min: 0
+    max: 30
+    step: 1
+    required: true
+    missing_codes: [-1]
+    self_reportable: false
+    is_cognitive_test: true
+    units: "score"
+    help_text: "Total score from Mini-Mental State Examination or Hindi/Odia Mental State Examination (0-30). Only required for test-assisted screening."
+    help_text_or: "ଜ୍ଞାନଗତ ପରୀକ୍ଷଣର ମୋଟ ସ୍କୋର (୦-୩୦)। କେବଳ ପରୀକ୍ଷା-ଆଧାରିତ ସ୍କ୍ରିନିଂ ପାଇଁ ଆବଶ୍ୟକ। [needs native review]"
+    model_variant: "with_mmse"
+
+target_definition:
+  source_variable: "CDR"
+  standard_name: "target"
+  threshold: 0.0
+  positive_rule: "CDR > 0"
+  fallback_variable: "Group"
+  fallback_positive_value: "Demented"
+
+participant_id_variable: "Subject ID"
