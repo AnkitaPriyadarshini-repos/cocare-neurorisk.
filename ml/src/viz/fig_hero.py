@@ -77,39 +77,39 @@ def generate_hero_banner(theme, mode="light"):
         transform=ax.transAxes
     )
     
-    # 4 Live Metric Cards
+    # 4 Live Metric Cards - Leading with Without-MMSE, then With-MMSE side-by-side
     cards = [
         {
-            "tag": "PRIMARY CV (WITH MMSE)",
-            "headline": f"{cv_auc_w:.3f}",
-            "unit": f"± {cv_auc_w_std:.3f}",
-            "sub": f"Held-out test: {test_data['model_with_mmse']['metrics']['roc_auc']:.3f} [95% CI: 0.85-0.99]",
-            "color": theme["accent_primary"],
-            "desc": "5x5 Repeated Group CV AUC"
-        },
-        {
-            "tag": "PRIMARY CV (DEMOGRAPHICS ONLY)",
+            "tag": "VARIANT A: DEMOGRAPHICS ONLY (WITHOUT MMSE)",
             "headline": f"{cv_auc_wo:.3f}",
-            "unit": f"± {cv_auc_wo_std:.3f}",
-            "sub": f"Held-out test: {test_data['model_without_mmse']['metrics']['roc_auc']:.3f} [95% CI: 0.54-0.81]",
+            "unit": f"± {cv_auc_wo_std:.3f} CV AUC",
+            "sub": f"Test: {test_data['model_without_mmse']['metrics']['roc_auc']:.3f} [{test_data['model_without_mmse']['bootstrap_95_ci_2000']['roc_auc']['ci_lower']:.2f}, {test_data['model_without_mmse']['bootstrap_95_ci_2000']['roc_auc']['ci_upper']:.2f}]",
             "color": theme["accent_secondary"],
-            "desc": "Self-reportable (No test items)"
+            "desc": "Self-reportable: Age, Sex, EDUC, SES"
         },
         {
-            "tag": "SCREENING SENSITIVITY",
+            "tag": "VARIANT B: COGNITIVE AUGMENTED (WITH MMSE)",
+            "headline": f"{cv_auc_w:.3f}",
+            "unit": f"± {cv_auc_w_std:.3f} CV AUC",
+            "sub": f"Test: {test_data['model_with_mmse']['metrics']['roc_auc']:.3f} [{test_data['model_with_mmse']['bootstrap_95_ci_2000']['roc_auc']['ci_lower']:.2f}, {test_data['model_with_mmse']['bootstrap_95_ci_2000']['roc_auc']['ci_upper']:.2f}]",
+            "color": theme["accent_primary"],
+            "desc": "Demographics + Cognitive Test Total Score"
+        },
+        {
+            "tag": "WITHOUT MMSE: OPERATING POINT",
+            "headline": f"{test_data['model_without_mmse']['metrics']['sensitivity']*100:.1f}%",
+            "unit": f"[{test_data['model_without_mmse']['bootstrap_95_ci_2000']['sensitivity']['ci_lower']*100:.0f}% - {test_data['model_without_mmse']['bootstrap_95_ci_2000']['sensitivity']['ci_upper']*100:.0f}% Sens]",
+            "sub": f"Spec: {test_data['model_without_mmse']['metrics']['specificity']*100:.1f}% [{test_data['model_without_mmse']['bootstrap_95_ci_2000']['specificity']['ci_lower']*100:.0f}%-{test_data['model_without_mmse']['bootstrap_95_ci_2000']['specificity']['ci_upper']*100:.0f}%] | Thresh: 0.3301",
+            "color": theme["accent_secondary"],
+            "desc": "High sensitivity triage at cost of false alarms"
+        },
+        {
+            "tag": "WITH MMSE: OPERATING POINT",
             "headline": f"{test_sens_w:.1f}%",
-            "unit": "[75% - 100%]",
-            "sub": "Calibrated operating threshold (0.3203)",
+            "unit": f"[{test_sens_ci['ci_lower']*100:.0f}% - {test_sens_ci['ci_upper']*100:.0f}% Sens]",
+            "sub": f"Spec: {test_spec_w:.1f}% [{test_spec_ci['ci_lower']*100:.0f}%-{test_spec_ci['ci_upper']*100:.0f}%] | NPV: 95.0%",
             "color": theme["success"],
-            "desc": "High recall minimizes missed cases"
-        },
-        {
-            "tag": "SCREENING SPECIFICITY",
-            "headline": f"{test_spec_w:.1f}%",
-            "unit": "[62% - 87%]",
-            "sub": "Negative Predictive Value (NPV): 95.0%",
-            "color": theme["cyan"],
-            "desc": "Safe triage for primary care referral"
+            "desc": "High sensitivity (90.5%) + low false positives"
         }
     ]
     

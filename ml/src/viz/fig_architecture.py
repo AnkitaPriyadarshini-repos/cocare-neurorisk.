@@ -95,7 +95,7 @@ def generate_pipeline_architecture(theme, mode="light"):
     online_steps = [
         ("Client Form", "Dynamic rendering from\nform_spec.json (EN / Odia)", theme["cyan"]),
         ("HTTP API Route", "POST /api/risk/predict\nPayload validation (Pydantic)", theme["accent_primary"]),
-        ("Stateless Predict", "In-memory LR model\nInference latency < 1.5 ms", theme["success"]),
+        ("Stateless Predict", "In-memory LR model\nmodel inference time\n(local, warm) < 1.5 ms", theme["success"]),
         ("Runtime Explainer", "Occlusion sensitivity\nZero C++ dependencies", theme["purple"]),
         ("Localized Insights", "Bilingual risk band &\ntransparent factors", theme["accent_secondary"]),
         ("Stateless Privacy", "Zero participant data\npersisted to DB or logs", theme["danger"])

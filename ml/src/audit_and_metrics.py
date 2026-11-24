@@ -79,17 +79,35 @@ def compute_all_metrics(y_true: np.ndarray, y_prob: np.ndarray, threshold: float
     }
 
 
-def bootstrap_ci_2000(y_true: np.ndarray, y_prob: np.ndarray, threshold: float, n_boot: int = 2000, seed: int = 42) -> Dict[str, Dict[str, float]]:
-    """Compute 95% bootstrap confidence intervals with >= 2,000 resamples."""
+def cluster_bootstrap_ci_2000(
+    y_true: np.ndarray,
+    y_prob: np.ndarray,
+    cluster_ids: np.ndarray,
+    threshold: float,
+    n_boot: int = 2000,
+    seed: int = 42
+) -> Dict[str, Dict[str, float]]:
+    """Compute 95% bootstrap confidence intervals by resampling participants (cluster bootstrap).
+    
+    In longitudinal cohorts with repeated visits per participant, visit-level resampling
+    violates independence assumptions and artificially deflates standard errors.
+    Cluster bootstrap resamples participants with replacement and includes all visits
+    of each sampled participant.
+    """
     rng = np.random.RandomState(seed)
-    n = len(y_true)
+    unique_clusters = np.unique(cluster_ids)
+    n_clusters = len(unique_clusters)
+    cluster_to_indices = {c: np.where(cluster_ids == c)[0] for c in unique_clusters}
+    
     keys = ["sensitivity", "specificity", "precision", "npv", "f1", "accuracy", "roc_auc", "pr_auc", "brier_score"]
     boot_stats = {k: [] for k in keys}
     
     for _ in range(n_boot):
-        idx = rng.randint(0, n, size=n)
-        b_true = y_true[idx]
-        b_prob = y_prob[idx]
+        sampled_clusters = rng.choice(unique_clusters, size=n_clusters, replace=True)
+        sampled_indices = np.concatenate([cluster_to_indices[c] for c in sampled_clusters])
+        
+        b_true = y_true[sampled_indices]
+        b_prob = y_prob[sampled_indices]
         
         # Guard if sample lacks both classes
         if len(np.unique(b_true)) < 2:
@@ -387,12 +405,13 @@ def run_full_audit_and_metrics():
     # Test set predictions
     probs_with = final_pipe_with.predict_proba(X_test)[:, 1]
     probs_wo = final_pipe_wo.predict_proba(X_test)[:, 1]
+    groups_test = groups.iloc[test_idx].values
     
     test_metrics_with = compute_all_metrics(y_test.values, probs_with, threshold=th_with)
-    test_cis_with = bootstrap_ci_2000(y_test.values, probs_with, threshold=th_with, n_boot=2000, seed=seed)
+    test_cis_with = cluster_bootstrap_ci_2000(y_test.values, probs_with, cluster_ids=groups_test, threshold=th_with, n_boot=2000, seed=seed)
     
     test_metrics_wo = compute_all_metrics(y_test.values, probs_wo, threshold=th_wo)
-    test_cis_wo = bootstrap_ci_2000(y_test.values, probs_wo, threshold=th_wo, n_boot=2000, seed=seed)
+    test_cis_wo = cluster_bootstrap_ci_2000(y_test.values, probs_wo, cluster_ids=groups_test, threshold=th_wo, n_boot=2000, seed=seed)
     
     test_metrics_payload = {
         "model_with_mmse": {

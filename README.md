@@ -271,8 +271,8 @@ CO CARE is deployed live on Vercel as well as configured for local execution.
    - **Important Note**: Game session logging in `/tmp` will reset across serverless cold starts. Vercel deployment is intended as a **live demo**. For actual longitudinal research and participant study data collection, run the local deployment (`start.bat`) or configure a persistent cloud database.
 2. **Serverless Bundle Size Limit (< 250 MB)**:
    - Heavy offline data science packages (`shap`, `matplotlib`, `seaborn`, `imbalanced-learn`) are isolated in `ml/requirements.txt` and excluded from deployment.
-   - **Measured Vercel Footprint**: Project deployment source payload = 1.6 MB; uncompressed runtime Lambda footprint (FastAPI, scikit-learn, pandas, joblib) was measured at ~180 MB during deployment, verified well within Vercel's 250 MB serverless ceiling.
-   - Explainability runs via dependency-free feature occlusion at inference time (< 1.5 ms latency).
+   - **Measured Vercel Footprint**: Project deployment source upload payload = **44.3 KB** (strictly enforced via .vercelignore); uncompressed runtime serverless Lambda dependency footprint (FastAPI, scikit-learn, pandas, joblib) was measured at **249.47 MB** during production build, optimized by uv to fit strictly within Vercel's 250.0 MB serverless ceiling.
+   - Model inference executes via dependency-free linear dot products and runtime feature occlusion in < 1.5 ms (local, warm).
 
 ### Deployment Steps
 1. Push the repository to GitHub.
@@ -299,3 +299,14 @@ After deployment completes, verify the endpoints on your Vercel URL (`https://<y
   ```
   Returns 200 with `probability`, `band`, and `explanation`.
 
+---
+
+## Contributions
+
+- **CO CARE Core Team**: Conceptualized and implemented the primary CO CARE application, including the FastAPI backend (ackend/app), the React/Vite web frontend (rontend/src), culturally adapted cognitive game modules (Match the Pairs, Remember the Pictures, Find It), adaptive leveling logic (ackend/app/adaptive.py), and caregiver research instrumentation.
+- **Ankita (ML & Data Owner)**: Engineered **Part A (Machine Learning & Validation)**:
+  - Designed the end-to-end dataset-agnostic ML pipeline (ml/) and LASI-DAD config-driven mapping adapter.
+  - Conducted the longitudinal leakage audit (ml/docs/AUDIT.md), enforcing participant-grouped splits (GroupShuffleSplit / StratifiedGroupKFold) and zero-overlap cluster bootstrapping.
+  - Built model selection, probability calibration, and label permutation sanity verification.
+  - Implemented the stateless serverless inference API (ackend/app/risk.py), model export, and Vercel serverless integration (pi/index.py).
+  - Authored the publication-grade showcase visual system, figure manifest, and interactive documentation (docs/showcase/).

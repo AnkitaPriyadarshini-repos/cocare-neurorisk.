@@ -240,8 +240,8 @@ def predict_cognitive_risk(body: PredictIn):
             break
 
     # Explainability (runtime occlusion)
-    # Import explain_one
-    from ml.src.explain import explain_one
+    # Import explain_one from local self-contained module
+    from .explain import explain_one
     explanations = explain_one(
         profile=body.profile,
         pipeline=pipeline,

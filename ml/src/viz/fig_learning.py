@@ -46,20 +46,22 @@ def generate_learning_curve(theme, mode="light"):
     ax1.plot(sizes, auc_wo_mean, marker='s', lw=2.2, color=theme["accent_secondary"], label="Without MMSE (Demographics Only)", zorder=4)
     ax1.fill_between(sizes, auc_wo_mean - 1.96*auc_wo_std, auc_wo_mean + 1.96*auc_wo_std, color=theme["accent_secondary"], alpha=0.15, zorder=2)
     
-    # Scaling projection arrow toward LASI-DAD
+    # Scaling projection arrow citing LASI-DAD protocol
     ax1.annotate(
-        "LASI-DAD Scaling Frontier\n(N ~ 3,000+ records)\nProjected Demographics Lift",
-        xy=(301, 0.655), xytext=(220, 0.52),
+        "LASI-DAD Target Cohort\n(Lee et al., 2020; Bloom et al., 2021)\nTarget N~3,137 (Access agreement pending)\nProjected Demographics Power Lift",
+        xy=(301, 0.655), xytext=(170, 0.50),
         fontsize=8.5, fontweight="bold", color=theme["success"],
         arrowprops=dict(arrowstyle="->", color=theme["success"], lw=1.5),
         bbox=dict(boxstyle="square,pad=0.3", fc=theme["card_bg"], ec=theme["success"], lw=0.8),
         zorder=5
     )
 
-    ax1.set_xlabel("Training Sample Size (Visits)", fontsize=10, fontweight="bold")
+    ax1.set_xticks(sizes)
+    ax1.set_xticklabels(["50\n(~20 subj)", "100\n(~40 subj)", "150\n(~60 subj)", "200\n(~80 subj)", "250\n(~100 subj)", "301\n(120 subj)"], fontsize=8.5)
+    ax1.set_xlabel("Training Set Size: Visits [Approx. Participants]", fontsize=10, fontweight="bold")
     ax1.set_ylabel("5-Fold Stratified Group CV ROC-AUC", fontsize=10, fontweight="bold")
     ax1.set_title("Panel A: Discriminative Convergence Trajectory", fontsize=11, fontweight="bold", pad=10)
-    ax1.set_xlim(40, 320)
+    ax1.set_xlim(35, 325)
     ax1.set_ylim(0.45, 0.98)
     ax1.legend(loc="lower right", frameon=True, facecolor=theme["card_bg"], edgecolor=theme["border"], fontsize=8.5)
 
@@ -75,7 +77,9 @@ def generate_learning_curve(theme, mode="light"):
     # Baseline line
     ax2.axhline(0.252, color=theme["baseline"], linestyle="--", lw=1.2, label="Prevalence Baseline (0.252)", zorder=2)
     
-    ax2.set_xlabel("Training Sample Size (Visits)", fontsize=10, fontweight="bold")
+    ax2.set_xticks(sizes)
+    ax2.set_xticklabels(["50\n(~20 subj)", "100\n(~40 subj)", "150\n(~60 subj)", "200\n(~80 subj)", "250\n(~100 subj)", "301\n(120 subj)"], fontsize=8.5)
+    ax2.set_xlabel("Training Set Size: Visits [Approx. Participants]", fontsize=10, fontweight="bold")
     ax2.set_ylabel("Mean Brier Score (Lower is Better)", fontsize=10, fontweight="bold")
     ax2.set_title("Panel B: Calibration Error vs Sample Size", fontsize=11, fontweight="bold", pad=10)
     ax2.set_xlim(40, 320)

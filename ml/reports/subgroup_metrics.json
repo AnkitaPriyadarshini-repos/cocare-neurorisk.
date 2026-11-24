@@ -3,27 +3,29 @@
     "Sex": {
       "Male": {
         "n": 41,
+        "n_participants": 15,
         "n_positives": 17,
         "prevalence": 0.4146341463414634,
         "is_underpowered": false,
         "sensitivity": 0.9411764705882353,
         "sensitivity_ci": [
-          0.8092857142857143,
+          0.8499038461538462,
           1.0
         ],
         "specificity": 0.125,
         "specificity_ci": [
           0.0,
-          0.2692307692307692
+          0.25
         ],
         "roc_auc": 0.7561274509803922,
         "roc_auc_ci": [
-          0.5608340175150521,
-          0.9077053140096618
+          0.48245029239766074,
+          0.9804278074866308
         ]
       },
       "Female": {
         "n": 35,
+        "n_participants": 15,
         "n_positives": 8,
         "prevalence": 0.22857142857142856,
         "is_underpowered": false,
@@ -34,12 +36,12 @@
         ],
         "specificity": 0.6666666666666666,
         "specificity_ci": [
-          0.48148148148148145,
-          0.8461538461538461
+          0.41629901960784316,
+          0.8709677419354839
         ],
         "roc_auc": 0.9351851851851851,
         "roc_auc_ci": [
-          0.8275632183908046,
+          0.7427880184331798,
           1.0
         ]
       }
@@ -47,6 +49,7 @@
     "Age": {
       "<75 years": {
         "n": 23,
+        "n_participants": 12,
         "n_positives": 2,
         "prevalence": 0.08695652173913043,
         "is_underpowered": true,
@@ -57,43 +60,45 @@
         ],
         "specificity": 0.3333333333333333,
         "specificity_ci": [
-          0.14058441558441562,
-          0.55
+          0.07266483516483517,
+          0.6300986842105254
         ],
         "roc_auc": 1.0,
         "roc_auc_ci": [
-          0.9999999999999999,
+          1.0,
           1.0
         ]
       },
       ">=75 years": {
         "n": 53,
+        "n_participants": 24,
         "n_positives": 23,
         "prevalence": 0.4339622641509434,
         "is_underpowered": false,
         "sensitivity": 0.9565217391304348,
         "sensitivity_ci": [
-          0.8571428571428571,
+          0.8823529411764706,
           1.0
         ],
         "specificity": 0.4666666666666667,
         "specificity_ci": [
-          0.29411764705882354,
-          0.64
+          0.2352450980392157,
+          0.7
         ],
         "roc_auc": 0.868840579710145,
         "roc_auc_ci": [
-          0.7600596592663156,
-          0.9515164465164464
+          0.7096744544592031,
+          0.9765531357128453
         ]
       }
     },
     "Education": {
       "<=12 years": {
         "n": 35,
+        "n_participants": 13,
         "n_positives": 11,
         "prevalence": 0.3142857142857143,
-        "is_underpowered": false,
+        "is_underpowered": true,
         "sensitivity": 1.0,
         "sensitivity_ci": [
           1.0,
@@ -101,34 +106,35 @@
         ],
         "specificity": 0.5416666666666666,
         "specificity_ci": [
-          0.34782608695652173,
-          0.7333333333333333
+          0.2380252100840336,
+          0.8333333333333334
         ],
         "roc_auc": 0.9734848484848484,
         "roc_auc_ci": [
-          0.9055944055944056,
+          0.8893318905203456,
           1.0
         ]
       },
       ">12 years": {
         "n": 41,
+        "n_participants": 17,
         "n_positives": 14,
         "prevalence": 0.34146341463414637,
         "is_underpowered": false,
         "sensitivity": 0.9285714285714286,
         "sensitivity_ci": [
-          0.7691176470588236,
+          0.8333333333333334,
           1.0
         ],
         "specificity": 0.2962962962962963,
         "specificity_ci": [
-          0.13043478260869565,
-          0.4737468671679194
+          0.125,
+          0.5
         ],
         "roc_auc": 0.7156084656084657,
         "roc_auc_ci": [
-          0.5274404761904762,
-          0.8757575757575758
+          0.44326964870828967,
+          0.9394090909090907
         ]
       }
     }
@@ -137,6 +143,7 @@
     "Sex": {
       "Male": {
         "n": 41,
+        "n_participants": 15,
         "n_positives": 17,
         "prevalence": 0.4146341463414634,
         "is_underpowered": false,
@@ -152,35 +159,37 @@
         ],
         "roc_auc": 0.6433823529411765,
         "roc_auc_ci": [
-          0.4290121932396975,
-          0.8284331486217675
+          0.3465884170653908,
+          0.9625142045454544
         ]
       },
       "Female": {
         "n": 35,
+        "n_participants": 15,
         "n_positives": 8,
         "prevalence": 0.22857142857142856,
         "is_underpowered": false,
         "sensitivity": 0.75,
         "sensitivity_ci": [
-          0.4,
+          0.25,
           1.0
         ],
         "specificity": 0.07407407407407407,
         "specificity_ci": [
           0.0,
-          0.18518518518518517
+          0.2608695652173913
         ],
         "roc_auc": 0.44907407407407407,
         "roc_auc_ci": [
-          0.1599540816326531,
-          0.7471482758620689
+          0.08333333333333333,
+          0.875
         ]
       }
     },
     "Age": {
       "<75 years": {
         "n": 23,
+        "n_participants": 12,
         "n_positives": 2,
         "prevalence": 0.08695652173913043,
         "is_underpowered": true,
@@ -192,42 +201,44 @@
         "specificity": 0.047619047619047616,
         "specificity_ci": [
           0.0,
-          0.15
+          0.19047619047619047
         ],
         "roc_auc": 0.8095238095238095,
         "roc_auc_ci": [
-          0.4545454545454546,
+          0.3913043478260869,
           1.0
         ]
       },
       ">=75 years": {
         "n": 53,
+        "n_participants": 24,
         "n_positives": 23,
         "prevalence": 0.4339622641509434,
         "is_underpowered": false,
         "sensitivity": 0.9130434782608695,
         "sensitivity_ci": [
-          0.782608695652174,
+          0.7142857142857143,
           1.0
         ],
         "specificity": 0.03333333333333333,
         "specificity_ci": [
           0.0,
-          0.1111111111111111
+          0.12
         ],
         "roc_auc": 0.5659420289855073,
         "roc_auc_ci": [
-          0.3900905572755418,
-          0.7361283740228609
+          0.3233068493540088,
+          0.796362638382089
         ]
       }
     },
     "Education": {
       "<=12 years": {
         "n": 35,
+        "n_participants": 13,
         "n_positives": 11,
         "prevalence": 0.3142857142857143,
-        "is_underpowered": false,
+        "is_underpowered": true,
         "sensitivity": 1.0,
         "sensitivity_ci": [
           1.0,
@@ -240,29 +251,30 @@
         ],
         "roc_auc": 0.8674242424242424,
         "roc_auc_ci": [
-          0.7232346938775511,
-          0.9746717391304346
+          0.610897435897436,
+          1.0
         ]
       },
       ">12 years": {
         "n": 41,
+        "n_participants": 17,
         "n_positives": 14,
         "prevalence": 0.34146341463414637,
         "is_underpowered": false,
         "sensitivity": 0.8571428571428571,
         "sensitivity_ci": [
-          0.6426948051948053,
+          0.5,
           1.0
         ],
         "specificity": 0.07407407407407407,
         "specificity_ci": [
           0.0,
-          0.1875
+          0.25
         ],
         "roc_auc": 0.4722222222222222,
         "roc_auc_ci": [
-          0.2743548387096774,
-          0.6794871794871795
+          0.16324617346938775,
+          0.7653061224489796
         ]
       }
     }

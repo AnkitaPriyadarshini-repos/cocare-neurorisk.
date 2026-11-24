@@ -88,10 +88,16 @@ def compute_subgroup_metrics():
             spec_w = tn_w / (tn_w + fp_w) if (tn_w + fp_w) > 0 else 0.0
             auc_w = roc_auc_score(sub_y, sub_prob_w) if len(np.unique(sub_y)) > 1 else 0.5
             
-            # Bootstrap CI for sens_w and spec_w
+            sub_groups = groups.iloc[test_idx][mask].values
+            sub_clusters = np.unique(sub_groups)
+            n_sub_clusters = len(sub_clusters)
+            cluster_map = {c: np.where(sub_groups == c)[0] for c in sub_clusters}
+            
+            # Bootstrap CI for sens_w and spec_w via cluster bootstrap by participant
             boot_sens_w, boot_spec_w, boot_auc_w = [], [], []
             for _ in range(n_boot):
-                b_idx = rng.randint(0, n_sub, size=n_sub)
+                sampled_c = rng.choice(sub_clusters, size=n_sub_clusters, replace=True)
+                b_idx = np.concatenate([cluster_map[c] for c in sampled_c])
                 if len(np.unique(sub_y[b_idx])) < 2:
                     continue
                 b_pred = (sub_prob_w[b_idx] >= thresh_with).astype(int)
@@ -104,9 +110,10 @@ def compute_subgroup_metrics():
                 
             subgroup_res["model_with_mmse"][group_name][cat_name] = {
                 "n": n_sub,
+                "n_participants": n_sub_clusters,
                 "n_positives": n_pos,
                 "prevalence": float(n_pos / n_sub),
-                "is_underpowered": bool(n_sub < 30),
+                "is_underpowered": bool(n_sub < 30 or n_sub_clusters < 15),
                 "sensitivity": float(sens_w),
                 "sensitivity_ci": [float(np.percentile(boot_sens_w, 2.5)), float(np.percentile(boot_sens_w, 97.5))] if boot_sens_w else [0.0, 1.0],
                 "specificity": float(spec_w),
@@ -115,7 +122,7 @@ def compute_subgroup_metrics():
                 "roc_auc_ci": [float(np.percentile(boot_auc_w, 2.5)), float(np.percentile(boot_auc_w, 97.5))] if boot_auc_w else [0.5, 0.5]
             }
             
-            # Model without MMSE
+            # Model without MMSE via cluster bootstrap
             pred_wo = (sub_prob_wo >= thresh_without).astype(int)
             tn_wo, fp_wo, fn_wo, tp_wo = confusion_matrix(sub_y, pred_wo, labels=[0, 1]).ravel()
             sens_wo = tp_wo / (tp_wo + fn_wo) if (tp_wo + fn_wo) > 0 else 0.0
@@ -124,7 +131,8 @@ def compute_subgroup_metrics():
             
             boot_sens_wo, boot_spec_wo, boot_auc_wo = [], [], []
             for _ in range(n_boot):
-                b_idx = rng.randint(0, n_sub, size=n_sub)
+                sampled_c = rng.choice(sub_clusters, size=n_sub_clusters, replace=True)
+                b_idx = np.concatenate([cluster_map[c] for c in sampled_c])
                 if len(np.unique(sub_y[b_idx])) < 2:
                     continue
                 b_pred = (sub_prob_wo[b_idx] >= thresh_without).astype(int)
@@ -135,9 +143,10 @@ def compute_subgroup_metrics():
                 
             subgroup_res["model_without_mmse"][group_name][cat_name] = {
                 "n": n_sub,
+                "n_participants": n_sub_clusters,
                 "n_positives": n_pos,
                 "prevalence": float(n_pos / n_sub),
-                "is_underpowered": bool(n_sub < 30),
+                "is_underpowered": bool(n_sub < 30 or n_sub_clusters < 15),
                 "sensitivity": float(sens_wo),
                 "sensitivity_ci": [float(np.percentile(boot_sens_wo, 2.5)), float(np.percentile(boot_sens_wo, 97.5))] if boot_sens_wo else [0.0, 1.0],
                 "specificity": float(spec_wo),

@@ -8,7 +8,7 @@ Guidelines and recommended metadata for presenting the **CO CARE** machine learn
 Add these topics in the GitHub repository settings (under the **About** gear icon on the main repo page):
 
 ```
-dementia-screening, cognitive-health, machine-learning, scikit-learn, fastapi, shap, responsible-ai, stateless-privacy, healthcare-ai, lasi-dad, oasis-dataset, serverless
+dementia-screening, cognitive-health, machine-learning, scikit-learn, fastapi, shap, responsible-ai, stateless-privacy, healthcare-ai, oasis-dataset, serverless, lasi-dad-planned
 ```
 
 ---
@@ -16,7 +16,7 @@ dementia-screening, cognitive-health, machine-learning, scikit-learn, fastapi, s
 ## 2. Recommended Repository Description
 Enter this concise, impact-oriented summary in the repository's **Description** field:
 
-> **AI-assisted cognitive risk screening pipeline and culturally adapted cognitive games for elderly populations. Features leakage-free longitudinal cross-validation, stateless serverless inference, and bilingual (English/Odia) feature attribution.**
+> **AI-assisted cognitive risk screening pipeline and culturally adapted cognitive games for elderly populations. Features subject-grouped cross-validation, stateless serverless inference, and Odia-ready (translations pending native review) feature attribution.**
 
 ---
 
