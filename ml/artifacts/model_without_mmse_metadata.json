@@ -1,0 +1,200 @@
+{
+  "variant": "model_without_mmse",
+  "model_type": "LogisticRegression",
+  "features": {
+    "numeric": [
+      "Age",
+      "EDUC",
+      "SES"
+    ],
+    "categorical": [
+      "Sex"
+    ],
+    "all_ordered": [
+      "Age",
+      "EDUC",
+      "SES",
+      "Sex"
+    ]
+  },
+  "threshold": 0.3302155012785084,
+  "risk_bands": {
+    "lower": [
+      0.0,
+      0.231
+    ],
+    "moderate": [
+      0.231,
+      0.429
+    ],
+    "higher": [
+      0.429,
+      1.0
+    ]
+  },
+  "sample_sizes": {
+    "train": 301,
+    "test": 72,
+    "train_prevalence": 0.4850498338870432,
+    "test_prevalence": 0.2916666666666667
+  },
+  "test_metrics": {
+    "sensitivity": 0.9047619047619048,
+    "specificity": 0.35294117647058826,
+    "precision": 0.36538461538461536,
+    "f1": 0.5205479452054794,
+    "accuracy": 0.5138888888888888,
+    "roc_auc": 0.6792717086834733,
+    "pr_auc": 0.5493817737083246,
+    "brier_score": 0.21014063558809484,
+    "tp": 19,
+    "fp": 33,
+    "tn": 18,
+    "fn": 2
+  },
+  "test_metrics_95_ci": {
+    "sensitivity": {
+      "mean": 0.9054504490838097,
+      "ci_lower": 0.75,
+      "ci_upper": 1.0
+    },
+    "specificity": {
+      "mean": 0.35273263282905803,
+      "ci_lower": 0.22909787735849055,
+      "ci_upper": 0.4823115079365078
+    },
+    "precision": {
+      "mean": 0.3649173607406395,
+      "ci_lower": 0.2399090909090909,
+      "ci_upper": 0.5
+    },
+    "f1": {
+      "mean": 0.5166799489144448,
+      "ci_lower": 0.3728450363196126,
+      "ci_upper": 0.6523169336384438
+    },
+    "accuracy": {
+      "mean": 0.5135277777777778,
+      "ci_lower": 0.3888888888888889,
+      "ci_upper": 0.625
+    },
+    "roc_auc": {
+      "mean": 0.6801383267939463,
+      "ci_lower": 0.5256555613601823,
+      "ci_upper": 0.8093685300207039
+    },
+    "pr_auc": {
+      "mean": 0.5566646992171402,
+      "ci_lower": 0.34960791997401225,
+      "ci_upper": 0.7279710906583594
+    }
+  },
+  "fairness_audit": {
+    "subgroups": {
+      "sex": {
+        "M": {
+          "count": 21,
+          "prevalence": 0.5238095238095238,
+          "sensitivity": 1.0,
+          "precision": 0.5238095238095238,
+          "accuracy": 0.5238095238095238,
+          "roc_auc": 0.5727272727272728
+        },
+        "F": {
+          "count": 51,
+          "prevalence": 0.19607843137254902,
+          "sensitivity": 0.8,
+          "precision": 0.25806451612903225,
+          "accuracy": 0.5098039215686274,
+          "roc_auc": 0.6207317073170732
+        }
+      },
+      "age_band": {
+        "<75": {
+          "count": 26,
+          "prevalence": 0.34615384615384615,
+          "sensitivity": 0.7777777777777778,
+          "precision": 0.3888888888888889,
+          "accuracy": 0.5,
+          "roc_auc": 0.5
+        },
+        ">=75": {
+          "count": 46,
+          "prevalence": 0.2608695652173913,
+          "sensitivity": 1.0,
+          "precision": 0.35294117647058826,
+          "accuracy": 0.5217391304347826,
+          "roc_auc": 0.8112745098039216
+        }
+      },
+      "education_band": {
+        "<=12_years": {
+          "count": 19,
+          "prevalence": 0.5263157894736842,
+          "sensitivity": 1.0,
+          "precision": 0.5263157894736842,
+          "accuracy": 0.5263157894736842,
+          "roc_auc": 0.6499999999999999
+        },
+        ">12_years": {
+          "count": 53,
+          "prevalence": 0.20754716981132076,
+          "sensitivity": 0.8181818181818182,
+          "precision": 0.2727272727272727,
+          "accuracy": 0.5094339622641509,
+          "roc_auc": 0.6320346320346321
+        }
+      }
+    },
+    "flags": [
+      "Sex sensitivity gap is 0.200 (> 0.05 threshold).",
+      "Age band sensitivity gap is 0.222 (> 0.05 threshold).",
+      "Education band sensitivity gap is 0.182 (> 0.05 threshold)."
+    ],
+    "passed_parity": false
+  },
+  "reference_medians": {
+    "Age": 77.0,
+    "EDUC": 15.0,
+    "SES": 2.0,
+    "Sex": "F"
+  },
+  "background_summary": {
+    "n_samples": 301,
+    "numeric_summaries": {
+      "Age": {
+        "mean": 76.52491694352159,
+        "std": 7.238568717392407,
+        "median": 77.0,
+        "p25": 71.0,
+        "p75": 81.0
+      },
+      "EDUC": {
+        "mean": 14.601328903654485,
+        "std": 2.722841327509763,
+        "median": 15.0,
+        "p25": 12.0,
+        "p75": 16.0
+      },
+      "SES": {
+        "mean": 2.4645390070921986,
+        "std": 1.166168087099724,
+        "median": 2.0,
+        "p25": 1.0,
+        "p75": 3.0
+      }
+    },
+    "categorical_distributions": {
+      "Sex": {
+        "F": 0.538,
+        "M": 0.462
+      }
+    }
+  },
+  "seed": 42,
+  "library_versions": {
+    "scikit_learn": "1.6.1",
+    "joblib": "1.5.1"
+  },
+  "disclaimer": "This tool is a cognitive risk screening aid designed for preliminary assessment, NOT a clinical diagnosis."
+}
