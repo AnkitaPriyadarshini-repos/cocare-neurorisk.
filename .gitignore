@@ -10,3 +10,4 @@ ml/data/
 *.dta
 *.sav
 
+.vercel
