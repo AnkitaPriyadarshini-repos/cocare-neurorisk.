@@ -213,6 +213,16 @@
         <p>Animated progression of individual CV folds converging onto the mean ROC curve with 95% CI envelope.</p>
         <img class="theme-img" data-light="figures/15_signature_visual_animated.gif" data-dark="figures/15_signature_visual_animated.gif" alt="Animated CV Convergence">
       </div>
+      <div class="figure-card">
+        <h2>Figure 16: Solver Convergence (Logistic Regression)</h2>
+        <p>Cross-entropy loss and out-of-fold generalization gap across L-BFGS solver iterations (5-fold StratifiedGroupKFold on training split, N=297 visits, 120 subjects).</p>
+        <img class="theme-img" data-light="figures/16_training_loss_convergence-light.png" data-dark="figures/16_training_loss_convergence-dark.png" alt="Solver Convergence">
+      </div>
+      <div class="figure-card">
+        <h2>Figure 17: Class-Wise Evaluation & Performance Symmetry</h2>
+        <p>Class 0 (Healthy) vs Class 1 (Risk) precision, recall, and specificity showing Without-MMSE (Specificity ~35.3%) alongside With-MMSE (Specificity ~74.5%).</p>
+        <img class="theme-img" data-light="figures/17_class_wise_evaluation-light.png" data-dark="figures/17_class_wise_evaluation-dark.png" alt="Class-Wise Evaluation">
+      </div>
     </div>
 
     <!-- Tab 3: Clinical Calibration -->
@@ -255,6 +265,16 @@
         <h2>Figure 14: Model Card at a Glance</h2>
         <p>Executive infographic summarizing model details, performance, ethical boundaries, and responsible AI safeguards.</p>
         <img class="theme-img" data-light="figures/14_model_card_glance-light.png" data-dark="figures/14_model_card_glance-dark.png" alt="Model Card Infographic">
+      </div>
+      <div class="figure-card">
+        <h2>Figure 18: Risk Factor Odds Ratios & Multicollinearity</h2>
+        <p>Cluster-robust odds ratios (Huber-White sandwich standard errors, G=150 subjects): MMSE decrement (OR 2.68, p &lt; 0.001) and Male sex (OR 3.76, p = 0.002) show clear risk associations; Education (OR 0.36 per 4y, p = 0.005) is protective; Age per decade (OR 0.72, p = 0.252) shows no clear evidence of an independent effect after adjusting for cognition and demographics.</p>
+        <img class="theme-img" data-light="figures/18_risk_factor_odds_ratios-light.png" data-dark="figures/18_risk_factor_odds_ratios-dark.png" alt="Risk Factor Odds Ratios">
+      </div>
+      <div class="figure-card">
+        <h2>Figure 19: Longitudinal Risk Trajectories (Out-of-Fold)</h2>
+        <p>Out-of-fold predicted risk across annual visits for Non-Demented (n=72), Converted (exploratory, n=14), and Demented (n=64) participants.</p>
+        <img class="theme-img" data-light="figures/19_longitudinal_trajectory-light.png" data-dark="figures/19_longitudinal_trajectory-dark.png" alt="Longitudinal Trajectories">
       </div>
     </div>
 

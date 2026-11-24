@@ -1,7 +1,7 @@
 """Runtime explainability module for CO CARE serverless deployment.
 
 Self-contained within backend/app so Vercel does not require ml/ to be deployed.
-Uses lightweight feature occlusion with zero C++ or heavy dependencies (< 1.5 ms latency).
+Uses lightweight feature occlusion with zero C++ or heavy dependencies (model inference ~1 ms (local, warm)).
 """
 from typing import Dict, List, Any
 import numpy as np
@@ -11,13 +11,13 @@ FEATURE_TEXTS = {
     "Age": {
         "raises": {
             "key": "risk.age.raises",
-            "en": "Advanced age is a primary non-modifiable risk factor for cognitive vulnerability.",
-            "or": "ଅଧିକ ବୟସ ଜ୍ଞାନଗତ ଦୁର୍ବଳତା ପାଇଁ ଏକ ମୁଖ୍ୟ ବିପଦ କାରଣ। [needs native review]"
+            "en": "In this demo model, older age raises predicted risk.",
+            "or": "ଏହି ଡେମୋ ମଡେଲରେ, ଅଧିକ ବୟସ ଆକଳିତ ବିପଦକୁ ବୃଦ୍ଧି କରେ। [needs native review]"
         },
         "lowers": {
             "key": "risk.age.lowers",
-            "en": "Younger age profile contributes positively to baseline cognitive resilience.",
-            "or": "କମ୍ ବୟସ ଜ୍ଞାନଗତ ସହନଶୀଳତା ବୃଦ୍ଧିରେ ସହାୟକ ହୁଏ। [needs native review]"
+            "en": "In this demo model, younger age lowers predicted risk.",
+            "or": "ଏହି ଡେମୋ ମଡେଲରେ, କମ୍ ବୟସ ଆକଳିତ ବିପଦକୁ ହ୍ରାସ କରେ। [needs native review]"
         }
     },
     "EDUC": {

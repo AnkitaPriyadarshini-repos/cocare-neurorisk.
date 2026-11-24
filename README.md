@@ -227,17 +227,11 @@ This project draws conceptual inspiration from several open-source and clinical 
 
 **Independence & Non-Infringement Statement**:
 - **Zero Copied Code or Assets**: No code, model weights, neural architectures, or visual assets were copied from these repositories or platforms. All pipelines, feature encodings, preprocessors, FastAPI routers, React components, and figures in CO CARE are original implementations developed independently.
-- **Licenses & Transparency**: The reference repositories are distributed under their respective open-source or educational licenses (e.g., JacobW4 under educational terms). CO CARE is open-sourced under the permissive **MIT License**.
-
----|:---|:---|:---|:---|
-| **Data Modality** | Brain MRI Scan Images ($180\times 180$) | Census / LGA Administrative Statistics | Audio / Speech Recordings & Clinical Surveys | **Demographics + Brief Cognitive Test (MMSE/HMSE)** |
-| **Screening Setting** | Specialized Hospital (MRI required) | Macro Geographic & Epidemiological | Clinical Workflow / Telehealth | **Primary Care & Rural Community Intake** |
-| **Model Architecture** | 3-Layer Conv2D + Dense Deep CNN | Bayesian Spatial INLA Regression | Proprietary Cloud ML Platform | **Calibrated Regularized Logistic + Group CV** |
-| **Inference Hardware** | GPU / Heavy TensorFlow runtime | Offline R / Spatial runtime | Cloud Web Application | **$model inference ~1 ms (local, warm) Serverless Lambda ($2\text{ KB}$ weights)** |
-| **Training Dynamics** | Accuracy & Loss curves (TensorFlow) | Not reported | Not open-source | **Empirical Log-Loss Convergence + Group CV** |
-| **Cultural Adaptation** | English / US Kaggle Dataset | Australian LGA Census | English Clinical Interface | **Odia-Ready (translations pending review) + LASI-DAD ready** |
-| **Privacy & Persist.** | Offline Notebook | Macro Public Datasets | Enterprise Database | **100% Stateless: Zero DB logging of patient profiles** |
-| **Open Source URL** | [JacobW4 Repo](https://github.com/JacobW4/cnn-dementia-classification) | [Albert-L-Phan Repo](https://github.com/Albert-L-Phan/Dementia) | [Memora App](https://memora-health.vercel.app/) | **[CO CARE Repo](https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.)** |
+- **Repository Licenses**:
+  - **[JacobW4/cnn-dementia-classification](https://github.com/JacobW4/cnn-dementia-classification)**: No standalone LICENSE file found in repository (`no license found`). README states under License: *"This project is for educational purposes. Dataset is subject to Kaggle's terms of use."*
+  - **[Albert-L-Phan/Dementia](https://github.com/Albert-L-Phan/Dementia)**: No license file found in repository (`no license found`).
+  - **[Memora Health](https://memora-health.vercel.app/)**: Cloud clinical web application; no public source repository or license found (`no license found`).
+  - **CO CARE**: Open-sourced under the permissive **MIT License**.
 
 ---
 
