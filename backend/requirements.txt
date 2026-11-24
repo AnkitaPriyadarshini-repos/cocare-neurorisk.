@@ -1,2 +1,6 @@
 fastapi>=0.110
 uvicorn[standard]>=0.29
+
+# Runtime ML dependencies (minimal bundle for serverless)
+scikit-learn==1.6.1
+joblib>=1.3.0

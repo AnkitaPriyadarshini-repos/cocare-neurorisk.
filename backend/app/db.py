@@ -3,7 +3,12 @@ import os
 import sqlite3
 from contextlib import contextmanager
 
-DB_PATH = os.environ.get("COCARE_DB", os.path.join(os.path.dirname(__file__), "..", "cocare.db"))
+if "COCARE_DB" in os.environ:
+    DB_PATH = os.environ["COCARE_DB"]
+elif os.environ.get("VERCEL"):
+    DB_PATH = "/tmp/cocare.db"
+else:
+    DB_PATH = os.path.join(os.path.dirname(__file__), "..", "cocare.db")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (

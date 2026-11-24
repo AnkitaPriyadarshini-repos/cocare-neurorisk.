@@ -226,6 +226,13 @@ def export_csv(table: str):
                              headers={"Content-Disposition": f"attachment; filename={table}.csv"})
 
 
+
+# ---------- Risk Screening (ML) Module ----------
+from .risk import router as risk_router
+app.include_router(risk_router)
+# ------------------------------------------------
+
+
 # ---------- serve the built frontend (after `npm run build`) ----------
 DIST = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
 if os.path.isdir(DIST):
