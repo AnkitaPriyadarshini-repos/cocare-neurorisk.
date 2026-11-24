@@ -1,0 +1,18 @@
+{
+  "total_records": 373,
+  "target_prevalence": 0.4477211796246649,
+  "target_counts": {
+    "0": 206,
+    "1": 167
+  },
+  "by_sex": {
+    "F": {
+      "count": 213,
+      "mean": 0.3333333333333333
+    },
+    "M": {
+      "count": 160,
+      "mean": 0.6
+    }
+  }
+}
