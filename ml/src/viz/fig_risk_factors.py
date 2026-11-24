@@ -36,7 +36,7 @@ def create_risk_factors_figure(theme: dict, mode: str) -> plt.Figure:
     ax1.set_yticks(range(len(features)))
     ax1.set_xticklabels(display_labels, fontsize=10, rotation=25, ha="right", fontweight="bold")
     ax1.set_yticklabels(display_labels, fontsize=10, fontweight="bold")
-    ax1.set_title("Multifactor Feature Correlation Heatmap\n(Pearson Correlation r)", fontsize=12, fontweight="bold", pad=12)
+    ax1.set_title("Multifactor Feature Correlation Heatmap\n(Note: SES coded 1=highest, 5=lowest)", fontsize=11.5, fontweight="bold", pad=12)
     
     # Annotate values
     for i in range(len(features)):
@@ -57,6 +57,7 @@ def create_risk_factors_figure(theme: dict, mode: str) -> plt.Figure:
     ci_lows = [item["ci_lower"] for item in ors]
     ci_highs = [item["ci_upper"] for item in ors]
     p_vals = [item["p_value"] for item in ors]
+    directions = [item.get("risk_direction", "") for item in ors]
     
     y_pos = np.arange(len(labels))
     
@@ -67,28 +68,35 @@ def create_risk_factors_figure(theme: dict, mode: str) -> plt.Figure:
         or_val = estimates[i]
         low = ci_lows[i]
         high = ci_highs[i]
-        color = theme["danger"] if or_val > 1.2 else (theme["success"] if or_val < 0.9 else theme["accent_primary"])
+        effect_label = directions[i]
+        
+        if "No clear evidence" in effect_label:
+            color = theme["baseline"]
+        elif "Risk" in effect_label:
+            color = theme["danger"]
+        else:
+            color = theme["success"]
         
         # Horizontal error bar
         ax2.errorbar(or_val, y_pos[i], xerr=[[or_val - low], [high - or_val]], fmt="o", color=color,
                      ecolor=color, elinewidth=2.2, capsize=5, markersize=8)
         
         # Annotation text on right
-        ax2.text(high + 0.05, y_pos[i], f"OR={or_val:.2f} [{low:.2f}-{high:.2f}], p {p_vals[i]}",
-                 va="center", fontsize=9, fontweight="bold", color=theme["text"])
+        ax2.text(high + 0.12, y_pos[i], f"OR={or_val:.2f} [{low:.2f}-{high:.2f}], p={p_vals[i]} ({effect_label})",
+                 va="center", fontsize=8.5, fontweight="bold", color=theme["text"])
         
     ax2.set_yticks(y_pos)
     ax2.set_yticklabels(labels, fontsize=10.5, fontweight="bold")
-    ax2.set_xlabel("Adjusted Odds Ratio (OR with 95% CI)", fontsize=11, labelpad=8)
-    ax2.set_xlim(0.4, 3.2)
-    ax2.set_title("Adjusted Odds Ratios for Dementia Risk\n(Multivariate Logistic Regression)", fontsize=12, fontweight="bold", pad=12)
+    ax2.set_xlabel("Adjusted Odds Ratio (OR with 95% CI; Cluster-Robust SEs)", fontsize=11, labelpad=8)
+    ax2.set_xlim(0.0, 11.5)
+    ax2.set_title("Adjusted Odds Ratios (Cluster-Robust by Participant SEs)\nMultivariate Logistic Regression", fontsize=11.5, fontweight="bold", pad=12)
     ax2.invert_yaxis()  # top-down
     ax2.legend(loc="lower right", framealpha=0.85, facecolor=theme["card_bg"], edgecolor=theme["border"], fontsize=9)
 
     add_figure_footer(
         fig, theme,
-        dataset="OASIS-1 Longitudinal (N=373 visits, 150 subjects; Multivariate Regularized Model)",
-        disclaimer="Standardized odds ratios with 95% CIs | Screening demonstration only, NOT clinical diagnosis"
+        dataset="OASIS-1 Longitudinal (N=373 visits, 150 subjects; Cluster-Robust by Participant SEs)",
+        disclaimer="Huber-White cluster sandwich SEs | Screening demonstration only, NOT clinical diagnosis"
     )
     plt.tight_layout(rect=[0.02, 0.05, 0.98, 0.96])
     return fig

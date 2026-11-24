@@ -544,24 +544,111 @@ def compute_class_wise_metrics():
 
 
 def compute_risk_factor_data():
-    """Compute risk factor correlation matrix and standardized odds ratios."""
+    """Compute risk factor correlation matrix and cluster-robust standardized odds ratios.
+    
+    Uses Huber-White/Liang-Zeger sandwich variance estimator clustered by Subject ID
+    to account for longitudinal participant repeated visits.
+    Note on SES: Coded 1 to 5 where 1 = highest socioeconomic status, 5 = lowest.
+    """
+    from scipy import stats
     X_raw, y_raw, groups = load_oasis()
     clean_df, _ = clean_raw_data(X_raw)
     
     clean_df["target"] = y_raw
+    clean_df["Subject_ID"] = groups
+    
+    # Impute missing values with medians
+    clean_df["SES"] = clean_df["SES"].fillna(clean_df["SES"].median())
+    clean_df["MMSE"] = clean_df["MMSE"].fillna(clean_df["MMSE"].median())
+    
     corr = clean_df[["Age", "EDUC", "SES", "MMSE", "target"]].corr().round(4).to_dict()
     
-    odds_ratios = [
-        {"feature": "MMSE (per 1-pt drop)", "odds_ratio": 1.48, "ci_lower": 1.31, "ci_upper": 1.68, "p_value": "< 0.001", "risk_direction": "Risk Factor"},
-        {"feature": "Age (per decade)", "odds_ratio": 1.34, "ci_lower": 1.05, "ci_upper": 1.72, "p_value": "0.019", "risk_direction": "Risk Factor"},
-        {"feature": "Male Sex", "odds_ratio": 1.62, "ci_lower": 0.98, "ci_upper": 2.68, "p_value": "0.061", "risk_direction": "Modest Risk"},
-        {"feature": "SES (per tier increase)", "odds_ratio": 1.14, "ci_lower": 0.88, "ci_upper": 1.49, "p_value": "0.320", "risk_direction": "Neutral"},
-        {"feature": "Education (per 4 yrs)", "odds_ratio": 0.81, "ci_lower": 0.64, "ci_upper": 1.02, "p_value": "0.076", "risk_direction": "Protective"}
+    # Standardized features for odds ratio computation
+    clean_df["MMSE_drop"] = -1.0 * clean_df["MMSE"]
+    clean_df["Age_decade"] = clean_df["Age"] / 10.0
+    clean_df["EDUC_4yr"] = clean_df["EDUC"] / 4.0
+    clean_df["SES_tier"] = clean_df["SES"]
+    clean_df["Sex_M"] = (clean_df["Sex"] == "M").astype(float)
+    
+    features = ["MMSE_drop", "Age_decade", "Sex_M", "SES_tier", "EDUC_4yr"]
+    feature_labels = [
+        "MMSE (per 1-pt drop)",
+        "Age (per decade)",
+        "Male Sex (vs Female)",
+        "SES tier (1=highest, 5=lowest)",
+        "Education (per 4 yrs)"
     ]
     
+    X_mat = clean_df[features].copy()
+    X_mat.insert(0, "Intercept", 1.0)
+    X_arr = X_mat.values
+    y_arr = clean_df["target"].values
+    subj_arr = clean_df["Subject_ID"].values
+    
+    clf = LogisticRegression(penalty=None, solver="lbfgs", max_iter=2000, random_state=42)
+    clf.fit(X_arr[:, 1:], y_arr)
+    
+    beta = np.zeros(X_arr.shape[1])
+    beta[0] = clf.intercept_[0]
+    beta[1:] = clf.coef_[0]
+    
+    p = 1.0 / (1.0 + np.exp(-X_arr @ beta))
+    p = np.clip(p, 1e-15, 1.0 - 1e-15)
+    
+    W = p * (1.0 - p)
+    H = (X_arr.T * W) @ X_arr
+    H_inv = np.linalg.inv(H)
+    
+    unique_subjs = np.unique(subj_arr)
+    G = len(unique_subjs)
+    N = len(y_arr)
+    K = len(beta)
+    
+    B = np.zeros((K, K))
+    residuals = y_arr - p
+    for subj in unique_subjs:
+        mask = (subj_arr == subj)
+        s_g = X_arr[mask].T @ residuals[mask]
+        B += np.outer(s_g, s_g)
+        
+    dfc = (G / (G - 1)) * ((N - 1) / (N - K))
+    V_cluster = dfc * (H_inv @ B @ H_inv)
+    se_cluster = np.sqrt(np.diag(V_cluster))
+    z_stats = beta / se_cluster
+    p_values = 2.0 * (1.0 - stats.norm.cdf(np.abs(z_stats)))
+    
+    odds_ratios = np.exp(beta)
+    ci_lower = np.exp(beta - 1.96 * se_cluster)
+    ci_upper = np.exp(beta + 1.96 * se_cluster)
+    
+    odds_ratios_data = []
+    for i in range(1, len(beta)):
+        lbl = feature_labels[i - 1]
+        or_val = odds_ratios[i]
+        low = ci_lower[i]
+        high = ci_upper[i]
+        pval = p_values[i]
+        
+        if pval < 0.05:
+            effect = "Risk Factor" if or_val > 1.0 else "Protective"
+        else:
+            effect = "No clear evidence of effect"
+            
+        p_str = "< 0.001" if pval < 0.001 else f"{pval:.3f}"
+        odds_ratios_data.append({
+            "feature": lbl,
+            "odds_ratio": round(float(or_val), 2),
+            "ci_lower": round(float(low), 2),
+            "ci_upper": round(float(high), 2),
+            "z_stat": round(float(z_stats[i]), 2),
+            "p_value": p_str,
+            "risk_direction": effect
+        })
+        
     data = {
         "correlation_matrix": corr,
-        "odds_ratios": odds_ratios
+        "ses_coding_note": "SES is coded 1 to 5 (Hollingshead Index), where 1 = highest status and 5 = lowest status",
+        "odds_ratios": odds_ratios_data
     }
     
     with open("ml/reports/risk_factors.json", "w") as f:
@@ -570,46 +657,78 @@ def compute_risk_factor_data():
 
 
 def compute_longitudinal_trajectory_data():
-    """Compute longitudinal risk trajectories across patient visits."""
+    """Compute longitudinal risk trajectories across patient visits using ONLY out-of-fold predictions.
+    
+    Uses 5-fold StratifiedGroupKFold on Subject ID.
+    Every patient visit prediction is purely out-of-fold.
+    """
     X_raw, y_raw, groups = load_oasis()
     clean_df, _ = clean_raw_data(X_raw)
     raw_csv = pd.read_csv("ml/data/oasis_longitudinal.csv")
     
+    clean_df["Subject_ID"] = groups
     clean_df["Group"] = raw_csv["Group"]
     clean_df["Visit"] = raw_csv["Visit"]
     clean_df["CDR"] = raw_csv["CDR"]
+    clean_df["target"] = y_raw
     
-    model_w = joblib.load("backend/models/model_with_mmse.joblib")
-    model_wo = joblib.load("backend/models/model_without_mmse.joblib")
+    # 5-fold Stratified Group CV for pure out-of-fold predictions
+    sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
+    oof_preds = np.zeros(len(clean_df))
     
+    prep = build_preprocessor(["Age", "EDUC", "SES", "MMSE"], ["Sex"])
     features_w = ["Age", "EDUC", "SES", "MMSE", "Sex"]
-    features_wo = ["Age", "EDUC", "SES", "Sex"]
     
-    clean_df["pred_with_mmse"] = model_w.predict_proba(clean_df[features_w])[:, 1]
-    clean_df["pred_without_mmse"] = model_wo.predict_proba(clean_df[features_wo])[:, 1]
+    for tr_idx, va_idx in sgkf.split(clean_df, clean_df["target"], groups=clean_df["Subject_ID"]):
+        X_tr = clean_df.iloc[tr_idx][features_w]
+        y_tr = clean_df.iloc[tr_idx]["target"]
+        X_va = clean_df.iloc[va_idx][features_w]
+        
+        pipe = Pipeline([
+            ("prep", prep),
+            ("clf", LogisticRegression(class_weight="balanced", max_iter=1000, random_state=42))
+        ])
+        pipe.fit(X_tr, y_tr)
+        oof_preds[va_idx] = pipe.predict_proba(X_va)[:, 1]
+        
+    clean_df["oof_pred_with_mmse"] = oof_preds
     
     trajectories = {}
     for grp in ["Nondemented", "Converted", "Demented"]:
         sub = clean_df[clean_df["Group"] == grp]
-        grp_data = {}
+        n_subj_grp = len(sub["Subject_ID"].unique())
+        n_visits_grp = len(sub)
+        grp_data = {
+            "total_participants": n_subj_grp,
+            "total_visits": n_visits_grp,
+            "is_exploratory": (grp == "Converted")
+        }
         for v in [1, 2, 3]:
             v_sub = sub[sub["Visit"] == v]
             if len(v_sub) > 0:
+                n_subj_v = len(v_sub["Subject_ID"].unique())
+                mean_p = np.mean(v_sub["oof_pred_with_mmse"])
+                std_p = np.std(v_sub["oof_pred_with_mmse"])
+                q25 = np.percentile(v_sub["oof_pred_with_mmse"], 25)
+                q75 = np.percentile(v_sub["oof_pred_with_mmse"], 75)
+                mean_cdr = np.mean(v_sub["CDR"])
                 grp_data[f"visit_{v}"] = {
-                    "n_visits": int(len(v_sub)),
-                    "mean_risk_with": round(float(np.mean(v_sub["pred_with_mmse"])), 4),
-                    "std_risk_with": round(float(np.std(v_sub["pred_with_mmse"])), 4),
-                    "mean_risk_without": round(float(np.mean(v_sub["pred_without_mmse"])), 4),
-                    "q25_risk_with": round(float(np.percentile(v_sub["pred_with_mmse"], 25)), 4),
-                    "q75_risk_with": round(float(np.percentile(v_sub["pred_with_mmse"], 75)), 4),
-                    "mean_cdr": round(float(np.mean(v_sub["CDR"])), 3)
+                    "n_participants": n_subj_v,
+                    "n_visits": len(v_sub),
+                    "mean_risk_oof": round(float(mean_p), 4),
+                    "std_risk_oof": round(float(std_p), 4),
+                    "q25_risk_oof": round(float(q25), 4),
+                    "q75_risk_oof": round(float(q75), 4),
+                    "mean_cdr": round(float(mean_cdr), 3)
                 }
         trajectories[grp] = grp_data
         
     data = {
         "screening_threshold": 0.3163,
+        "prediction_type": "out_of_fold_stratified_group_cv",
         "risk_bands": {"lower_max": 0.221, "moderate_max": 0.411},
-        "trajectories": trajectories
+        "trajectories": trajectories,
+        "exploratory_note": "Converted cohort (n=14 participants, 34 visits total) is exploratory due to small sample size"
     }
     
     with open("ml/reports/longitudinal_trajectories.json", "w") as f:

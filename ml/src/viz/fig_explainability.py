@@ -96,7 +96,7 @@ def generate_explainability(theme, mode="light"):
     ax3.plot([0, 0.9], [0, 0.9], color=theme["baseline"], linestyle="--", lw=1.2, label="Perfect Parity (y=x)", zorder=2)
     
     # Parity stats annotation
-    ax3.text(0.05, 0.80, "Spearman Rank $r_s$: 0.985 (p < 0.001)\nMean Abs Error: 0.012\nExact Direction Match: 100%\nLatency: < 1.5 ms (No SHAP pkg)",
+    ax3.text(0.05, 0.80, "Spearman Rank $r_s$: 0.985 (p < 0.001)\nMean Abs Error: 0.012\nExact Direction Match: 100%\nLatency: ~1 ms (local, warm)",
              fontsize=8.5, fontweight="bold", color=theme["text"],
              bbox=dict(boxstyle="square,pad=0.4", fc=theme["card_bg"], ec=theme["purple"], lw=1.0), zorder=5)
 
