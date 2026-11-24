@@ -9,7 +9,7 @@
 - **Artifacts**:
   - `model_with_mmse.joblib` + `model_with_mmse_metadata.json` (Features: Age, Sex, Education, SES, MMSE)
   - `model_without_mmse.joblib` + `model_without_mmse_metadata.json` (Features: Age, Sex, Education, SES strictly; zero cognitive test items)
-- **License**: MIT / Academic research demo.
+- **License**: License to be decided by the project team.
 
 ## 2. Intended Use
 - **Demonstration Architecture**: Designed to prototype and validate the end-to-end integration of machine learning cognitive screening pipelines, form schemas, localized feature explanations, and serverless deployment in CO CARE.

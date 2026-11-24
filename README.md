@@ -108,7 +108,7 @@ The same screen has CSV downloads of all tables for the analysis.
 ### TL;DR
 - **Problem**: Early community dementia risk screening is hindered by subjective scoring, lack of localization, and fear of data privacy exposure.
 - **Solution**: Two lightweight, stateless screening models (demographics-only and cognitive-augmented) with bilingual feature attribution (English & Odia).
-- **Validation**: Longitudinal OASIS cohort ($N=373$ records, 150 subjects) strictly grouped by participant to prevent leakage, achieving **0.892 ± 0.041 repeated CV AUC** and **90.5% held-out sensitivity** with $< 1.5\text{ ms}$ serverless latency.
+- **Validation**: Longitudinal OASIS cohort ($N=373$ records, 150 subjects) strictly grouped by participant to prevent leakage, achieving **0.892 ± 0.041 repeated CV AUC** and **90.5% held-out sensitivity** with $model inference ~1 ms (local, warm).
 
 > ⚠️ **DEMO models trained on OASIS (a US cohort). They have NOT been validated on LASI-DAD or on Odia-speaking/Indian populations and must not be used for screening real participants.**
 >
@@ -128,7 +128,7 @@ The pipeline strictly decouples **offline training and validation** from **runti
 1. **Dataset Adapter Layer**: Flexible ingestion (`oasis.py` and `lasi_dad.py`) driven by variable mapping YAML schemas (`ml/config/`).
 2. **Leakage Protection**: Strict participant clustering via `GroupShuffleSplit` (train/test) and `StratifiedGroupKFold` (CV) ensures no participant records cross partitions.
 3. **Fit-on-Train Preprocessing**: Imputers, scalers, and encoders are fitted solely within training fold pipelines.
-4. **Serverless Deployment**: Zero C++ heavy dependencies in Lambda (`shap` is isolated to offline training). Runtime explanations execute via direct mathematical feature occlusion in $< 1.5\text{ ms}$.
+4. **Serverless Deployment**: Zero C++ heavy dependencies in Lambda (`shap` is isolated to offline training). Runtime explanations execute via direct mathematical feature occlusion in $model inference ~1 ms (local, warm).
 
 ---
 
@@ -163,15 +163,15 @@ The pipeline strictly decouples **offline training and validation** from **runti
 
 *(Adapted and elevated from classical deep-learning and clinical benchmarks including JacobW4 and Memora Health)*
 
-#### 4. Training & Validation Loss Convergence Trajectory
+#### 4. Solver convergence (logistic regression)
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/showcase/figures/16_training_loss_convergence-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="docs/showcase/figures/16_training_loss_convergence-light.png">
-  <img alt="Model Training Dynamics: Cross-Entropy Loss Reduction and Metric Trajectory across Iterations" src="docs/showcase/figures/16_training_loss_convergence-light.png" width="100%">
+  <img alt="Solver convergence (logistic regression): Cross-Entropy Loss Reduction and Metric Trajectory across Iterations" src="docs/showcase/figures/16_training_loss_convergence-light.png" width="100%">
 </picture>
 
-- **Optimization Dynamics**: Cross-entropy log loss decreases monotonically from $0.693$ to $0.347$ (train) and $0.388$ (out-of-fold validation), stabilizing fully by iteration 16.
-- **Zero Overfitting**: L2 weight penalty ($\lambda=1.0$) bounds the generalization gap to $\Delta 	ext{Loss} < 0.04$, ensuring robust out-of-sample deployment stability on serverless edge runtimes.
+- **Out-of-Fold Curve Computation**: Evaluated via 5-fold StratifiedGroupKFold cross-validation on the training split ($N=297$ visits, 120 participants). At each L-BFGS solver iteration ($t \in [1, 50]$), the model fits on 4 folds and predicts probabilities on the held-out 5th fold; out-of-fold predictions are concatenated to evaluate log-loss and accuracy.
+- **Optimization Dynamics**: Training log loss decreases from $0.491$ to $0.348$, while out-of-fold validation log loss converges from $0.511$ to $0.388$ by iteration 16. L2 regularization ($C=1.0$) maintains a stable out-of-fold generalization gap ($\Delta < 0.04$).
 
 #### 5. Class-Wise Diagnostic Performance Breakdown
 <picture>
@@ -200,8 +200,13 @@ The pipeline strictly decouples **offline training and validation** from **runti
   <img alt="Multifactor Feature Correlation Heatmap and Adjusted Odds Ratios Forest Plot" src="docs/showcase/figures/18_risk_factor_odds_ratios-light.png" width="100%">
 </picture>
 
-- **Multicollinearity Check**: Low correlation between Age and cognitive scores ($r = +0.05$) confirms independent prognostic information; Education and SES show expected inverse relationship ($r = -0.72$).
-- **Adjusted Odds Ratios ($e^\beta$)**: MMSE decrement confers an adjusted odds ratio of **1.48 per point drop** ($p < 0.001$), while each decade of age adds **1.34x adjusted risk** ($p = 0.019$). Education acts as a cognitive reserve buffer ($	ext{OR} = 0.81$, $p = 0.076$).
+- **Model Specification & Feature Coding**: Documented single specification matching the deployed model: `LogisticRegression(class_weight='balanced', C=1.0, penalty='l2', solver='lbfgs')` fit on the training split ($N=297$ visits, 120 subjects, 48.5% prevalence) with participant cluster bootstrap (1,000 resamples by Subject ID). SES is coded 1 to 5 (Hollingshead Two-Factor Index, 1 = highest, 5 = lowest).
+- **Cluster-Robust Adjusted Odds Ratios ($e^\beta$) & Reconciliation**:
+  - **MMSE (per 1-pt drop)**: Adjusted OR of **2.23** [1.87, 2.80] ($p < 0.001$, Risk Factor). **Reconciliation**: The deployed model's unscaled coefficient $\beta = -0.8036$ confers an odds ratio of $e^{0.8036} = 2.2335$ per point drop. Across a 4-point cognitive drop (MMSE $30 \to 26$), predicted odds increase by $2.2335^4 = 24.89\times$ (odds 0.177 at MMSE 30 vs 4.41 at MMSE 26).
+  - **Male Sex (vs Female)**: Adjusted OR of **3.41** [1.62, 8.77] ($p = 0.004$, Risk Factor).
+  - **Higher Education (per 4 years)**: Adjusted OR of **0.37** [0.16, 0.71] ($p = 0.006$, Protective Factor).
+  - **SES Tier**: Adjusted OR of **0.67** [0.39, 1.02] ($p = 0.072$, No clear evidence of effect).
+  - **Age (per decade)**: Adjusted OR of **0.79** [0.41, 1.49] ($p = 0.442$, **No clear evidence of an independent effect**). **Reconciliation**: In a univariate baseline without cognitive controls, older age correlates with dementia ($\text{OR} \approx 1.34$). In the full multivariate model conditioning on MMSE and education, conditional age is negatively signed ($\beta = -0.239$ per decade) and statistically non-significant, reflecting that severe cognitive decrement at a younger age represents a more aggressive impairment. Cluster-robust standard errors widen the confidence interval across 1.0 without altering the point estimate.
 
 #### 7. Longitudinal Cognitive Trajectory & Conversion Dynamics
 <picture>
@@ -210,23 +215,46 @@ The pipeline strictly decouples **offline training and validation** from **runti
   <img alt="Longitudinal Risk Progression and Conversion Inflection Points across Clinical Assessment Visits" src="docs/showcase/figures/19_longitudinal_trajectory-light.png" width="100%">
 </picture>
 
-- **Early Conversion Inflection**: For participants who convert from normal to mild impairment (`Converted`), baseline risk begins low ($0.272$, below threshold $0.316$). By Visit 2, risk sharply surges to **0.462** (crossing into the elevated risk band) while the clinical CDR rating is still very mild ($0.333$).
-- **Longitudinal Stability**: Stable non-demented participants maintain flat, sub-threshold trajectories across years ($0.276 \to 0.235$), confirming low false-positive drift over time.
+- **Out-of-Fold Longitudinal Trajectories**: Evaluated using strictly out-of-fold predictions from 5-fold StratifiedGroupKFold on participant ID ($N=150$ total subjects):
+  - **Stable Non-Demented** ($n=72$ participants, 176 visits): Out-of-fold risk stays flat and sub-threshold over time ($0.287$ at Visit 1 $\to$ $0.248$ at Visit 3; mean CDR $0.000 \to 0.015$).
+  - **Stable Demented** ($n=64$ participants, 142 visits): Out-of-fold risk remains consistently elevated ($0.754$ at Visit 1 $\to$ $0.762$ at Visit 3; mean CDR $0.602 \to 0.688$).
+  - **Converted (Exploratory, $n=14$ participants**, 34 visits): Mean out-of-fold risk begins at $0.242$ at baseline (below the $0.316$ threshold) and rises to $0.418$ at Visit 2 as clinical CDR emerges ($0.333$). Due to the small sample size ($n=14$ participants), this trajectory is exploratory and should not be generalized without replication.
 
 ---
 
-### Benchmark Comparison: CO CARE vs. Prior Art & Ecosystem
+### Related Work and Acknowledgements
 
-| Feature Dimension | JacobW4 (`cnn-dementia-classification`) | Albert-L-Phan (`Dementia`) | Memora Health (`memora-health`) | **CO CARE (This Work)** |
-|:---|:---|:---|:---|:---|
-| **Data Modality** | Brain MRI Scan Images ($180\times 180$) | Census / LGA Administrative Statistics | Audio / Speech Recordings & Clinical Surveys | **Demographics + Brief Cognitive Test (MMSE/HMSE)** |
-| **Screening Setting** | Specialized Hospital (MRI required) | Macro Geographic & Epidemiological | Clinical Workflow / Telehealth | **Primary Care & Rural Community Intake** |
-| **Model Architecture** | 3-Layer Conv2D + Dense Deep CNN | Bayesian Spatial INLA Regression | Proprietary Cloud ML Platform | **Calibrated Regularized Logistic + Group CV** |
-| **Inference Hardware** | GPU / Heavy TensorFlow runtime | Offline R / Spatial runtime | Cloud Web Application | **$< 1.5\text{ ms}$ Serverless Lambda ($2\text{ KB}$ weights)** |
-| **Training Dynamics** | Accuracy & Loss curves (TensorFlow) | Not reported | Not open-source | **Empirical Log-Loss Convergence + Group CV** |
-| **Cultural Adaptation** | English / US Kaggle Dataset | Australian LGA Census | English Clinical Interface | **Odia-Ready (translations pending review) + LASI-DAD ready** |
-| **Privacy & Persist.** | Offline Notebook | Macro Public Datasets | Enterprise Database | **100% Stateless: Zero DB logging of patient profiles** |
-| **Open Source URL** | [JacobW4 Repo](https://github.com/JacobW4/cnn-dementia-classification) | [Albert-L-Phan Repo](https://github.com/Albert-L-Phan/Dementia) | [Memora App](https://memora-health.vercel.app/) | **[CO CARE Repo](https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.)** |
+This project draws conceptual inspiration from several open-source and clinical initiatives in the dementia and cognitive assessment domain:
+
+- **[JacobW4/cnn-dementia-classification](https://github.com/JacobW4/cnn-dementia-classification)**: A deep learning binary CNN classifying brain MRI images (Healthy vs. Very Mild Dementia) using TensorFlow/Keras, which demonstrated the value of presenting clear optimization convergence trajectories (loss and accuracy curves) and class-wise precision/recall evaluation.
+- **[Albert-L-Phan/Dementia](https://github.com/Albert-L-Phan/Dementia)**: A spatial regression study of self-reported dementia incidence across Australian Local Government Areas (LGAs), which highlighted the importance of analyzing demographic, socioeconomic, and environmental risk factors.
+- **[Memora Health](https://memora-health.vercel.app/)**: A clinical care platform supporting speech-based cognitive assessment workflows that emphasizes longitudinal patient tracking over time.
+
+**Independence & Non-Infringement Statement**:
+- **Zero Copied Code or Assets**: No code, model weights, neural architectures, or visual assets were copied from these repositories or platforms. All pipelines, feature encodings, preprocessors, FastAPI routers, React components, and figures in CO CARE are original implementations developed independently.
+- **Repository Licenses**:
+  - **[JacobW4/cnn-dementia-classification](https://github.com/JacobW4/cnn-dementia-classification)**: No standalone LICENSE file found in repository (`no license found`). README states under License: *"This project is for educational purposes. Dataset is subject to Kaggle's terms of use."*
+  - **[Albert-L-Phan/Dementia](https://github.com/Albert-L-Phan/Dementia)**: No license file found in repository (`no license found`).
+  - **[Memora Health](https://memora-health.vercel.app/)**: Cloud clinical web application; no public source repository or license found (`no license found`).
+  - **CO CARE**: License to be decided by the project team.
+
+---
+
+### Population Prevalence, Bayesian PPV/NPV & Screening Utility
+
+> [!IMPORTANT]
+> **Prevalence Calibration**: The deployed models produce a **model score (calibrated to the OASIS sample prevalence of 48.5%)**. In a community screening setting with a lower true population prevalence (e.g., 5% to 10%), the raw score is not an absolute population probability. The API provides the explicit `score_note` field to convey this calibration boundary.
+
+#### Positive and Negative Predictive Values across Community Prevalences
+Computed via Bayes' theorem from empirical held-out test performance and primary 5x5 repeated group cross-validation:
+
+| Clinical Screening Setting | True Population Prevalence | Model Variant | Sensitivity | Specificity | PPV (Positive Predictive Value) | NPV (Negative Predictive Value) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **General Community Screening** | **5.0%** | **With MMSE (Held-Out)**<br>With MMSE (Primary CV)<br>**Without MMSE (Held-Out)**<br>Without MMSE (Primary CV) | 90.5%<br>72.9%<br>90.5%<br>61.2% | 74.5%<br>85.9%<br>35.3%<br>63.2% | **15.7%**<br>21.4%<br>**6.9%**<br>8.0% | **99.3%**<br>98.4%<br>**98.6%**<br>96.9% |
+| **Elderly Outreach Cohort (75+)** | **10.0%** | **With MMSE (Held-Out)**<br>With MMSE (Primary CV)<br>**Without MMSE (Held-Out)**<br>Without MMSE (Primary CV) | 90.5%<br>72.9%<br>90.5%<br>61.2% | 74.5%<br>85.9%<br>35.3%<br>63.2% | **28.3%**<br>36.5%<br>**13.4%**<br>15.6% | **98.6%**<br>96.6%<br>**97.1%**<br>93.6% |
+| **Memory Clinic / Triage Setting** | **20.0%** | **With MMSE (Held-Out)**<br>With MMSE (Primary CV)<br>**Without MMSE (Held-Out)**<br>Without MMSE (Primary CV) | 90.5%<br>72.9%<br>90.5%<br>61.2% | 74.5%<br>85.9%<br>35.3%<br>63.2% | **47.0%**<br>56.4%<br>**25.9%**<br>29.4% | **96.9%**<br>92.7%<br>**93.7%**<br>86.7% |
+
+- **Plain-Language Clinical Interpretation**: At 5% community prevalence, `model_without_mmse` yields a PPV of **6.9%** (approx. 93 false positives per 100 positive screens), whereas adding MMSE elevates PPV to **15.7%**. Conversely, the **Negative Predictive Value is exceptionally high (>98.6% - 99.3%)**, meaning a negative screen virtually guarantees absence of impairment. The tool is mathematically structured as a **rule-out community triage screen** to identify who needs formal in-person diagnostic evaluation, not as a standalone diagnosis.
 
 ---
 
@@ -326,14 +354,21 @@ Because the single test set ($N=72$) is small, **5x Repeated 5-Fold Stratified G
 
 CO CARE is deployed live on Vercel as well as configured for local execution.
 
-### Live Production Deployment Links
-- 🌐 **Web Application**: [https://cocare-zeta.vercel.app](https://cocare-zeta.vercel.app)
-- 📖 **Interactive API Documentation (Swagger)**: [https://cocare-zeta.vercel.app/docs](https://cocare-zeta.vercel.app/docs)
-- 🏥 **Health Check & Diagnostics**: [https://cocare-zeta.vercel.app/api/risk/health](https://cocare-zeta.vercel.app/api/risk/health)
-- 🧠 **Risk Screening Model Info**: [https://cocare-zeta.vercel.app/api/risk/model-info](https://cocare-zeta.vercel.app/api/risk/model-info)
-- 📋 **Screening Form Specification**: [https://cocare-zeta.vercel.app/api/risk/form-spec](https://cocare-zeta.vercel.app/api/risk/form-spec)
-- 🐙 **GitHub Repository**: [https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.](https://github.com/AnkitaPriyadarshini-repos/cocare-neurorisk.)
-- ⚡ **Vercel Project Dashboard**: [https://vercel.com/ankitapriyadarshini-repos-projects/cocare](https://vercel.com/ankitapriyadarshini-repos-projects/cocare)
+### Live Production vs Preview Deployment Status
+- 🌐 **Live Production Deployment**: [https://cocare-zeta.vercel.app](https://cocare-zeta.vercel.app)
+  - Verified endpoints: `GET /` (200), `GET /docs` (200), `GET /api/risk/health` (200), `GET /api/risk/model-info` (200), `POST /api/risk/predict` (200 for both variants).
+- 🔒 **Preview Deployments**: Protected behind Vercel Deployment Protection (Vercel Authentication). Public unauthenticated access is intercepted with HTTP 200 (Login gateway HTML) on GET and HTTP 401 on POST, and therefore was not publicly verified without team credentials.
+
+### Automated CI Test Suite & Transparency
+
+The repository enforces automated continuous integration across 26 test cases:
+- **Executed & Passing in CI (23 tests)**:
+  - `ml/tests/test_pipeline.py`: Form input validation, localization text completeness, MMSE monotonicity across demographic baselines, model loading integrity, explanation direction alignment (`raises` vs `lowers` relative to typical training-data medians), and synthetic LASI-DAD adapter validation.
+  - `ml/tests/test_showcase.py`: Verification of all 19 figures in Light & Dark modes, size bounds (<400 KB), animated GIF (<2 MB), sidecar numeric parity with JSON artifacts, and manifest documentation.
+  - `backend/tests/`: API health check, form specification schema, model info, fuzzing, statelessness verification, and predict endpoint integration.
+- **Skipped in Public CI (3 tests)**:
+  - `test_participant_grouping_zero_overlap`, `test_preprocessing_fit_on_train_only`, and `test_label_permutation_sanity_check`.
+  - **Reason**: These tests require reading the raw longitudinal OASIS clinical dataset (`ml/data/oasis_longitudinal.csv`). In strict compliance with participant data privacy, raw microdata is excluded from git commits. These audit tests are verified locally prior to export.
 
 ### Architectural Constraints Handled
 1. **Read-Only / Ephemeral Filesystem**:
@@ -343,7 +378,7 @@ CO CARE is deployed live on Vercel as well as configured for local execution.
 2. **Serverless Bundle Size Limit (< 250 MB)**:
    - Heavy offline data science packages (`shap`, `matplotlib`, `seaborn`, `imbalanced-learn`) are isolated in `ml/requirements.txt` and excluded from deployment.
    - **Measured Vercel Footprint**: Project deployment source upload payload = **44.3 KB** (strictly enforced via .vercelignore); uncompressed runtime serverless Lambda dependency footprint (FastAPI, scikit-learn, pandas, joblib) was measured at **249.47 MB** during production build, optimized by uv to fit strictly within Vercel's 250.0 MB serverless ceiling.
-   - Model inference executes via dependency-free linear dot products and runtime feature occlusion in < 1.5 ms (local, warm).
+   - Model inference executes via dependency-free linear dot products and runtime feature occlusion in model inference ~1 ms (local, warm).
 
 ### Deployment Steps
 1. Push the repository to GitHub.

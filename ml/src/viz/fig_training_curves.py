@@ -40,17 +40,17 @@ def create_training_curves_figure(theme: dict, mode: str) -> plt.Figure:
     # Convergence zone highlight
     ax1.axvspan(15, 50, color=theme["success"], alpha=0.08, label="Stable Convergence Region")
     
-    ax1.set_title("Training & Validation Loss Trajectory (Cross-Entropy)", fontsize=13, fontweight="bold", pad=12)
-    ax1.set_xlabel("Optimization Solver Iterations", fontsize=11, labelpad=8)
+    ax1.set_title("Log-Loss vs. L-BFGS Solver Iterations (5-Fold Grouped CV)", fontsize=12, fontweight="bold", pad=12)
+    ax1.set_xlabel("L-BFGS Solver Iterations", fontsize=11, labelpad=8)
     ax1.set_ylabel("Binary Log-Loss (lower is better)", fontsize=11, labelpad=8)
     ax1.set_ylim(0.25, 0.75)
     ax1.legend(loc="upper right", framealpha=0.85, facecolor=theme["card_bg"], edgecolor=theme["border"], fontsize=9.5)
     
     # Annotation on generalization gap
     ax1.annotate(
-        "L2 Regularization Bounds\nGeneralization Gap (Δ < 0.04)",
+        "L2 Regularization (C=1.0) stabilizes\nvalidation loss (Δ < 0.04)",
         xy=(28, w_va_loss[-2]),
-        xytext=(20, 0.62),
+        xytext=(16, 0.62),
         arrowprops=dict(arrowstyle="->", color=theme["text"], lw=1.2),
         fontsize=9,
         color=theme["text"],
@@ -76,27 +76,29 @@ def create_training_curves_figure(theme: dict, mode: str) -> plt.Figure:
     ax2.axhline(0.90, color=theme["accent_primary"], linestyle=":", alpha=0.6)
     ax2.text(2, 0.905, "AUC = 0.90 Threshold", fontsize=8.5, color=theme["accent_primary"], fontweight="bold")
     
-    ax2.set_title("Performance Metric Progression Across Iterations", fontsize=13, fontweight="bold", pad=12)
-    ax2.set_xlabel("Optimization Solver Iterations", fontsize=11, labelpad=8)
+    ax2.set_title("Out-of-Fold Validation Metric Progression (Accuracy & AUC)", fontsize=12, fontweight="bold", pad=12)
+    ax2.set_xlabel("L-BFGS Solver Iterations", fontsize=11, labelpad=8)
     ax2.set_ylabel("Metric Score (higher is better)", fontsize=11, labelpad=8)
     ax2.set_ylim(0.45, 1.00)
     ax2.legend(loc="lower right", framealpha=0.85, facecolor=theme["card_bg"], edgecolor=theme["border"], fontsize=9.5)
     
     ax2.annotate(
-        "With MMSE converges to\nAUC = 0.904 in 16 steps",
+        "Out-of-fold curves computed via 5-fold\nStratifiedGroupKFold on train set (N=297 visits, 120 subjects)\nWith MMSE converges to AUC=0.904 by step 16",
         xy=(16, w_va_auc[5]),
-        xytext=(5, 0.78),
+        xytext=(3, 0.74),
         arrowprops=dict(arrowstyle="->", color=theme["accent_primary"], lw=1.2),
-        fontsize=9,
+        fontsize=8.5,
         color=theme["text"],
         fontweight="bold",
         bbox=dict(boxstyle="round,pad=0.4", fc=theme["card_bg"], ec=theme["border"], alpha=0.9)
     )
 
+    fig.suptitle("Solver convergence (logistic regression)", fontsize=14, fontweight="bold", y=0.98, color=theme["text"])
+
     add_figure_footer(
         fig, theme,
-        dataset="OASIS-1 Longitudinal (N=373 visits, 150 subjects; 5-Fold Stratified Group CV)",
-        disclaimer="OASIS training dynamics benchmark | Screening demonstration only, NOT clinical diagnosis"
+        dataset="OASIS-1 Longitudinal (N=297 train visits, 120 subjects; 5-Fold Stratified Group CV)",
+        disclaimer="Out-of-fold cross-validation convergence trajectory | Screening demonstration only, NOT clinical diagnosis"
     )
     plt.tight_layout(rect=[0.02, 0.05, 0.98, 0.96])
     return fig
