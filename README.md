@@ -97,6 +97,59 @@ The same screen has CSV downloads of all tables for the analysis.
 - [ ] Step 8: generate Odia audio with Indic-TTS and play it from `speech.js`.
 - [ ] Ethics approval and printed consent form.
 
+## Risk Check and Progress screens (Frontend Experience)
+
+CO CARE provides an elderly-friendly, multilingual, and privacy-preserving cognitive health screening and progress tracking experience integrated directly into the React/Vite frontend.
+
+<div align="center">
+  <img src="docs/showcase/ui/01_risk_wizard_screen.svg" alt="CO CARE Risk Check Wizard Screen" width="31%" style="vertical-align: top; margin: 1%;">
+  <img src="docs/showcase/ui/02_risk_result_screen.svg" alt="CO CARE Risk Check Result Screen" width="31%" style="vertical-align: top; margin: 1%;">
+  <img src="docs/showcase/ui/03_my_progress_screen.svg" alt="CO CARE My Progress Screen" width="31%" style="vertical-align: top; margin: 1%;">
+</div>
+
+### 1. Risk Check Wizard (`frontend/src/screens/RiskCheckWizard.jsx`)
+- **Elderly-Friendly Ergonomics**:
+  - Exactly one large question per screen with high contrast, calm terracotta palette (`#b4471b`), and oversized touch targets ($\ge 56\text{px}$).
+  - Stepper controls (`−` and `+`) allowing frictionless numeric adjustments without requiring a soft keyboard.
+  - Multi-tier font size switcher (`A`, `A+`, `A++`) for older adults with visual impairments.
+  - Bilingual audio read-aloud via `frontend/src/speech.js` with speech synthesis rate tuned for older listeners.
+- **Dynamic Specification**:
+  - Dynamically fetches intake specification and validation rules from `GET /api/risk/form-spec` via `frontend/src/riskApi.js`.
+  - Seamless fallback to `FALLBACK_FORM_SPEC` during network disruption or cold starts.
+- **Guardrailed MMSE Entry**:
+  - MMSE cognitive testing is explicitly presented as an optional clinical step: *"Did a trained healthcare professional administer an MMSE?"*.
+  - Users without an official test simply proceed with demographic intake only (`model_without_mmse`).
+
+### 2. Screening Result Card (`frontend/src/screens/RiskCheckResult.jsx`)
+- **Responsible Terminology**:
+  - Output is strictly framed as a **model score** (calibrated to the OASIS sample prevalence of $48.5\%$), never a diagnosis or probability of disease.
+  - Includes prominent non-diagnostic disclaimer: *"⚠️ Notice: This is a preliminary screening demonstration, not a medical diagnosis. Please consult a qualified doctor."*
+- **Accessible Score Bands**:
+  - Clear visual badge (`ScoreBandBadge.jsx`) combining icon, color, and localized text across three tiers:
+    - 🛡️ **Lower Risk Band** (`#1b5e20` green on `#e8f5e9`)
+    - ⚖️ **Moderate Risk Band** (`#b26a00` amber on `#fff8e1`)
+    - 🩺 **Elevated Risk Band** (`#b71c1c` red on `#ffebee`)
+- **Transparent Explanations & Actionable Guidance**:
+  - Explanations are filtered to features with contribution magnitude $|\Delta| \ge 0.01$, rendered in plain language relative to typical training data medians.
+  - Non-alarmist next steps tailored to risk level (e.g. promoting physical activity, social engagement, and discussion during routine checkups).
+- **Printable Doctor Summary (`DoctorSummaryPrint.jsx`)**:
+  - One-click print-ready summary formatted specifically for a primary care clinician or neurologist, detailing demographic covariates, model variant, threshold, calibration notes, and feature contributions.
+- **Strict Client-Side Privacy**:
+  - Screening profiles are **never stored on the server**.
+  - Local history storage is **strictly opt-in** on the user's personal device (`localStorage` keyed by user ID).
+  - Prominent "Delete my data" button immediately purges all saved screening records.
+
+### 3. My Progress Dashboard (`frontend/src/screens/MyProgress.jsx`)
+- **Caregiver & Family Overview**:
+  - Quick summary cards reporting total game sessions, historical average accuracy, and latest risk screening status.
+- **Lightweight Inline SVG Charts (`ProgressChart.jsx`)**:
+  - Custom vector charts illustrating session accuracy trends (%) and level progression over time.
+  - Zero heavy third-party charting libraries: frontend bundle impact is only $\approx 44\text{ KB}$ uncompressed ($\approx 11\text{ KB}$ gzip).
+- **Screening History Ledger**:
+  - Chronological history of opted-in assessments with dates, scores, risk bands, and model variants.
+
+---
+
 ## Risk screening (ML) - DEMO ONLY
 
 <picture>
