@@ -79,24 +79,14 @@ export const STRINGS = {
     val_age_req: 'Please enter your age between 40 and 120.',
     val_sex_req: 'Please select biological sex.',
     val_educ_req: 'Please enter completed years of education (0 to 30).',
-    val_ses_req: 'Please select a socioeconomic tier (1 to 5).',
+    val_ses_req: 'Please select a socioeconomic tier (1 to 5) or skip this question.',
     val_mmse_range: 'MMSE score must be between 0 and 30.',
-    ses_plain_desc: 'Socioeconomic status reflects your primary work, occupation, or family background. This question is completely optional.',
-    ses_tier_1: 'Tier 1 - Higher professional / executive',
-    ses_tier_1_title: 'Tier 1 - Higher Executive / Major Professional',
-    ses_tier_1_ex: 'e.g. Doctor, engineer, professor, lawyer, senior government officer, large business owner',
-    ses_tier_2: 'Tier 2 - Business / technical manager',
-    ses_tier_2_title: 'Tier 2 - Business Manager / School Teacher / Specialist',
-    ses_tier_2_ex: 'e.g. Teacher, manager, accountant, nurse, mid-size business owner',
-    ses_tier_3: 'Tier 3 - Skilled administrative / trade',
-    ses_tier_3_title: 'Tier 3 - Skilled Craftsman / Clerical / Small Shop',
-    ses_tier_3_ex: 'e.g. Clerk, electrician, tailor, small shop proprietor, office assistant',
-    ses_tier_4: 'Tier 4 - Semi-skilled worker',
-    ses_tier_4_title: 'Tier 4 - Semi-Skilled Worker / Operator',
-    ses_tier_4_ex: 'e.g. Machine operator, bus/auto driver, factory worker, cook, security guard',
-    ses_tier_5: 'Tier 5 - Primary labor / agriculture',
-    ses_tier_5_title: 'Tier 5 - Primary Labor / Agricultural Worker',
-    ses_tier_5_ex: 'e.g. Daily wage laborer, farm worker, construction helper, domestic worker',
+    ses_plain_desc: 'Optional (1 = highest, 5 = lowest). Demo approximation, not the clinical SES index used in OASIS. If skipped, the model imputes typical training median.',
+    ses_tier_1: 'Tier 1 (Highest status in demo scale)',
+    ses_tier_2: 'Tier 2',
+    ses_tier_3: 'Tier 3',
+    ses_tier_4: 'Tier 4',
+    ses_tier_5: 'Tier 5 (Lowest status in demo scale)',
     skip_ses: 'Skip this optional question',
     demo_banner_title: 'DEMO MODE',
     demo_banner_desc: 'OASIS model not clinically validated or calibrated for Indian populations (LASI-DAD).',
@@ -209,24 +199,14 @@ export const STRINGS = {
     val_age_req: 'ଦୟାକରି ଆପଣଙ୍କ ବୟସ ୪୦ ରୁ ୧୨୦ ମଧ୍ୟରେ ଲେଖନ୍ତୁ। [needs native review]',
     val_sex_req: 'ଦୟାକରି ଜୈବିକ ଲିଙ୍ଗ ବାଛନ୍ତୁ। [needs native review]',
     val_educ_req: 'ଦୟାକରି ଶିକ୍ଷା ବର୍ଷ (୦-୩୦) ଲେଖନ୍ତୁ। [needs native review]',
-    val_ses_req: 'ଦୟାକରି ସାମାଜିକ ସ୍ତର ବାଛନ୍ତୁ। [needs native review]',
+    val_ses_req: 'ଦୟାକରି ସାମାଜିକ ସ୍ତର ବାଛନ୍ତୁ କିମ୍ବା ଛାଡ଼ନ୍ତୁ। [needs native review]',
     val_mmse_range: 'MMSE ସ୍କୋର ୦ ରୁ ୩୦ ମଧ୍ୟରେ ହେବା ଉଚିତ। [needs native review]',
-    ses_plain_desc: 'ଆପଣଙ୍କ ମୁଖ୍ୟ କାର୍ଯ୍ୟ କିମ୍ବା ପେଶା ଅନୁସାରେ ଏକ ସ୍ତର ବାଛନ୍ତୁ। ଏହା ସମ୍ପୂର୍ଣ୍ଣ ଇଚ୍ଛାଧୀନ। [needs native review]',
-    ses_tier_1: 'ସ୍ତର ୧ - ଉଚ୍ଚ ପଦସ୍ଥ କର୍ମଜୀବୀ [needs native review]',
-    ses_tier_1_title: 'ସ୍ତର ୧ - ଉଚ୍ଚ ପଦସ୍ଥ କର୍ମଜୀବୀ [needs native review]',
-    ses_tier_1_ex: 'ଉଦାହରଣ: ଡାକ୍ତର, ଇଞ୍ଜିନିୟର, ପ୍ରଫେସର, ଓକିଲ, ବରିଷ୍ଠ ଅଧିକାରୀ, ବଡ଼ ବ୍ୟବସାୟୀ [needs native review]',
-    ses_tier_2: 'ସ୍ତର ୨ - ବ୍ୟବସାୟୀ / ପରିଚାଳକ [needs native review]',
-    ses_tier_2_title: 'ସ୍ତର ୨ - ବ୍ୟବସାୟୀ / ଶିକ୍ଷକ / ପରିଚାଳକ [needs native review]',
-    ses_tier_2_ex: 'ଉଦାହରଣ: ଶିକ୍ଷକ, ପରିଚାଳକ, ଆକାଉଣ୍ଟାଣ୍ଟ, ନର୍ସ, ମଧ୍ୟମ ବ୍ୟବସାୟୀ [needs native review]',
-    ses_tier_3: 'ସ୍ତର ୩ - କୁଶଳୀ କର୍ମଚାରୀ [needs native review]',
-    ses_tier_3_title: 'ସ୍ତର ୩ - କୁଶଳୀ କର୍ମଚାରୀ / କାରିଗର / ଛୋଟ ଦୋକାନୀ [needs native review]',
-    ses_tier_3_ex: 'ଉଦାହରଣ: କିରାଣୀ, ଇଲେକ୍ଟ୍ରିସିଆନ, ଦରଜୀ, ଛୋଟ ଦୋକାନୀ, ଅଫିସ ସହାୟକ [needs native review]',
-    ses_tier_4: 'ସ୍ତର ୪ - ଅର୍ଦ୍ଧ-କୁଶଳୀ କର୍ମଚାରୀ [needs native review]',
-    ses_tier_4_title: 'ସ୍ତର ୪ - ଅର୍ଦ୍ଧ-କୁଶଳୀ କର୍ମଚାରୀ / ଡ୍ରାଇଭର [needs native review]',
-    ses_tier_4_ex: 'ଉଦାହରଣ: କାରଖାନା କର୍ମଚାରୀ, ଡ୍ରାଇଭର, ରୋଷେୟା, ସୁରକ୍ଷା କର୍ମୀ [needs native review]',
-    ses_tier_5: 'ସ୍ତର ୫ - ଶ୍ରମିକ / କୃଷିଜୀବୀ [needs native review]',
-    ses_tier_5_title: 'ସ୍ତର ୫ - ଶ୍ରମିକ / କୃଷିଜୀବୀ [needs native review]',
-    ses_tier_5_ex: 'ଉଦାହରଣ: ଦିନମଜୁରିଆ, କ୍ଷେତ ଶ୍ରମିକ, ନିର୍ମାଣ ଶ୍ରମିକ, ଘରୋଇ ସହାୟକ [needs native review]',
+    ses_plain_desc: 'ଇଚ୍ଛାଧୀନ (୧ = ସର୍ବୋଚ୍ଚ, ୫ = ସର୍ବନିମ୍ନ)। ଡେମୋ ଅନୁମାନ, OASIS କ୍ଲିନିକାଲ SES ସୂଚକାଙ୍କ ନୁହେଁ। ଏହାକୁ ଛାଡ଼ି ପାରିବେ। [needs native review]',
+    ses_tier_1: 'ସ୍ତର ୧ (ସର୍ବୋଚ୍ଚ) [needs native review]',
+    ses_tier_2: 'ସ୍ତର ୨ [needs native review]',
+    ses_tier_3: 'ସ୍ତର ୩ [needs native review]',
+    ses_tier_4: 'ସ୍ତର ୪ [needs native review]',
+    ses_tier_5: 'ସ୍ତର ୫ (ସର୍ବନିମ୍ନ) [needs native review]',
     skip_ses: 'ଏହି ପ୍ରଶ୍ନ ଛାଡ଼ନ୍ତୁ [needs native review]',
     demo_banner_title: 'ଡେମୋ ମୋଡ୍ [needs native review]',
     demo_banner_desc: 'OASIS ମଡେଲ ଭାରତୀୟ ଜନସଂଖ୍ୟା (LASI-DAD) ପାଇଁ ପରୀକ୍ଷିତ ନୁହେଁ। [needs native review]',
@@ -276,12 +256,25 @@ export const STRINGS = {
   },
 }
 
+export function cleanDevTags(str, forceClean = false) {
+  if (typeof str !== 'string') return str
+  // In production builds (PROD is true) or when forced, strip developer tags
+  // In dev-only mode (DEV is true and not forced), retain them for linguists & devs
+  const isProd = Boolean(typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PROD)
+  if (isProd || forceClean) {
+    return str.replace(/\s*\[needs native review\]/g, '').trim()
+  }
+  return str
+}
+
 export function t(key, lang = 'or') {
-  return STRINGS[lang]?.[key] ?? STRINGS.en[key] ?? key
+  const val = STRINGS[lang]?.[key] ?? STRINGS.en[key] ?? key
+  return cleanDevTags(val)
 }
 
 export function label(item, lang) {
-  return item.label[lang] ?? item.label.en
+  const val = item.label[lang] ?? item.label.en
+  return cleanDevTags(val)
 }
 
 export const LANGS = [

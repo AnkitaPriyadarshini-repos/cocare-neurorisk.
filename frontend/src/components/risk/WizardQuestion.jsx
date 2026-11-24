@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { hasVoiceForLang, speak } from '../../speech'
-import { t } from '../../i18n'
+import { t, cleanDevTags } from '../../i18n'
 
 export default function WizardQuestion({
   field,
@@ -10,8 +10,10 @@ export default function WizardQuestion({
   lang = 'or'
 }) {
   const isOdia = lang === 'or'
-  const title = isOdia && field.label_or ? field.label_or : field.label
-  const help = isOdia && field.help_text_or ? field.help_text_or : field.help_text
+  const rawTitle = isOdia && field.label_or ? field.label_or : field.label
+  const rawHelp = isOdia && field.help_text_or ? field.help_text_or : field.help_text
+  const title = cleanDevTags(rawTitle)
+  const help = cleanDevTags(rawHelp)
 
   const [canSpeak, setCanSpeak] = useState(() => hasVoiceForLang(lang))
 
@@ -32,8 +34,8 @@ export default function WizardQuestion({
     if (!canSpeak) return
     speak(
       {
-        en: `${field.label}. ${field.help_text || ''}`,
-        or: `${field.label_or || field.label}। ${field.help_text_or || ''}`
+        en: cleanDevTags(`${field.label}. ${field.help_text || ''}`),
+        or: cleanDevTags(`${field.label_or || field.label}। ${field.help_text_or || ''}`)
       },
       lang
     )
@@ -73,7 +75,7 @@ export default function WizardQuestion({
         {field.name === 'Sex' ? (
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             {field.options?.map((opt) => {
-              const optLabel = isOdia && opt.label_or ? opt.label_or : opt.label
+              const optLabel = cleanDevTags(isOdia && opt.label_or ? opt.label_or : opt.label)
               const isSelected = value === opt.value
               return (
                 <button
@@ -102,43 +104,39 @@ export default function WizardQuestion({
             <p style={{ margin: '0 0 0.25rem', fontSize: '0.98rem', color: 'var(--muted)', lineHeight: '1.4' }}>
               {t('ses_plain_desc', lang)}
             </p>
-            {[1, 2, 3, 4, 5].map((tier) => {
-              const tierTitleKey = `ses_tier_${tier}_title`
-              const tierExKey = `ses_tier_${tier}_ex`
-              const isSelected = Number(value) === tier
-              return (
-                <button
-                  key={tier}
-                  type="button"
-                  onClick={() => onChange(tier)}
-                  className={isSelected ? 'primary' : ''}
-                  style={{
-                    minHeight: '74px',
-                    justifyContent: 'flex-start',
-                    textAlign: 'left',
-                    padding: '0.7rem 1rem',
-                    borderWidth: isSelected ? '3px' : '2px',
-                    borderColor: isSelected ? 'var(--primary)' : 'var(--line)'
-                  }}
-                  aria-pressed={isSelected}
-                >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                    <div style={{ fontSize: '1.05rem', fontWeight: '700' }}>
-                      {isSelected ? '✓ ' : ''}{tier}. {t(tierTitleKey, lang)}
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: isSelected ? '#fff' : 'var(--muted)', lineHeight: '1.3' }}>
-                      {t(tierExKey, lang)}
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {[1, 2, 3, 4, 5].map((tier) => {
+                const tierKey = `ses_tier_${tier}`
+                const isSelected = Number(value) === tier
+                return (
+                  <button
+                    key={tier}
+                    type="button"
+                    onClick={() => onChange(tier)}
+                    className={isSelected ? 'primary' : ''}
+                    style={{
+                      minHeight: '56px',
+                      justifyContent: 'flex-start',
+                      textAlign: 'left',
+                      padding: '0.75rem 1.25rem',
+                      fontSize: '1.05rem',
+                      fontWeight: isSelected ? '700' : '500',
+                      borderWidth: isSelected ? '3px' : '2px',
+                      borderColor: isSelected ? 'var(--primary)' : 'var(--line)'
+                    }}
+                    aria-pressed={isSelected}
+                  >
+                    {isSelected ? '✓ ' : ''}{tier}. {t(tierKey, lang)}
+                  </button>
+                )
+              })}
+            </div>
             <div style={{ textAlign: 'right', marginTop: '0.25rem' }}>
               <button
                 type="button"
                 className="small link"
                 onClick={() => onChange('')}
-                style={{ margin: 0, textDecoration: 'underline' }}
+                style={{ margin: 0, textDecoration: 'underline', fontSize: '0.95rem', color: 'var(--muted)' }}
               >
                 {t('skip_ses', lang)}
               </button>

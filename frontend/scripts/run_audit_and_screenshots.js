@@ -71,9 +71,9 @@ async function runAudit(page, screenName) {
 
   const passes = results.passes.length
   const violations = results.violations.length
-  const score = Math.round((passes / (passes + violations || 1)) * 100)
+  const audit_status = `${violations} axe-core violations (automated checks only; manual keyboard/screen-reader/200% zoom testing pending)`
 
-  console.log(`[Axe A11y] Screen: ${screenName} -> Passes: ${passes}, Violations: ${violations}, Score: ${score}%`)
+  console.log(`[Axe A11y] Screen: ${screenName} -> Passes: ${passes}, Violations: ${violations} (${audit_status})`)
   if (violations > 0) {
     console.log(`[Axe Violations on ${screenName}]:`)
     for (const v of results.violations) {
@@ -81,7 +81,7 @@ async function runAudit(page, screenName) {
     }
   }
 
-  return { screenName, passes, violations, score, details: results.violations }
+  return { screenName, passes, violations, audit_status, details: results.violations }
 }
 
 async function main() {
@@ -218,15 +218,15 @@ async function main() {
       await page.waitForTimeout(200)
 
       // Step 2 (Sex) -> Next
-      await page.locator('button', { hasText: '→' }).click()
+      await page.locator('.stack > button.big.primary').click()
       await page.waitForTimeout(200)
 
       // Step 3 (EDUC) -> Next
-      await page.locator('button', { hasText: '→' }).click()
+      await page.locator('.stack > button.big.primary').click()
       await page.waitForTimeout(200)
 
       // Step 4 (SES) -> Next
-      await page.locator('button', { hasText: '→' }).click()
+      await page.locator('.stack > button.big.primary').click()
       await page.waitForTimeout(200)
 
       // Step 5 (MMSE) -> Submit
@@ -268,7 +268,7 @@ async function main() {
 
   console.log('\n--- ACCESSIBILITY AUDIT SUMMARY ---')
   for (const r of auditReport) {
-    console.log(`${r.screenName}: Score ${r.score}% (${r.passes} passed, ${r.violations} violations)`)
+    console.log(`${r.screenName}: ${r.audit_status} (${r.passes} passed, ${r.violations} violations)`)
   }
 
   // Save audit report JSON

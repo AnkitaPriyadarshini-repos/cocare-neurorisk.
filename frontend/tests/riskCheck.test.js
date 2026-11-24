@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { FALLBACK_FORM_SPEC, isRiskCheckEnabled, riskApi } from '../src/riskApi.js'
-import { STRINGS, t } from '../src/i18n.js'
+import { STRINGS, t, cleanDevTags } from '../src/i18n.js'
 
 test('FALLBACK_FORM_SPEC contains all required intake fields with metadata', () => {
   assert.equal(FALLBACK_FORM_SPEC.dataset, 'OASIS-demo')
@@ -19,10 +19,23 @@ test('FALLBACK_FORM_SPEC contains all required intake fields with metadata', () 
   assert.equal(sex.type, 'categorical')
   assert.equal(sex.options.length, 2)
 
+  const ses = FALLBACK_FORM_SPEC.fields.find((f) => f.name === 'SES')
+  assert.equal(ses.required, false)
+  assert.equal(ses.min, 1)
+  assert.equal(ses.max, 5)
+  assert.ok(ses.label.includes('demo approximation, not the clinical SES index used in OASIS'))
+
   const mmse = FALLBACK_FORM_SPEC.fields.find((f) => f.name === 'MMSE')
   assert.equal(mmse.min, 0)
   assert.equal(mmse.max, 30)
   assert.equal(mmse.required, false)
+})
+
+test('cleanDevTags hides [needs native review] tag in production builds while preserving it in dev mode', () => {
+  const sample = 'ମଡେଲ [needs native review]'
+  assert.equal(cleanDevTags(sample, true), 'ମଡେଲ')
+  assert.equal(cleanDevTags(sample, false), sample)
+  assert.equal(cleanDevTags('English text without tag', true), 'English text without tag')
 })
 
 test('i18n contains all risk screening and progress translation keys in Odia and English', () => {
@@ -47,6 +60,13 @@ test('i18n contains all risk screening and progress translation keys in Odia and
     'val_educ_req',
     'val_ses_req',
     'val_mmse_range',
+    'ses_plain_desc',
+    'ses_tier_1',
+    'ses_tier_2',
+    'ses_tier_3',
+    'ses_tier_4',
+    'ses_tier_5',
+    'skip_ses',
     'result_title',
     'model_score_label',
     'band_lower',

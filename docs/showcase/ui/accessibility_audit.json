@@ -3,21 +3,21 @@
     "screenName": "RiskCheckWizard (Mobile 360px)",
     "passes": 32,
     "violations": 0,
-    "score": 100,
+    "audit_status": "0 axe-core violations (automated checks only; manual keyboard/screen-reader/200% zoom testing pending)",
     "details": []
   },
   {
     "screenName": "RiskCheckResult (Mobile 360px)",
     "passes": 33,
     "violations": 0,
-    "score": 100,
+    "audit_status": "0 axe-core violations (automated checks only; manual keyboard/screen-reader/200% zoom testing pending)",
     "details": []
   },
   {
     "screenName": "MyProgress (Mobile 360px)",
     "passes": 23,
     "violations": 0,
-    "score": 100,
+    "audit_status": "0 axe-core violations (automated checks only; manual keyboard/screen-reader/200% zoom testing pending)",
     "details": []
   }
 ]

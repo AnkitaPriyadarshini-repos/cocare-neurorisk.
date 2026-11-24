@@ -130,21 +130,23 @@ To safeguard research integrity and clinical governance, the risk screening expe
 
 ---
 
-### Accessibility & Automated Audit (Score: 100%)
+### Accessibility & Automated Verification (0 axe-core violations)
 
 Automated accessibility audits were executed on mobile viewports (360px) using `axe-core` via Playwright ([audit log: `docs/showcase/ui/accessibility_audit.json`](docs/showcase/ui/accessibility_audit.json)):
 
-| Screen | Viewport | Passes | Violations | Accessibility Score | Status |
-| :--- | :--- | :---: | :---: | :---: | :---: |
-| **Risk Check Wizard** (`/risk_check`) | 360 × 640 mobile | 32 | 0 | **100%** | Passed (Zero violations) |
-| **Risk Check Result** (`/risk_result`) | 360 × 640 mobile | 33 | 0 | **100%** | Passed (Zero violations) |
-| **My Progress** (`/progress`) | 360 × 640 mobile | 23 | 0 | **100%** | Passed (Zero violations) |
+| Screen | Viewport | Passes | Violations | Audit Status |
+| :--- | :--- | :---: | :---: | :--- |
+| **Risk Check Wizard** (`/risk_check`) | 360 × 640 mobile | 32 | 0 | **0 axe-core violations** (automated checks only; manual keyboard/screen-reader/200% zoom testing pending) |
+| **Risk Check Result** (`/risk_result`) | 360 × 640 mobile | 33 | 0 | **0 axe-core violations** (automated checks only; manual keyboard/screen-reader/200% zoom testing pending) |
+| **My Progress** (`/progress`) | 360 × 640 mobile | 23 | 0 | **0 axe-core violations** (automated checks only; manual keyboard/screen-reader/200% zoom testing pending) |
+
+> ℹ️ **Lighthouse Accessibility Audit**: Lighthouse mobile accessibility audit was **not run** (requires headless Chrome DevTools runner not bundled in production dependencies). Automated checks verified 0 axe-core violations across all three screens on a 360px mobile viewport; manual assistive-technology testing (screen readers, keyboard traversal, and 200% text zoom) is scheduled prior to participant deployment.
 
 Key accessibility & ergonomic enhancements:
 - **Explicit Labels for Emoji Badges**: Badges combine emoji and localized descriptive text (e.g. `🛡️ Lower Risk Band`, `⚖️ Moderate Risk Band`, `🩺 Elevated Risk Band`) with WCAG 2.1 AA compliant color contrast ($\ge 4.5:1$ for text, $\ge 3:1$ for UI badges).
 - **Smart Speech Voice Detection**: `hasVoiceForLang(lang)` inspects the client's Web Speech API voices. If no native Odia voice is installed on the user's device, the read-aloud button is cleanly disabled with a descriptive tooltip (`voice_not_available`) instead of attempting phonetic corruption with an English voice.
-- **Plain-Language SES Questions**: Socioeconomic status (SES) includes plain-language descriptions and concrete examples for all 5 tiers (Tier 1 Upper to Tier 5 Lower) and provides a prominent "Skip this optional question" button.
-- **Schema Parity Guardrail**: Checks `schema_version` between client fallback specification and `/api/risk/form-spec` (`"1.0.0"`), warning in the console on mismatch.
+- **Demo Approximation SES Item**: Socioeconomic status (SES) is labeled as a **demo approximation, not the clinical SES index used in OASIS** (which used the Hollingshead index). It provides a simple 1 to 5 scale (1 = highest, 5 = lowest), omits class labels and invented occupational examples, is completely optional, and features a prominent "Skip this optional question" button (the model automatically imputes the training median value if skipped).
+- **Schema Parity Guardrail**: Checks `schema_version` between client fallback specification and `/api/risk/form-spec` (`"1.1.0"`), warning in the console on mismatch.
 
 ---
 
@@ -165,10 +167,10 @@ Key accessibility & ergonomic enhancements:
 ### Measured Frontend Bundle Size
 
 Measured from the production Vite build (`npm run build`):
-- `frontend/dist/index.html`: **0.40 kB** (gzip: 0.28 kB)
+- `frontend/dist/index.html`: **0.40 kB** (gzip: 0.27 kB)
 - `frontend/dist/assets/index-*.css`: **3.64 kB** (gzip: 1.27 kB)
-- `frontend/dist/assets/index-*.js`: **291.57 kB** (gzip: 88.02 kB)
-- **Total uncompressed bundle**: **~295.6 kB** (**~89.5 kB** gzip). Lightweight vector SVG charting (`ProgressChart.jsx`) avoids heavy external visualization libraries, keeping the bundle fast on rural 3G/4G connections.
+- `frontend/dist/assets/index-*.js`: **289.19 kB** (gzip: 87.38 kB)
+- **Total uncompressed bundle**: **~293.2 kB** (**~88.9 kB** gzip). Lightweight vector SVG charting (`ProgressChart.jsx`) avoids heavy external visualization libraries, keeping the bundle fast on rural 3G/4G connections.
 
 ---
 
@@ -503,6 +505,33 @@ The repository enforces automated continuous integration across 26 test cases:
    - **Build Command**: `cd frontend && npm install && npm run build`
    - **Output Directory**: `frontend/dist`
 4. Click **Deploy**. Vercel will build the frontend assets and deploy the serverless Python function at `api/index.py`.
+
+### Configuring Dual Deployments (Study vs. Demo) on Vercel
+
+To maintain strict clinical governance and prevent unvalidated risk screening from reaching older participants during field research, CO CARE supports two deployment configurations from the same GitHub repository:
+
+| Deployment Target | Environment | `VITE_ENABLE_RISK_CHECK` | Intended Audience | Behavior |
+| :--- | :--- | :---: | :--- | :--- |
+| **Study Deployment** (Primary) | Production (`cocare.vercel.app`) | `false` (default) | Research participants & field staff | Risk screening navigation is hidden; direct URLs redirect to Home. |
+| **Demo / Showcase Deployment** | Preview or Dedicated Project (`cocare-demo.vercel.app`) | `true` | Public evaluators, reviewers, recruiters | Full Risk Check wizard and My Progress screens enabled with persistent DEMO banner. |
+
+#### Setup Option A: Separate Vercel Projects (Recommended)
+1. **Primary Project (Study Deployment)**:
+   - In Vercel, import the repository as `cocare-study`.
+   - In **Project Settings > Environment Variables**, leave `VITE_ENABLE_RISK_CHECK` unset or explicitly set `VITE_ENABLE_RISK_CHECK=false` for **Production**.
+   - In this project, `isRiskCheckEnabled()` evaluates to `false`. Real study participants only see cognitive games.
+2. **Secondary Project (Demo Showcase Deployment)**:
+   - Click **Add New > Project** in Vercel and import the same repository again as `cocare-demo`.
+   - In **Project Settings > Environment Variables**, add:
+     - **Key**: `VITE_ENABLE_RISK_CHECK`
+     - **Value**: `true`
+     - **Environment**: Select **Production**, **Preview**, and **Development**.
+   - Deploy. The resulting URL (e.g. `https://cocare-demo.vercel.app`) will display the "Brain Health Check" navigation button and persistent demo banners.
+
+#### Setup Option B: Branch-Based or Preview Environment
+1. In your single Vercel project, go to **Settings > Environment Variables**.
+2. Add `VITE_ENABLE_RISK_CHECK=true`, but check **Preview** only (uncheck **Production**).
+3. Any pull request preview branch (e.g. `feature/risk-check-ui`) will automatically build with Risk Check **ON**, while pushes to `main` (Production) will build with Risk Check **OFF**.
 
 ### Post-Deployment Smoke Test
 After deployment completes, verify the endpoints on your Vercel URL (`https://<your-project>.vercel.app`):
