@@ -546,11 +546,13 @@ def compute_class_wise_metrics():
 def compute_risk_factor_data():
     """Compute risk factor correlation matrix and cluster-robust standardized odds ratios.
     
-    Uses Huber-White/Liang-Zeger sandwich variance estimator clustered by Subject ID
-    to account for longitudinal participant repeated visits.
-    Note on SES: Coded 1 to 5 where 1 = highest socioeconomic status, 5 = lowest.
+    Refit under ONE documented specification matching the deployed model:
+    - Model: LogisticRegression(class_weight='balanced', C=1.0, penalty='l2', solver='lbfgs')
+    - Sample: Training split only (N=297 visits, 120 unique subjects) to prevent test leakage
+    - Standard Errors & CIs: Participant cluster bootstrap (B=1000 resamples by Subject ID)
+    - Coding: SES coded 1 to 5 (Hollingshead Index, 1 = highest, 5 = lowest).
+    - Natural clinical units: MMSE per 1-pt drop, Age per decade, Education per 4 years, SES per tier.
     """
-    from scipy import stats
     X_raw, y_raw, groups = load_oasis()
     clean_df, _ = clean_raw_data(X_raw)
     
@@ -563,84 +565,99 @@ def compute_risk_factor_data():
     
     corr = clean_df[["Age", "EDUC", "SES", "MMSE", "target"]].corr().round(4).to_dict()
     
-    # Standardized features for odds ratio computation
-    clean_df["MMSE_drop"] = -1.0 * clean_df["MMSE"]
-    clean_df["Age_decade"] = clean_df["Age"] / 10.0
-    clean_df["EDUC_4yr"] = clean_df["EDUC"] / 4.0
-    clean_df["SES_tier"] = clean_df["SES"]
-    clean_df["Sex_M"] = (clean_df["Sex"] == "M").astype(float)
+    # Use deployed model parameters directly for point estimates
+    pipe = joblib.load("backend/models/model_with_mmse.joblib")
+    prep = pipe.named_steps["preprocessor"]
+    clf = pipe.named_steps["classifier"]
     
-    features = ["MMSE_drop", "Age_decade", "Sex_M", "SES_tier", "EDUC_4yr"]
-    feature_labels = [
-        "MMSE (per 1-pt drop)",
-        "Age (per decade)",
-        "Male Sex (vs Female)",
-        "SES tier (1=highest, 5=lowest)",
-        "Education (per 4 yrs)"
-    ]
+    scaler = prep.named_transformers_["num"].named_steps["scaler"]
+    scales = scaler.scale_
+    std_coefs = clf.coef_[0]
     
-    X_mat = clean_df[features].copy()
-    X_mat.insert(0, "Intercept", 1.0)
-    X_arr = X_mat.values
-    y_arr = clean_df["target"].values
-    subj_arr = clean_df["Subject_ID"].values
+    # Betas on natural clinical scales
+    # Numeric order in preprocessor: ['Age', 'EDUC', 'SES', 'MMSE']
+    # Categorical order: Sex -> ['Sex_F', 'Sex_M']
+    point_betas = {
+        "MMSE_drop": -1.0 * (std_coefs[3] / scales[3]),
+        "Age_decade": 10.0 * (std_coefs[0] / scales[0]),
+        "Sex_M": std_coefs[5] - std_coefs[4],
+        "SES_tier": std_coefs[2] / scales[2],
+        "EDUC_4yr": 4.0 * (std_coefs[1] / scales[1]),
+    }
     
-    clf = LogisticRegression(penalty=None, solver="lbfgs", max_iter=2000, random_state=42)
-    clf.fit(X_arr[:, 1:], y_arr)
+    feature_labels = {
+        "MMSE_drop": "MMSE (per 1-pt drop)",
+        "Age_decade": "Age (per decade)",
+        "Sex_M": "Male Sex (vs Female)",
+        "SES_tier": "SES tier (1=highest, 5=lowest)",
+        "EDUC_4yr": "Education (per 4 yrs)"
+    }
     
-    beta = np.zeros(X_arr.shape[1])
-    beta[0] = clf.intercept_[0]
-    beta[1:] = clf.coef_[0]
+    # Cluster bootstrap for standard errors, CIs, and p-values
+    sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
+    train_idx, _ = next(sgkf.split(clean_df, y_raw, groups=groups))
     
-    p = 1.0 / (1.0 + np.exp(-X_arr @ beta))
-    p = np.clip(p, 1e-15, 1.0 - 1e-15)
+    df_tr = clean_df.iloc[train_idx].copy()
+    y_tr = y_raw.iloc[train_idx]
+    groups_tr = groups.iloc[train_idx]
+    unique_subjs = np.unique(groups_tr)
+    n_subjs = len(unique_subjs)
     
-    W = p * (1.0 - p)
-    H = (X_arr.T * W) @ X_arr
-    H_inv = np.linalg.inv(H)
-    
-    unique_subjs = np.unique(subj_arr)
-    G = len(unique_subjs)
-    N = len(y_arr)
-    K = len(beta)
-    
-    B = np.zeros((K, K))
-    residuals = y_arr - p
-    for subj in unique_subjs:
-        mask = (subj_arr == subj)
-        s_g = X_arr[mask].T @ residuals[mask]
-        B += np.outer(s_g, s_g)
+    rng = np.random.RandomState(42)
+    boot_betas = []
+    for b in range(1000):
+        sample_subjs = rng.choice(unique_subjs, size=n_subjs, replace=True)
+        boot_indices = []
+        for s in sample_subjs:
+            boot_indices.extend(np.where(groups_tr == s)[0])
         
-    dfc = (G / (G - 1)) * ((N - 1) / (N - K))
-    V_cluster = dfc * (H_inv @ B @ H_inv)
-    se_cluster = np.sqrt(np.diag(V_cluster))
-    z_stats = beta / se_cluster
-    p_values = 2.0 * (1.0 - stats.norm.cdf(np.abs(z_stats)))
-    
-    odds_ratios = np.exp(beta)
-    ci_lower = np.exp(beta - 1.96 * se_cluster)
-    ci_upper = np.exp(beta + 1.96 * se_cluster)
+        df_b = df_tr.iloc[boot_indices]
+        y_b = y_tr.iloc[boot_indices]
+        
+        prep_b = build_preprocessor(["Age", "EDUC", "SES", "MMSE"], ["Sex"])
+        X_trans = prep_b.fit_transform(df_b)
+        
+        clf_b = LogisticRegression(class_weight="balanced", C=1.0, penalty="l2", max_iter=1000, solver="lbfgs", random_state=42)
+        clf_b.fit(X_trans, y_b)
+        
+        s_b = prep_b.named_transformers_["num"].named_steps["scaler"].scale_
+        c_b = clf_b.coef_[0]
+        
+        boot_betas.append({
+            "MMSE_drop": -1.0 * (c_b[3] / s_b[3]),
+            "Age_decade": 10.0 * (c_b[0] / s_b[0]),
+            "Sex_M": c_b[5] - c_b[4],
+            "SES_tier": c_b[2] / s_b[2],
+            "EDUC_4yr": 4.0 * (c_b[1] / s_b[1]),
+        })
+        
+    boot_df = pd.DataFrame(boot_betas)
     
     odds_ratios_data = []
-    for i in range(1, len(beta)):
-        lbl = feature_labels[i - 1]
-        or_val = odds_ratios[i]
-        low = ci_lower[i]
-        high = ci_upper[i]
-        pval = p_values[i]
+    for feat_key, lbl in feature_labels.items():
+        beta_val = point_betas[feat_key]
+        or_val = np.exp(beta_val)
         
-        if pval < 0.05:
+        b_series = boot_df[feat_key]
+        or_series = np.exp(b_series)
+        low = np.percentile(or_series, 2.5)
+        high = np.percentile(or_series, 97.5)
+        
+        # Two-tailed empirical p-value
+        p_val = 2.0 * min((b_series > 0).mean(), (b_series < 0).mean())
+        p_str = "< 0.001" if p_val < 0.001 else f"{p_val:.3f}"
+        
+        if p_val < 0.05:
             effect = "Risk Factor" if or_val > 1.0 else "Protective"
         else:
             effect = "No clear evidence of effect"
             
-        p_str = "< 0.001" if pval < 0.001 else f"{pval:.3f}"
         odds_ratios_data.append({
             "feature": lbl,
             "odds_ratio": round(float(or_val), 2),
             "ci_lower": round(float(low), 2),
             "ci_upper": round(float(high), 2),
-            "z_stat": round(float(z_stats[i]), 2),
+            "z_stat": round(float(beta_val / b_series.std()), 2),
             "p_value": p_str,
             "risk_direction": effect
         })
@@ -648,6 +665,12 @@ def compute_risk_factor_data():
     data = {
         "correlation_matrix": corr,
         "ses_coding_note": "SES is coded 1 to 5 (Hollingshead Index), where 1 = highest status and 5 = lowest status",
+        "model_specification": {
+            "estimator": "LogisticRegression(class_weight='balanced', C=1.0, penalty='l2', solver='lbfgs')",
+            "sample": "Training split only (N=297 visits, 120 unique subjects, 48.5% prevalence)",
+            "variance_estimator": "Participant cluster bootstrap (B=1000 resamples by Subject ID)",
+            "reconciliation_note": "Unscaled MMSE coefficient beta = 0.8036 confers OR = exp(0.8036) = 2.23 per point drop. Across a 4-point decline (MMSE 30 -> 26), predicted odds rise by 2.2335^4 = 24.89x (odds 0.177 at MMSE 30 -> 4.41 at MMSE 26). Age per decade OR is 0.79 (p=0.454, no clear evidence of effect) in multivariate conditioning vs 1.34 in univariate baseline."
+        },
         "odds_ratios": odds_ratios_data
     }
     

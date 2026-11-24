@@ -37,50 +37,56 @@
     }
   },
   "ses_coding_note": "SES is coded 1 to 5 (Hollingshead Index), where 1 = highest status and 5 = lowest status",
+  "model_specification": {
+    "estimator": "LogisticRegression(class_weight='balanced', C=1.0, penalty='l2', solver='lbfgs')",
+    "sample": "Training split only (N=297 visits, 120 unique subjects, 48.5% prevalence)",
+    "variance_estimator": "Participant cluster bootstrap (B=1000 resamples by Subject ID)",
+    "reconciliation_note": "Unscaled MMSE coefficient beta = 0.8036 confers OR = exp(0.8036) = 2.23 per point drop. Across a 4-point decline (MMSE 30 -> 26), predicted odds rise by 2.2335^4 = 24.89x (odds 0.177 at MMSE 30 -> 4.41 at MMSE 26). Age per decade OR is 0.79 (p=0.454, no clear evidence of effect) in multivariate conditioning vs 1.34 in univariate baseline."
+  },
   "odds_ratios": [
     {
       "feature": "MMSE (per 1-pt drop)",
-      "odds_ratio": 2.68,
-      "ci_lower": 2.05,
-      "ci_upper": 3.5,
-      "z_stat": 7.22,
+      "odds_ratio": 2.23,
+      "ci_lower": 1.87,
+      "ci_upper": 2.8,
+      "z_stat": 7.81,
       "p_value": "< 0.001",
       "risk_direction": "Risk Factor"
     },
     {
       "feature": "Age (per decade)",
-      "odds_ratio": 0.72,
+      "odds_ratio": 0.79,
       "ci_lower": 0.41,
-      "ci_upper": 1.27,
-      "z_stat": -1.14,
-      "p_value": "0.252",
+      "ci_upper": 1.49,
+      "z_stat": -0.75,
+      "p_value": "0.442",
       "risk_direction": "No clear evidence of effect"
     },
     {
       "feature": "Male Sex (vs Female)",
-      "odds_ratio": 3.76,
-      "ci_lower": 1.63,
-      "ci_upper": 8.65,
-      "z_stat": 3.11,
-      "p_value": "0.002",
+      "odds_ratio": 3.41,
+      "ci_lower": 1.62,
+      "ci_upper": 8.77,
+      "z_stat": 2.83,
+      "p_value": "0.004",
       "risk_direction": "Risk Factor"
     },
     {
       "feature": "SES tier (1=highest, 5=lowest)",
-      "odds_ratio": 0.62,
-      "ci_lower": 0.38,
-      "ci_upper": 1.0,
-      "z_stat": -1.98,
-      "p_value": "0.048",
-      "risk_direction": "Protective"
+      "odds_ratio": 0.67,
+      "ci_lower": 0.39,
+      "ci_upper": 1.02,
+      "z_stat": -1.6,
+      "p_value": "0.072",
+      "risk_direction": "No clear evidence of effect"
     },
     {
       "feature": "Education (per 4 yrs)",
-      "odds_ratio": 0.36,
-      "ci_lower": 0.18,
-      "ci_upper": 0.74,
-      "z_stat": -2.78,
-      "p_value": "0.005",
+      "odds_ratio": 0.37,
+      "ci_lower": 0.16,
+      "ci_upper": 0.71,
+      "z_stat": -2.52,
+      "p_value": "0.006",
       "risk_direction": "Protective"
     }
   ]

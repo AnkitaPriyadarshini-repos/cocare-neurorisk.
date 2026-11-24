@@ -38,7 +38,7 @@ def generate_hero_banner(theme, mode="light"):
         ("Scikit-Learn", "1.6.1", theme["cyan"]),
         ("FastAPI", "Serverless", theme["purple"]),
         ("Vercel", "Production Live", theme["accent_secondary"]),
-        ("License", "MIT", theme["baseline"]),
+        ("License", "TBD by Team", theme["baseline"]),
     ]
     
     bx_start = 0.05

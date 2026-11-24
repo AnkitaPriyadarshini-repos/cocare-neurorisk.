@@ -203,6 +203,43 @@ class TestMLPipeline(unittest.TestCase):
         profile = {"Age": 70, "Sex": "F", "EDUC": 12}
         res = predict_risk(profile, use_mmse=False, models_dir="ml/artifacts")
         self.assertTrue(0.0 <= res["probability"] <= 1.0)
+        self.assertIn("score_note", res)
+        self.assertIn("calibrated to OASIS sample prevalence", res["score_note"])
+
+    def test_model_load_and_metadata_integrity(self):
+        """Verify model weights and metadata load properly and contain required keys in CI."""
+        models_dir = "backend/models" if os.path.exists("backend/models/model_with_mmse.joblib") else "ml/artifacts"
+        for variant in ["model_with_mmse", "model_without_mmse"]:
+            model, meta = load_model_and_metadata(variant, models_dir=models_dir)
+            self.assertIsNotNone(model)
+            self.assertIn("threshold", meta)
+            self.assertIn("reference_medians", meta)
+            self.assertIn("risk_bands", meta)
+            self.assertIn("features", meta)
+
+    def test_explanation_direction_matches_effect(self):
+        """Verify that for BOTH variants the explanation direction matches the mathematical sign of feature effects."""
+        models_dir = "backend/models" if os.path.exists("backend/models/model_with_mmse.joblib") else "ml/artifacts"
+        
+        # Test Profiles: Low cognitive / higher risk vs preserved cognitive / lower risk
+        p_high = {"Age": 85, "Sex": "M", "EDUC": 6, "SES": 4, "MMSE": 18}
+        p_low = {"Age": 62, "Sex": "F", "EDUC": 18, "SES": 1, "MMSE": 30}
+        
+        for use_mmse in [True, False]:
+            variant = "model_with_mmse" if use_mmse else "model_without_mmse"
+            pipe, meta = load_model_and_metadata(variant, models_dir=models_dir)
+            ref_medians = meta.get("reference_medians", {})
+            features = meta["features"]["all_ordered"]
+            
+            for profile in [p_high, p_low]:
+                exps = explain_one(profile, pipe, ref_medians, features)
+                for exp in exps:
+                    effect = exp["effect"]
+                    en_text = exp["text_en"]
+                    if effect == "raises":
+                        self.assertIn("raises predicted score relative to typical training-data values", en_text)
+                    elif effect == "lowers":
+                        self.assertIn("lowers predicted score relative to typical training-data values", en_text)
 
 
 if __name__ == "__main__":
